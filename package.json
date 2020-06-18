@@ -1,0 +1,69 @@
+{
+  "name": "svelte-timezone-picker",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">= 10",
+    "npm": ">= 6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tricinel/svelte-timezone-picker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tricinel/svelte-timezone-picker/issues"
+  },
+  "homepage": "https://github.com/tricinel/svelte-timezone-picker#readme",
+  "module": "lib/index.mjs",
+  "main": "lib/index.js",
+  "svelte": "src/index.js",
+  "browser": "web/index.js",
+  "author": "Bogdan Lazar",
+  "license": "MIT",
+  "keywords": [
+    "svelte",
+    "timezone picker",
+    "timezone",
+    "datetime"
+  ],
+  "files": [
+    "src",
+    "lib",
+    "web"
+  ],
+  "scripts": {
+    "build:web": "rollup -c ./rollup.config.web.js",
+    "build:prod": "rollup -c ./rollup.config.js",
+    "build": "npm-run-all --parallel build:**",
+    "dev": "rollup -c ./rollup.config.development.js -w",
+    "start": "sirv demo",
+    "lint": "eslint src/**/*.{svelte,js}"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^12.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^8.0.0",
+    "eslint": "^7.2.0",
+    "eslint-config-frontwerk": "^1.0.2",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.21.1",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-svelte3": "^2.7.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.0.5",
+    "prettier-plugin-svelte": "^1.1.0",
+    "rollup": "^2.3.4",
+    "rollup-plugin-livereload": "^1.0.0",
+    "rollup-plugin-svelte": "^5.0.3",
+    "rollup-plugin-terser": "^5.1.2",
+    "svelte": "^3.0.0",
+    "sirv-cli": "^1.0.0"
+  },
+  "dependencies": {
+    "compute-scroll-into-view": "^1.0.14",
+    "date-fns": "^2.14.0",
+    "date-fns-tz": "^1.0.10"
+  },
+  "peerDependencies": {
+    "svelte": "^3.0.0"
+  }
+}

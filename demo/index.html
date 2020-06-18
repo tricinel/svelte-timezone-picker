@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset='utf-8'>
+		<meta name='viewport' content='width=device-width,initial-scale=1'>
+
+		<title>Svelte app</title>
+
+		<link rel='icon' type='image/png' href='/favicon.png'>
+		<link rel="stylesheet" href="https://unpkg.com/normalize.css@8.0.1/normalize.css">
+		<link rel='stylesheet' href='/build/bundle.css'>
+
+		<style>
+			@import url('https://rsms.me/inter/inter.css');
+
+			:root {
+				--color-gray-400: #acacac;
+				--color-gray-600: #757575;
+				--color-gray-900: #292929;
+				--color-info: #076196;
+			}
+
+			html {
+				font-size: 16px;
+				font-family: 'Inter', sans-serif;
+			}
+
+			body {
+				background-color: #dadada;
+			}
+
+			main {
+				margin: 2em;
+				max-width: 90vw;
+				width: 760px;
+			}
+
+		</style>
+
+		<script defer src='/build/bundle.js'></script>
+
+	</head>
+
+	<body>
+		<main>
+			<div id="root"></div>
+		</main>
+	</body>
+
+</html>
