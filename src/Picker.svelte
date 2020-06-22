@@ -240,14 +240,24 @@
     // and we update the time for each timezone every minute
     if (!datetime) {
       let nextTimeToUpdate = Date.now();
+      let firstRun = true;
+
       const updateCurrentDatetime = () => {
         const now = Date.now();
+        let elapsedMs = 0;
+
+        // On the first run, we need to take into account
+        // the number of seconds that have already elapsed from the full minute
+        if (firstRun) {
+          elapsedMs = new Date().getMilliseconds();
+          firstRun = false;
+        }
 
         if (nextTimeToUpdate <= now) {
           datetime = new Date();
           utcDatetime = zonedTimeToUtc(datetime, timezone);
-          nextTimeToUpdate = now + UPDATE_INTERVAL;
-          console.log('updating...');
+          // On subsequent runs, the elapsedMs will be always 0
+          nextTimeToUpdate = now + UPDATE_INTERVAL - elapsedMs;
         }
         animationFrameId = requestAnimationFrame(updateCurrentDatetime);
       };

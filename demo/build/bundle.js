@@ -5000,7 +5000,7 @@ var SvelteTimezonePicker = (function () {
     	return child_ctx;
     }
 
-    // (276:0) {#if open}
+    // (286:0) {#if open}
     function create_if_block_5(ctx) {
     	let div;
     	let mounted;
@@ -5010,7 +5010,7 @@ var SvelteTimezonePicker = (function () {
     		c: function create() {
     			div = element("div");
     			attr_dev(div, "class", "overlay svelte-22kpky");
-    			add_location(div, file, 276, 2, 8826);
+    			add_location(div, file, 286, 2, 9172);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -5032,14 +5032,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_5.name,
     		type: "if",
-    		source: "(276:0) {#if open}",
+    		source: "(286:0) {#if open}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (372:4) {#if utcDatetime}
+    // (382:4) {#if utcDatetime}
     function create_if_block_4(ctx) {
     	let small;
     	let t0;
@@ -5054,7 +5054,7 @@ var SvelteTimezonePicker = (function () {
     			t1 = text(t1_value);
     			t2 = text(")");
     			attr_dev(small, "class", "svelte-22kpky");
-    			add_location(small, file, 372, 6, 14581);
+    			add_location(small, file, 382, 6, 14927);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, small, anchor);
@@ -5074,14 +5074,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_4.name,
     		type: "if",
-    		source: "(372:4) {#if utcDatetime}",
+    		source: "(382:4) {#if utcDatetime}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (392:2) {#if open}
+    // (402:2) {#if open}
     function create_if_block(ctx) {
     	let div1;
     	let label;
@@ -5124,7 +5124,7 @@ var SvelteTimezonePicker = (function () {
 
     			attr_dev(label, "id", /*labelId*/ ctx[9]);
     			attr_dev(label, "class", "svelte-22kpky");
-    			add_location(label, file, 393, 6, 15216);
+    			add_location(label, file, 403, 6, 15562);
     			attr_dev(input, "id", /*searchInputId*/ ctx[11]);
     			attr_dev(input, "type", "search");
     			attr_dev(input, "aria-autocomplete", "list");
@@ -5135,16 +5135,16 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(input, "placeholder", "Search...");
     			input.autofocus = true;
     			attr_dev(input, "class", "svelte-22kpky");
-    			add_location(input, file, 399, 8, 15455);
+    			add_location(input, file, 409, 8, 15801);
     			attr_dev(div0, "class", "input-group svelte-22kpky");
-    			add_location(div0, file, 397, 6, 15375);
+    			add_location(div0, file, 407, 6, 15721);
     			attr_dev(ul, "tabindex", "-1");
     			attr_dev(ul, "class", "tz-groups svelte-22kpky");
     			attr_dev(ul, "id", /*listBoxId*/ ctx[10]);
     			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[9]);
-    			add_location(ul, file, 435, 6, 16506);
+    			add_location(ul, file, 445, 6, 16852);
     			attr_dev(div1, "class", "tz-dropdown svelte-22kpky");
-    			add_location(div1, file, 392, 4, 15138);
+    			add_location(div1, file, 402, 4, 15484);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -5246,14 +5246,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(392:2) {#if open}",
+    		source: "(402:2) {#if open}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (413:8) {#if userSearch && userSearch.length > 0}
+    // (423:8) {#if userSearch && userSearch.length > 0}
     function create_if_block_3(ctx) {
     	let button;
     	let svg;
@@ -5273,20 +5273,20 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(path0, "stroke", "hsl(0, 0%, 18%)");
     			attr_dev(path0, "strokelinecap", "round");
     			attr_dev(path0, "d", "M 3 16.5 L 17 2.5");
-    			add_location(path0, file, 415, 14, 15990);
+    			add_location(path0, file, 425, 14, 16336);
     			attr_dev(path1, "fill", "transparent");
     			attr_dev(path1, "strokewidth", "3");
     			attr_dev(path1, "stroke", "hsl(0, 0%, 18%)");
     			attr_dev(path1, "strokelinecap", "round");
     			attr_dev(path1, "d", "M 3 2.5 L 17 16.346");
-    			add_location(path1, file, 422, 14, 16217);
+    			add_location(path1, file, 432, 14, 16563);
     			attr_dev(svg, "width", "0.88em");
     			attr_dev(svg, "height", "0.88em");
     			attr_dev(svg, "viewBox", "0 0 23 23");
-    			add_location(svg, file, 414, 12, 15919);
+    			add_location(svg, file, 424, 12, 16265);
     			attr_dev(button, "title", "Clear search text");
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 413, 10, 15847);
+    			add_location(button, file, 423, 10, 16193);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -5311,14 +5311,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_3.name,
     		type: "if",
-    		source: "(413:8) {#if userSearch && userSearch.length > 0}",
+    		source: "(423:8) {#if userSearch && userSearch.length > 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (444:12) {#if groupHasVisibleChildren(group, filteredZones)}
+    // (454:12) {#if groupHasVisibleChildren(group, filteredZones)}
     function create_if_block_2(ctx) {
     	let p;
     	let t_value = /*group*/ ctx[34] + "";
@@ -5329,7 +5329,7 @@ var SvelteTimezonePicker = (function () {
     			p = element("p");
     			t = text(t_value);
     			attr_dev(p, "class", "svelte-22kpky");
-    			add_location(p, file, 444, 14, 16771);
+    			add_location(p, file, 454, 14, 17117);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, p, anchor);
@@ -5345,14 +5345,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(444:12) {#if groupHasVisibleChildren(group, filteredZones)}",
+    		source: "(454:12) {#if groupHasVisibleChildren(group, filteredZones)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (452:16) {#if filteredZones.includes(name)}
+    // (462:16) {#if filteredZones.includes(name)}
     function create_if_block_1(ctx) {
     	let li;
     	let button;
@@ -5386,15 +5386,15 @@ var SvelteTimezonePicker = (function () {
     			span = element("span");
     			t2 = text(t2_value);
     			t3 = space();
-    			add_location(span, file, 463, 22, 17554);
+    			add_location(span, file, 473, 22, 17900);
     			attr_dev(button, "aria-label", button_aria_label_value = `Select ${/*name*/ ctx[37]}`);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 457, 20, 17269);
+    			add_location(button, file, 467, 20, 17615);
     			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[37])}`);
     			attr_dev(li, "role", "option");
     			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[7] === /*name*/ ctx[37]);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 452, 18, 17079);
+    			add_location(li, file, 462, 18, 17425);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5433,14 +5433,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(452:16) {#if filteredZones.includes(name)}",
+    		source: "(462:16) {#if filteredZones.includes(name)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (451:14) {#each Object.keys(groupedZones[group]) as name}
+    // (461:14) {#each Object.keys(groupedZones[group]) as name}
     function create_each_block_1(ctx) {
     	let show_if = /*filteredZones*/ ctx[5].includes(/*name*/ ctx[37]);
     	let if_block_anchor;
@@ -5481,14 +5481,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(451:14) {#each Object.keys(groupedZones[group]) as name}",
+    		source: "(461:14) {#each Object.keys(groupedZones[group]) as name}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (442:8) {#each Object.keys(groupedZones) as group}
+    // (452:8) {#each Object.keys(groupedZones) as group}
     function create_each_block(ctx) {
     	let li;
     	let show_if = /*groupHasVisibleChildren*/ ctx[14](/*group*/ ctx[34], /*filteredZones*/ ctx[5]);
@@ -5520,9 +5520,9 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(ul, "role", "listbox");
     			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
     			attr_dev(ul, "class", "svelte-22kpky");
-    			add_location(ul, file, 446, 12, 16816);
+    			add_location(ul, file, 456, 12, 17162);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 442, 10, 16688);
+    			add_location(li, file, 452, 10, 17034);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5591,7 +5591,7 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(442:8) {#each Object.keys(groupedZones) as group}",
+    		source: "(452:8) {#each Object.keys(groupedZones) as group}",
     		ctx
     	});
 
@@ -5640,26 +5640,26 @@ var SvelteTimezonePicker = (function () {
     			t5 = space();
     			if (if_block2) if_block2.c();
     			attr_dev(path0, "d", "M484.681\n        213.47c-4.498-40.879-19.541-78.226-43.869-111.5-39.194-53.578-91.611-86.336-157.067-97.74-13.051-2.271-26.398-2.862-39.608-4.23h-2.622c-12.342\n        1.351-24.737 2.246-36.993 4.129C78.665 23.442-12.331 142.612 2.056\n        269.395 8.921 329.91 34.27 381.516 79.271 422.673c53.504 48.941 117.062\n        69.925 189.118 63.079 55.301-5.271 103.557-27.573 143.33-66.489\n        57.76-56.561 81.781-125.699 72.962-205.793zM433.4\n        338.072c-6.153-10.729-13.92-25.688-17.39-38.455-5.042-18.537-17.147-.627-18.158\n        11.479s-9.078 21.184-25.221\n        3.025c-16.143-18.157-19.169-14.126-24.211-14.126s-14.121 12.104-12.105\n        68.601c1.437 40.335 17.349 46.736 27.746 49.662-19.305 13.264-41.488\n        23.714-66.385 30.038-95.157\n        24.151-192.289-19.706-237.671-106.837-42.28-81.185-21.681-173.053\n        21.299-223.616 1.156 9.094 2.288 17.263 3.23 25.464 2.562 22.39.629\n        44.487-3.939 66.496-.976 4.69-.636 10.033.629 14.646.688 2.519 4.486\n        5.494 7.11 5.743 2.066.201 5.671-3.074 6.508-5.533 1.513-4.397\n        1.575-9.327 2.04-14.053.334-3.334.34-6.712.57-11.942 3.413 2.766 5.902\n        4.444 7.971 6.525 5.272 5.308 10.604 10.592 15.415 16.299 2.125 2.533\n        4.315 6.079 4.256 9.129-.133 6.525 2.73 10.962 6.227 16.086 3.886 5.698\n        5.636 12.862 8.136 19.459 1.046 2.766 1.265 5.887 2.512 8.547 2.663\n        5.697 6.688 9.599 13.607 10.024 7.279.461 10.004 3.286 11.05\n        10.733-1.862.213-3.715.462-5.574.633-8.878.846-13.278 4.924-12.927\n        13.879.694 17.785 7.11 33.324 20.312 45.678 3.638 3.411 7.503 6.579\n        11.038 10.072 8.074 7.974 10.891 17.342 7.01 28.354-1.859 5.249-4.407\n        10.403-5.231 15.83-.839 5.514-.845 11.508.432 16.904 1.324 5.615.756\n        17.897 6.555 16.881 10.258-1.803 16.154.219\n        16.952-11.266.151-2.188-.018-2.459-.6-4.48-3.05-10.781 10.799-41.387\n        19.109-46.967 7.099-4.776 14.218-9.635 20.652-15.244 9.276-8.062\n        13.429-18.477 9.531-30.605-3.668-11.414.623-19.795 8.603-27.143\n        8.14-7.489 13.477-16.119\n        12.921-27.645-.556-11.526-8.098-19.849-17.927-18.666-4.806.567-9.413\n        2.872-14.098 4.45-6.868 2.323-13.571 5.574-20.62 6.839-9.88\n        1.75-15.968-4.705-20.375-12.543-3.546-6.301-4.714-6.785-10.87-2.86-5.193\n        3.322-10.376 6.667-15.755 9.67-5.588 3.121-8.633\n        1.963-12.941-2.707-2.548-2.755-6.076-4.693-9.351-6.679-2.355-1.442-5.539-1.839-7.427-3.647-2.53-2.447-6.059-6.076-5.701-8.729.417-3.115\n        4.025-7.014 7.172-8.29 5.423-2.199 11.585-2.554 17.401-3.818 3.097-.674\n        6.239-1.375 9.167-2.53 4.008-1.599\n        3.839-4.232.771-6.703-1.513-1.215-3.384-2.069-5.208-2.802-8.866-3.57-17.782-6.984-26.643-10.568-2.202-.884-4.371-1.971-6.348-3.263-5.571-3.661-6.242-7.692-1.188-12.152\n        19.955-17.602 43.264-22.756 63.916.63 6.398 7.243 10.737 16.275 16.778\n        23.876 4.752 5.994 10.223 11.621 16.263 16.246 2.489 1.9 8.086 2.223\n        10.87.697 4.146-2.27 4.291-7.444\n        2.205-11.759-1.803-3.748-3.922-7.442-6.469-10.722-11.733-15.117-10.926-44.576\n        12.055-56.867 7.687-4.117 15.441-8.453 19.112-19.497-4.403 1.191-7.596\n        1.959-10.723 2.917-17.451 5.405-5.302-7.613 2.726-9.883\n        4.876-1.386-4.362-5.122-4.362-5.122.219-.381 6.135-2.069 12.714-4.874\n        4.527-1.924 9.155-4.09 12.915-7.152 2.436-1.998 3.375-5.816\n        4.977-8.819-.407-.473-.804-.934-1.217-1.407-4.611.621-9.216 1.303-13.838\n        1.824-7.832.877-9.67-.659-10.396-8.559-.503-5.394-6-8.334-11.133-5.568-3.473\n        1.883-6.476 4.613-9.818 6.773-7.716 4.998-13.485\n        3-16.512-5.618-1.803-5.13-4.314-6.1-9.034-3.227-2.374 1.442-4.354\n        3.549-6.768 4.897-3.958 2.211-7.982 4.43-12.232 5.932-4.14 1.466-9.126\n        2.53-11.943-2.01-3.026-4.882-.381-9.635 3.435-12.696 4.743-3.807\n        10.211-6.762 15.548-9.753 7.602-4.279 15.652-7.838 22.993-12.504\n        5.388-3.438 7.743-9.041\n        6-15.652-1.472-5.58-5.205-7.468-10.374-4.909-4.268 2.119-7.997\n        5.435-12.386 7.143-3.207 1.229-7.203\n        1.242-10.646.636-1.271-.225-2.622-3.747-2.657-5.792-.024-1.179\n        2.367-3.227 3.892-3.476 10.604-1.652 21.255-3.05 31.921-4.265 1.41-.154\n        3.529.718 4.413 1.844 7.045 8.893 16.875 13.208 27.216 16.287 8.688 2.58\n        9.947 1.351 11.142-7.764 11.159-2.627 22.502-7.803 33.732-.721 6.23\n        3.921 11.91 8.917 17.183 14.091 1.307 1.288.509 5.272-.118 7.838-.827\n        3.448-2.736 6.635-3.617 10.083-1.702 6.682 2.618 11.904 9.522 11.795\n        2.181-.047 4.356-.494 6.549-.603 6.378-.298 8.642 2.143 8.057 8.583-.828\n        9.126.691 10.223 9.9 8.665 2.647-.446 5.704.756 8.405 1.703 1.607.567\n        2.854 2.107 4.285 3.188 8.564 6.49 15.113 4.058\n        17.62-6.561.271-1.156.236-2.391.473-3.559.993-4.764 3.683-5.99\n        6.897-2.604 6.81 7.211 13.199 14.824 20.108 22.686-7.424 6.809-7.672\n        15.084-6.028 23.193 1.826 9.021-.55 16.858-4.108 24.805-3.41 7.613-7.157\n        15.179-9.434 23.144-3.404 11.955.461 17.416 12.602 20.062 11.585 2.529\n        13.482 4.858 13.92 16.184.585 15.448 8.518 26.11 22.071 32.914 3.009\n        1.501 6.206 2.642 9.279 3.919-1.519 23.814-8.317 48.598-19.949 72.111z");
-    			add_location(path0, file, 296, 6, 9313);
+    			add_location(path0, file, 306, 6, 9659);
     			attr_dev(svg0, "xmlns", "http://www.w3.org/2000/svg");
     			attr_dev(svg0, "viewBox", "0 0 487.015 487.015");
     			attr_dev(svg0, "width", "0.88em");
     			attr_dev(svg0, "height", "0.88em");
-    			add_location(svg0, file, 290, 4, 9176);
+    			add_location(svg0, file, 300, 4, 9522);
     			attr_dev(span, "class", "svelte-22kpky");
-    			add_location(span, file, 370, 4, 14526);
+    			add_location(span, file, 380, 4, 14872);
     			attr_dev(path1, "d", "M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0\n        113.536-3.536l11.095 11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z");
 
     			attr_dev(path1, "transform", path1_transform_value = /*open*/ ctx[1]
     			? "rotate(180, 15.3635, 15.3635)"
     			: "rotate(0)");
 
-    			add_location(path1, file, 384, 6, 14866);
+    			add_location(path1, file, 394, 6, 15212);
     			attr_dev(svg1, "xmlns", "http://www.w3.org/2000/svg");
     			attr_dev(svg1, "viewBox", "0 0 30.727 30.727");
     			attr_dev(svg1, "width", "0.88em");
     			attr_dev(svg1, "height", "0.88em");
-    			add_location(svg1, file, 378, 4, 14731);
+    			add_location(svg1, file, 388, 4, 15077);
     			attr_dev(button, "type", "button");
     			attr_dev(button, "role", "button");
     			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`);
@@ -5667,9 +5667,9 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(button, "data-toggle", "true");
     			attr_dev(button, "aria-expanded", /*open*/ ctx[1]);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 280, 2, 8909);
+    			add_location(button, file, 290, 2, 9255);
     			attr_dev(div, "class", "tz-container svelte-22kpky");
-    			add_location(div, file, 279, 0, 8880);
+    			add_location(div, file, 289, 0, 9226);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -5999,15 +5999,25 @@ var SvelteTimezonePicker = (function () {
     		// and we update the time for each timezone every minute
     		if (!datetime) {
     			let nextTimeToUpdate = Date.now();
+    			let firstRun = true;
 
     			const updateCurrentDatetime = () => {
     				const now = Date.now();
+    				let elapsedMs = 0;
+
+    				// On the first run, we need to take into account
+    				// the number of seconds that have already elapsed from the full minute
+    				if (firstRun) {
+    					elapsedMs = new Date().getMilliseconds();
+    					firstRun = false;
+    				}
 
     				if (nextTimeToUpdate <= now) {
     					$$invalidate(20, datetime = new Date());
     					$$invalidate(3, utcDatetime = zonedTimeToUtc(datetime, timezone));
-    					nextTimeToUpdate = now + UPDATE_INTERVAL;
-    					console.log("updating...");
+
+    					// On subsequent runs, the elapsedMs will be always 0
+    					nextTimeToUpdate = now + UPDATE_INTERVAL - elapsedMs;
     				}
 
     				animationFrameId = requestAnimationFrame(updateCurrentDatetime);
