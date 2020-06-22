@@ -1,36 +1,40 @@
 <script>
   import Picker from '../src/Picker.svelte';
-  import { zonedTimeToUtc } from 'date-fns-tz';
-  import { format } from 'date-fns';
+  import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+  import { format, parseISO } from 'date-fns';
 
-  let datetime = '2020-06-10T19:30';
+  let datetime = '2016-06-19T08:30';
   let timezone = 'Europe/London';
+  // let datetime;
+  // let timezone;
 
-  let dt = zonedTimeToUtc(datetime, timezone);
-
-  let payload = {
-    datetime,
-    timezone,
-    dt
-  };
+  let payload = {};
 
   const update = (ev) => {
+    payload.datetime = ev.detail.datetime;
     payload.timezone = ev.detail.timezone;
-    payload.dt = ev.detail.datetime;
+    payload.utcDatetime = ev.detail.utcDatetime;
+    payload.zonedDatetime = ev.detail.zonedDatetime;
   };
 </script>
 
 <div class="cols">
   <div class="col">
-    <p>Somewhere in Haikuland...</p>
+    <p>Somewhere in user land...</p>
     <input type="datetime-local" value="{datetime}" />
     <Picker on:update="{update}" {datetime} {timezone} />
   </div>
-  <div class="col">
-    <p>The payload for the server will be:</p>
-    <pre>{JSON.stringify(payload, null, 2)}</pre>
-    <p>{format(payload.dt, "MMMM do, yyyy 'at' HH:mm aaaa")}</p>
-  </div>
+  {#if Object.keys(payload).length}
+    <div class="col">
+      <p>The payload for the server will be:</p>
+      <pre>{JSON.stringify(payload, null, 2)}</pre>
+      <p>
+        It will be {format(payload.zonedDatetime, "MMMM do, yyyy 'at' HH:mm aaaa")}
+        in {payload.timezone}.
+      </p>
+      <p>UTC: {format(payload.utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa")}</p>
+    </div>
+  {/if}
 </div>
 
 <style>

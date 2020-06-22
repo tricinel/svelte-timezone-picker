@@ -3027,6 +3027,41 @@ var SvelteTimezonePicker = (function () {
     }
 
     /**
+     * Returns the formatted time zone name of the provided `timeZone` or the current
+     * system time zone if omitted, accounting for DST according to the UTC value of
+     * the date.
+     */
+    function tzIntlTimeZoneName(length, date, options) {
+      var dtf = getDTF(length, options.timeZone, options.locale);
+      return dtf.formatToParts ? partsTimeZone(dtf, date) : hackyTimeZone(dtf, date)
+    }
+
+    function partsTimeZone(dtf, date) {
+      var formatted = dtf.formatToParts(date);
+      return formatted[formatted.length - 1].value
+    }
+
+    function hackyTimeZone(dtf, date) {
+      var formatted = dtf.format(date).replace(/\u200E/g, '');
+      var tzNameMatch = / [\w-+ ]+$/.exec(formatted);
+      return tzNameMatch ? tzNameMatch[0].substr(1) : ''
+    }
+
+    // If a locale has been provided `en-US` is used as a fallback in case it is an
+    // invalid locale, otherwise the locale is left undefined to use the system locale.
+    function getDTF(length, timeZone, locale) {
+      if (locale && !locale.code) {
+        throw new Error(
+          "date-fns-tz error: Please set a language code on the locale object imported from date-fns, e.g. `locale.code = 'en-US'`"
+        )
+      }
+      return new Intl.DateTimeFormat(locale ? [locale.code, 'en-US'] : undefined, {
+        timeZone: timeZone,
+        timeZoneName: length
+      })
+    }
+
+    /**
      * Returns the [year, month, day, hour, minute, seconds] tokens of the provided
      * `date` as it will be rendered in the `timeZone`.
      */
@@ -3191,8 +3226,149 @@ var SvelteTimezonePicker = (function () {
       return true
     }
 
+    var MILLISECONDS_IN_MINUTE$2 = 60 * 1000;
+
+    var formatters$2 = {
+      // Timezone (ISO-8601. If offset is 0, output is always `'Z'`)
+      X: function(date, token, localize, options) {
+        var originalDate = options._originalDate || date;
+        var timezoneOffset = options.timeZone
+          ? tzParseTimezone(options.timeZone, originalDate) / MILLISECONDS_IN_MINUTE$2
+          : originalDate.getTimezoneOffset();
+
+        if (timezoneOffset === 0) {
+          return 'Z'
+        }
+
+        switch (token) {
+          // Hours and optional minutes
+          case 'X':
+            return formatTimezoneWithOptionalMinutes$1(timezoneOffset)
+
+          // Hours, minutes and optional seconds without `:` delimeter
+          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+          // so this token always has the same output as `XX`
+          case 'XXXX':
+          case 'XX': // Hours and minutes without `:` delimeter
+            return formatTimezone$1(timezoneOffset)
+
+          // Hours, minutes and optional seconds with `:` delimeter
+          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+          // so this token always has the same output as `XXX`
+          case 'XXXXX':
+          case 'XXX': // Hours and minutes with `:` delimeter
+          default:
+            return formatTimezone$1(timezoneOffset, ':')
+        }
+      },
+
+      // Timezone (ISO-8601. If offset is 0, output is `'+00:00'` or equivalent)
+      x: function(date, token, localize, options) {
+        var originalDate = options._originalDate || date;
+        var timezoneOffset = options.timeZone
+          ? tzParseTimezone(options.timeZone, originalDate) / MILLISECONDS_IN_MINUTE$2
+          : originalDate.getTimezoneOffset();
+
+        switch (token) {
+          // Hours and optional minutes
+          case 'x':
+            return formatTimezoneWithOptionalMinutes$1(timezoneOffset)
+
+          // Hours, minutes and optional seconds without `:` delimeter
+          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+          // so this token always has the same output as `xx`
+          case 'xxxx':
+          case 'xx': // Hours and minutes without `:` delimeter
+            return formatTimezone$1(timezoneOffset)
+
+          // Hours, minutes and optional seconds with `:` delimeter
+          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+          // so this token always has the same output as `xxx`
+          case 'xxxxx':
+          case 'xxx': // Hours and minutes with `:` delimeter
+          default:
+            return formatTimezone$1(timezoneOffset, ':')
+        }
+      },
+
+      // Timezone (GMT)
+      O: function(date, token, localize, options) {
+        var originalDate = options._originalDate || date;
+        var timezoneOffset = options.timeZone
+          ? tzParseTimezone(options.timeZone, originalDate) / MILLISECONDS_IN_MINUTE$2
+          : originalDate.getTimezoneOffset();
+
+        switch (token) {
+          // Short
+          case 'O':
+          case 'OO':
+          case 'OOO':
+            return 'GMT' + formatTimezoneShort$1(timezoneOffset, ':')
+          // Long
+          case 'OOOO':
+          default:
+            return 'GMT' + formatTimezone$1(timezoneOffset, ':')
+        }
+      },
+
+      // Timezone (specific non-location)
+      z: function(date, token, localize, options) {
+        var originalDate = options._originalDate || date;
+
+        switch (token) {
+          // Short
+          case 'z':
+          case 'zz':
+          case 'zzz':
+            return tzIntlTimeZoneName('short', originalDate, options)
+          // Long
+          case 'zzzz':
+          default:
+            return tzIntlTimeZoneName('long', originalDate, options)
+        }
+      }
+    };
+
+    function addLeadingZeros$1(number, targetLength) {
+      var sign = number < 0 ? '-' : '';
+      var output = Math.abs(number).toString();
+      while (output.length < targetLength) {
+        output = '0' + output;
+      }
+      return sign + output
+    }
+
+    function formatTimezone$1(offset, dirtyDelimeter) {
+      var delimeter = dirtyDelimeter || '';
+      var sign = offset > 0 ? '-' : '+';
+      var absOffset = Math.abs(offset);
+      var hours = addLeadingZeros$1(Math.floor(absOffset / 60), 2);
+      var minutes = addLeadingZeros$1(absOffset % 60, 2);
+      return sign + hours + delimeter + minutes
+    }
+
+    function formatTimezoneWithOptionalMinutes$1(offset, dirtyDelimeter) {
+      if (offset % 60 === 0) {
+        var sign = offset > 0 ? '-' : '+';
+        return sign + addLeadingZeros$1(Math.abs(offset) / 60, 2)
+      }
+      return formatTimezone$1(offset, dirtyDelimeter)
+    }
+
+    function formatTimezoneShort$1(offset, dirtyDelimeter) {
+      var sign = offset > 0 ? '-' : '+';
+      var absOffset = Math.abs(offset);
+      var hours = Math.floor(absOffset / 60);
+      var minutes = absOffset % 60;
+      if (minutes === 0) {
+        return sign + String(hours)
+      }
+      var delimeter = dirtyDelimeter || '';
+      return sign + String(hours) + delimeter + addLeadingZeros$1(minutes, 2)
+    }
+
     var MILLISECONDS_IN_HOUR$1 = 3600000;
-    var MILLISECONDS_IN_MINUTE$2 = 60000;
+    var MILLISECONDS_IN_MINUTE$3 = 60000;
     var DEFAULT_ADDITIONAL_DIGITS = 2;
 
     var patterns$1 = {
@@ -3545,7 +3721,7 @@ var SvelteTimezonePicker = (function () {
         }
 
         return (
-          (hours % 24) * MILLISECONDS_IN_HOUR$1 + minutes * MILLISECONDS_IN_MINUTE$2
+          (hours % 24) * MILLISECONDS_IN_HOUR$1 + minutes * MILLISECONDS_IN_MINUTE$3
         )
       }
 
@@ -3562,7 +3738,7 @@ var SvelteTimezonePicker = (function () {
 
         return (
           (hours % 24) * MILLISECONDS_IN_HOUR$1 +
-          minutes * MILLISECONDS_IN_MINUTE$2 +
+          minutes * MILLISECONDS_IN_MINUTE$3 +
           seconds * 1000
         )
       }
@@ -3655,6 +3831,338 @@ var SvelteTimezonePicker = (function () {
       }
 
       return true
+    }
+
+    var tzFormattingTokensRegExp = /([xXOz]+)|''|'(''|[^'])+('|$)/g;
+
+    /**
+     * @name format
+     * @category Common Helpers
+     * @summary Format the date.
+     *
+     * @description
+     * Return the formatted date string in the given format. The result may vary by locale.
+     *
+     * > ⚠️ Please note that the `format` tokens differ from Moment.js and other libraries.
+     * > See: https://git.io/fxCyr
+     *
+     * The characters wrapped between two single quotes characters (') are escaped.
+     * Two single quotes in a row, whether inside or outside a quoted sequence, represent a 'real' single quote.
+     * (see the last example)
+     *
+     * Format of the string is based on Unicode Technical Standard #35:
+     * https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
+     * with a few additions (see note 7 below the table).
+     *
+     * Accepted patterns:
+     * | Unit                            | Pattern | Result examples                   | Notes |
+     * |---------------------------------|---------|-----------------------------------|-------|
+     * | Era                             | G..GGG  | AD, BC                            |       |
+     * |                                 | GGGG    | Anno Domini, Before Christ        | 2     |
+     * |                                 | GGGGG   | A, B                              |       |
+     * | Calendar year                   | y       | 44, 1, 1900, 2017                 | 5     |
+     * |                                 | yo      | 44th, 1st, 0th, 17th              | 5,7   |
+     * |                                 | yy      | 44, 01, 00, 17                    | 5     |
+     * |                                 | yyy     | 044, 001, 1900, 2017              | 5     |
+     * |                                 | yyyy    | 0044, 0001, 1900, 2017            | 5     |
+     * |                                 | yyyyy   | ...                               | 3,5   |
+     * | Local week-numbering year       | Y       | 44, 1, 1900, 2017                 | 5     |
+     * |                                 | Yo      | 44th, 1st, 1900th, 2017th         | 5,7   |
+     * |                                 | YY      | 44, 01, 00, 17                    | 5,8   |
+     * |                                 | YYY     | 044, 001, 1900, 2017              | 5     |
+     * |                                 | YYYY    | 0044, 0001, 1900, 2017            | 5,8   |
+     * |                                 | YYYYY   | ...                               | 3,5   |
+     * | ISO week-numbering year         | R       | -43, 0, 1, 1900, 2017             | 5,7   |
+     * |                                 | RR      | -43, 00, 01, 1900, 2017           | 5,7   |
+     * |                                 | RRR     | -043, 000, 001, 1900, 2017        | 5,7   |
+     * |                                 | RRRR    | -0043, 0000, 0001, 1900, 2017     | 5,7   |
+     * |                                 | RRRRR   | ...                               | 3,5,7 |
+     * | Extended year                   | u       | -43, 0, 1, 1900, 2017             | 5     |
+     * |                                 | uu      | -43, 01, 1900, 2017               | 5     |
+     * |                                 | uuu     | -043, 001, 1900, 2017             | 5     |
+     * |                                 | uuuu    | -0043, 0001, 1900, 2017           | 5     |
+     * |                                 | uuuuu   | ...                               | 3,5   |
+     * | Quarter (formatting)            | Q       | 1, 2, 3, 4                        |       |
+     * |                                 | Qo      | 1st, 2nd, 3rd, 4th                | 7     |
+     * |                                 | QQ      | 01, 02, 03, 04                    |       |
+     * |                                 | QQQ     | Q1, Q2, Q3, Q4                    |       |
+     * |                                 | QQQQ    | 1st quarter, 2nd quarter, ...     | 2     |
+     * |                                 | QQQQQ   | 1, 2, 3, 4                        | 4     |
+     * | Quarter (stand-alone)           | q       | 1, 2, 3, 4                        |       |
+     * |                                 | qo      | 1st, 2nd, 3rd, 4th                | 7     |
+     * |                                 | qq      | 01, 02, 03, 04                    |       |
+     * |                                 | qqq     | Q1, Q2, Q3, Q4                    |       |
+     * |                                 | qqqq    | 1st quarter, 2nd quarter, ...     | 2     |
+     * |                                 | qqqqq   | 1, 2, 3, 4                        | 4     |
+     * | Month (formatting)              | M       | 1, 2, ..., 12                     |       |
+     * |                                 | Mo      | 1st, 2nd, ..., 12th               | 7     |
+     * |                                 | MM      | 01, 02, ..., 12                   |       |
+     * |                                 | MMM     | Jan, Feb, ..., Dec                |       |
+     * |                                 | MMMM    | January, February, ..., December  | 2     |
+     * |                                 | MMMMM   | J, F, ..., D                      |       |
+     * | Month (stand-alone)             | L       | 1, 2, ..., 12                     |       |
+     * |                                 | Lo      | 1st, 2nd, ..., 12th               | 7     |
+     * |                                 | LL      | 01, 02, ..., 12                   |       |
+     * |                                 | LLL     | Jan, Feb, ..., Dec                |       |
+     * |                                 | LLLL    | January, February, ..., December  | 2     |
+     * |                                 | LLLLL   | J, F, ..., D                      |       |
+     * | Local week of year              | w       | 1, 2, ..., 53                     |       |
+     * |                                 | wo      | 1st, 2nd, ..., 53th               | 7     |
+     * |                                 | ww      | 01, 02, ..., 53                   |       |
+     * | ISO week of year                | I       | 1, 2, ..., 53                     | 7     |
+     * |                                 | Io      | 1st, 2nd, ..., 53th               | 7     |
+     * |                                 | II      | 01, 02, ..., 53                   | 7     |
+     * | Day of month                    | d       | 1, 2, ..., 31                     |       |
+     * |                                 | do      | 1st, 2nd, ..., 31st               | 7     |
+     * |                                 | dd      | 01, 02, ..., 31                   |       |
+     * | Day of year                     | D       | 1, 2, ..., 365, 366               | 8     |
+     * |                                 | Do      | 1st, 2nd, ..., 365th, 366th       | 7     |
+     * |                                 | DD      | 01, 02, ..., 365, 366             | 8     |
+     * |                                 | DDD     | 001, 002, ..., 365, 366           |       |
+     * |                                 | DDDD    | ...                               | 3     |
+     * | Day of week (formatting)        | E..EEE  | Mon, Tue, Wed, ..., Su            |       |
+     * |                                 | EEEE    | Monday, Tuesday, ..., Sunday      | 2     |
+     * |                                 | EEEEE   | M, T, W, T, F, S, S               |       |
+     * |                                 | EEEEEE  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
+     * | ISO day of week (formatting)    | i       | 1, 2, 3, ..., 7                   | 7     |
+     * |                                 | io      | 1st, 2nd, ..., 7th                | 7     |
+     * |                                 | ii      | 01, 02, ..., 07                   | 7     |
+     * |                                 | iii     | Mon, Tue, Wed, ..., Su            | 7     |
+     * |                                 | iiii    | Monday, Tuesday, ..., Sunday      | 2,7   |
+     * |                                 | iiiii   | M, T, W, T, F, S, S               | 7     |
+     * |                                 | iiiiii  | Mo, Tu, We, Th, Fr, Su, Sa        | 7     |
+     * | Local day of week (formatting)  | e       | 2, 3, 4, ..., 1                   |       |
+     * |                                 | eo      | 2nd, 3rd, ..., 1st                | 7     |
+     * |                                 | ee      | 02, 03, ..., 01                   |       |
+     * |                                 | eee     | Mon, Tue, Wed, ..., Su            |       |
+     * |                                 | eeee    | Monday, Tuesday, ..., Sunday      | 2     |
+     * |                                 | eeeee   | M, T, W, T, F, S, S               |       |
+     * |                                 | eeeeee  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
+     * | Local day of week (stand-alone) | c       | 2, 3, 4, ..., 1                   |       |
+     * |                                 | co      | 2nd, 3rd, ..., 1st                | 7     |
+     * |                                 | cc      | 02, 03, ..., 01                   |       |
+     * |                                 | ccc     | Mon, Tue, Wed, ..., Su            |       |
+     * |                                 | cccc    | Monday, Tuesday, ..., Sunday      | 2     |
+     * |                                 | ccccc   | M, T, W, T, F, S, S               |       |
+     * |                                 | cccccc  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
+     * | AM, PM                          | a..aaa  | AM, PM                            |       |
+     * |                                 | aaaa    | a.m., p.m.                        | 2     |
+     * |                                 | aaaaa   | a, p                              |       |
+     * | AM, PM, noon, midnight          | b..bbb  | AM, PM, noon, midnight            |       |
+     * |                                 | bbbb    | a.m., p.m., noon, midnight        | 2     |
+     * |                                 | bbbbb   | a, p, n, mi                       |       |
+     * | Flexible day period             | B..BBB  | at night, in the morning, ...     |       |
+     * |                                 | BBBB    | at night, in the morning, ...     | 2     |
+     * |                                 | BBBBB   | at night, in the morning, ...     |       |
+     * | Hour [1-12]                     | h       | 1, 2, ..., 11, 12                 |       |
+     * |                                 | ho      | 1st, 2nd, ..., 11th, 12th         | 7     |
+     * |                                 | hh      | 01, 02, ..., 11, 12               |       |
+     * | Hour [0-23]                     | H       | 0, 1, 2, ..., 23                  |       |
+     * |                                 | Ho      | 0th, 1st, 2nd, ..., 23rd          | 7     |
+     * |                                 | HH      | 00, 01, 02, ..., 23               |       |
+     * | Hour [0-11]                     | K       | 1, 2, ..., 11, 0                  |       |
+     * |                                 | Ko      | 1st, 2nd, ..., 11th, 0th          | 7     |
+     * |                                 | KK      | 1, 2, ..., 11, 0                  |       |
+     * | Hour [1-24]                     | k       | 24, 1, 2, ..., 23                 |       |
+     * |                                 | ko      | 24th, 1st, 2nd, ..., 23rd         | 7     |
+     * |                                 | kk      | 24, 01, 02, ..., 23               |       |
+     * | Minute                          | m       | 0, 1, ..., 59                     |       |
+     * |                                 | mo      | 0th, 1st, ..., 59th               | 7     |
+     * |                                 | mm      | 00, 01, ..., 59                   |       |
+     * | Second                          | s       | 0, 1, ..., 59                     |       |
+     * |                                 | so      | 0th, 1st, ..., 59th               | 7     |
+     * |                                 | ss      | 00, 01, ..., 59                   |       |
+     * | Fraction of second              | S       | 0, 1, ..., 9                      |       |
+     * |                                 | SS      | 00, 01, ..., 99                   |       |
+     * |                                 | SSS     | 000, 0001, ..., 999               |       |
+     * |                                 | SSSS    | ...                               | 3     |
+     * | Timezone (ISO-8601 w/ Z)        | X       | -08, +0530, Z                     |       |
+     * |                                 | XX      | -0800, +0530, Z                   |       |
+     * |                                 | XXX     | -08:00, +05:30, Z                 |       |
+     * |                                 | XXXX    | -0800, +0530, Z, +123456          | 2     |
+     * |                                 | XXXXX   | -08:00, +05:30, Z, +12:34:56      |       |
+     * | Timezone (ISO-8601 w/o Z)       | x       | -08, +0530, +00                   |       |
+     * |                                 | xx      | -0800, +0530, +0000               |       |
+     * |                                 | xxx     | -08:00, +05:30, +00:00            | 2     |
+     * |                                 | xxxx    | -0800, +0530, +0000, +123456      |       |
+     * |                                 | xxxxx   | -08:00, +05:30, +00:00, +12:34:56 |       |
+     * | Timezone (GMT)                  | O...OOO | GMT-8, GMT+5:30, GMT+0            |       |
+     * |                                 | OOOO    | GMT-08:00, GMT+05:30, GMT+00:00   | 2     |
+     * | Timezone (specific non-locat.)  | z...zzz | PDT, EST, CEST                    | 6     |
+     * |                                 | zzzz    | Pacific Daylight Time             | 2,6   |
+     * | Seconds timestamp               | t       | 512969520                         | 7     |
+     * |                                 | tt      | ...                               | 3,7   |
+     * | Milliseconds timestamp          | T       | 512969520900                      | 7     |
+     * |                                 | TT      | ...                               | 3,7   |
+     * | Long localized date             | P       | 05/29/1453                        | 7     |
+     * |                                 | PP      | May 29, 1453                      | 7     |
+     * |                                 | PPP     | May 29th, 1453                    | 7     |
+     * |                                 | PPPP    | Sunday, May 29th, 1453            | 2,7   |
+     * | Long localized time             | p       | 12:00 AM                          | 7     |
+     * |                                 | pp      | 12:00:00 AM                       | 7     |
+     * |                                 | ppp     | 12:00:00 AM GMT+2                 | 7     |
+     * |                                 | pppp    | 12:00:00 AM GMT+02:00             | 2,7   |
+     * | Combination of date and time    | Pp      | 05/29/1453, 12:00 AM              | 7     |
+     * |                                 | PPpp    | May 29, 1453, 12:00:00 AM         | 7     |
+     * |                                 | PPPppp  | May 29th, 1453 at ...             | 7     |
+     * |                                 | PPPPpppp| Sunday, May 29th, 1453 at ...     | 2,7   |
+     * Notes:
+     * 1. "Formatting" units (e.g. formatting quarter) in the default en-US locale
+     *    are the same as "stand-alone" units, but are different in some languages.
+     *    "Formatting" units are declined according to the rules of the language
+     *    in the context of a date. "Stand-alone" units are always nominative singular:
+     *
+     *    `format(new Date(2017, 10, 6), 'do LLLL', {locale: cs}) //=> '6. listopad'`
+     *
+     *    `format(new Date(2017, 10, 6), 'do MMMM', {locale: cs}) //=> '6. listopadu'`
+     *
+     * 2. Any sequence of the identical letters is a pattern, unless it is escaped by
+     *    the single quote characters (see below).
+     *    If the sequence is longer than listed in table (e.g. `EEEEEEEEEEE`)
+     *    the output will be the same as default pattern for this unit, usually
+     *    the longest one (in case of ISO weekdays, `EEEE`). Default patterns for units
+     *    are marked with "2" in the last column of the table.
+     *
+     *    `format(new Date(2017, 10, 6), 'MMM') //=> 'Nov'`
+     *
+     *    `format(new Date(2017, 10, 6), 'MMMM') //=> 'November'`
+     *
+     *    `format(new Date(2017, 10, 6), 'MMMMM') //=> 'N'`
+     *
+     *    `format(new Date(2017, 10, 6), 'MMMMMM') //=> 'November'`
+     *
+     *    `format(new Date(2017, 10, 6), 'MMMMMMM') //=> 'November'`
+     *
+     * 3. Some patterns could be unlimited length (such as `yyyyyyyy`).
+     *    The output will be padded with zeros to match the length of the pattern.
+     *
+     *    `format(new Date(2017, 10, 6), 'yyyyyyyy') //=> '00002017'`
+     *
+     * 4. `QQQQQ` and `qqqqq` could be not strictly numerical in some locales.
+     *    These tokens represent the shortest form of the quarter.
+     *
+     * 5. The main difference between `y` and `u` patterns are B.C. years:
+     *
+     *    | Year | `y` | `u` |
+     *    |------|-----|-----|
+     *    | AC 1 |   1 |   1 |
+     *    | BC 1 |   1 |   0 |
+     *    | BC 2 |   2 |  -1 |
+     *
+     *    Also `yy` always returns the last two digits of a year,
+     *    while `uu` pads single digit years to 2 characters and returns other years unchanged:
+     *
+     *    | Year | `yy` | `uu` |
+     *    |------|------|------|
+     *    | 1    |   01 |   01 |
+     *    | 14   |   14 |   14 |
+     *    | 376  |   76 |  376 |
+     *    | 1453 |   53 | 1453 |
+     *
+     *    The same difference is true for local and ISO week-numbering years (`Y` and `R`),
+     *    except local week-numbering years are dependent on `options.weekStartsOn`
+     *    and `options.firstWeekContainsDate` (compare [getISOWeekYear]{@link https://date-fns.org/docs/getISOWeekYear}
+     *    and [getWeekYear]{@link https://date-fns.org/docs/getWeekYear}).
+     *
+     * 6. Specific non-location timezones are created using the Intl browser API. The output is determined by the
+     *    preferred standard of the current locale (en-US by default) which may not always give the expected result.
+     *    For this reason it is recommended to supply a `locale` in the format options when formatting a time zone name.
+     *
+     * 7. These patterns are not in the Unicode Technical Standard #35:
+     *    - `i`: ISO day of week
+     *    - `I`: ISO week of year
+     *    - `R`: ISO week-numbering year
+     *    - `t`: seconds timestamp
+     *    - `T`: milliseconds timestamp
+     *    - `o`: ordinal number modifier
+     *    - `P`: long localized date
+     *    - `p`: long localized time
+     *
+     * 8. These tokens are often confused with others. See: https://git.io/fxCyr
+     *
+     *
+     * ### v2.0.0 breaking changes:
+     *
+     * - [Changes that are common for the whole
+     *   library](https://github.com/date-fns/date-fns/blob/master/docs/upgradeGuide.md#Common-Changes).
+     *
+     * - The second argument is now required for the sake of explicitness.
+     *
+     *   ```javascript
+     *   // Before v2.0.0
+     *   format(new Date(2016, 0, 1))
+     *
+     *   // v2.0.0 onward
+     *   format(new Date(2016, 0, 1), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+     *   ```
+     *
+     * - New format string API for `format` function
+     *   which is based on [Unicode Technical Standard
+     *   #35](https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table). See [this
+     *   post](https://blog.date-fns.org/post/unicode-tokens-in-date-fns-v2-sreatyki91jg) for more details.
+     *
+     * - Characters are now escaped using single quote symbols (`'`) instead of square brackets.
+     *
+     * @param {Date|String|Number} date - the original date
+     * @param {String} format - the string of tokens
+     * @param {OptionsWithTZ} [options] - the object with options. See [Options]{@link https://date-fns.org/docs/Options}
+     * @param {0|1|2} [options.additionalDigits=2] - passed to `toDate`. See [toDate]{@link
+     *   https://date-fns.org/docs/toDate}
+     * @param {0|1|2|3|4|5|6} [options.weekStartsOn=0] - the index of the first day of the week (0 - Sunday)
+     * @param {Number} [options.firstWeekContainsDate=1] - the day of January, which is
+     * @param {Locale} [options.locale=defaultLocale] - the locale object. See
+     *   [Locale]{@link https://date-fns.org/docs/Locale}
+     * @param {Boolean} [options.awareOfUnicodeTokens=false] - if true, allows usage of Unicode tokens causes confusion:
+     *   - Some of the day of year tokens (`D`, `DD`) that are confused with the day of month tokens (`d`, `dd`).
+     *   - Some of the local week-numbering year tokens (`YY`, `YYYY`) that are confused with the calendar year tokens
+     *   (`yy`, `yyyy`). See: https://git.io/fxCyr
+     * @param {String} [options.timeZone=''] - used to specify the IANA time zone offset of a date String.
+     * @returns {String} the formatted date string
+     * @throws {TypeError} 2 arguments required
+     * @throws {RangeError} `options.additionalDigits` must be 0, 1 or 2
+     * @throws {RangeError} `options.locale` must contain `localize` property
+     * @throws {RangeError} `options.locale` must contain `formatLong` property
+     * @throws {RangeError} `options.weekStartsOn` must be between 0 and 6
+     * @throws {RangeError} `options.firstWeekContainsDate` must be between 1 and 7
+     * @throws {RangeError} `options.awareOfUnicodeTokens` must be set to `true` to use `XX` token; see:
+     *   https://git.io/fxCyr
+     *
+     * @example
+     * // Represent 11 February 2014 in middle-endian format:
+     * var result = format(new Date(2014, 1, 11), 'MM/dd/yyyy')
+     * //=> '02/11/2014'
+     *
+     * @example
+     * // Represent 2 July 2014 in Esperanto:
+     * import { eoLocale } from 'date-fns/esm/locale/eo'
+     * var result = format(new Date(2014, 6, 2), "do 'de' MMMM yyyy", {
+     *   locale: eoLocale
+     * })
+     * //=> '2-a de julio 2014'
+     *
+     * @example
+     * // Escape string by single quote characters:
+     * var result = format(new Date(2014, 6, 2, 15), "h 'o''clock'")
+     * //=> "3 o'clock"
+     */
+    function format$1(dirtyDate, dirtyFormatStr, dirtyOptions) {
+      var formatStr = String(dirtyFormatStr);
+      var options = dirtyOptions || {};
+
+      var matches = formatStr.match(tzFormattingTokensRegExp);
+      if (matches) {
+        var date = toDate$1(dirtyDate, options);
+        formatStr = matches.reduce(function(result, token) {
+          return token[0] === "'"
+            ? result
+            : result.replace(
+                token,
+                "'" + formatters$2[token[0]](date, token, null, options) + "'"
+              )
+        }, formatStr);
+      }
+
+      return format(dirtyDate, formatStr, options)
     }
 
     /**
@@ -3753,6 +4261,290 @@ var SvelteTimezonePicker = (function () {
       var extendedOptions = cloneObject(options);
       extendedOptions.timeZone = timeZone;
       return toDate$1(date, extendedOptions)
+    }
+
+    var MILLISECONDS_IN_HOUR$2 = 3600000;
+    var MILLISECONDS_IN_MINUTE$4 = 60000;
+    var DEFAULT_ADDITIONAL_DIGITS$1 = 2;
+    var patterns$2 = {
+      dateTimeDelimiter: /[T ]/,
+      timeZoneDelimiter: /[Z ]/i,
+      timezone: /([Z+-].*)$/
+    };
+    var dateRegex = /^-?(?:(\d{3})|(\d{2})(?:-?(\d{2}))?|W(\d{2})(?:-?(\d{1}))?|)$/;
+    var timeRegex = /^(\d{2}(?:[.,]\d*)?)(?::?(\d{2}(?:[.,]\d*)?))?(?::?(\d{2}(?:[.,]\d*)?))?$/;
+    var timezoneRegex = /^([+-])(\d{2})(?::?(\d{2}))?$/;
+    /**
+     * @name parseISO
+     * @category Common Helpers
+     * @summary Parse ISO string
+     *
+     * @description
+     * Parse the given string in ISO 8601 format and return an instance of Date.
+     *
+     * Function accepts complete ISO 8601 formats as well as partial implementations.
+     * ISO 8601: http://en.wikipedia.org/wiki/ISO_8601
+     *
+     * If the argument isn't a string, the function cannot parse the string or
+     * the values are invalid, it returns Invalid Date.
+     *
+     * ### v2.0.0 breaking changes:
+     *
+     * - [Changes that are common for the whole library](https://github.com/date-fns/date-fns/blob/master/docs/upgradeGuide.md#Common-Changes).
+     *
+     * - The previous `parse` implementation was renamed to `parseISO`.
+     *
+     *   ```javascript
+     *   // Before v2.0.0
+     *   parse('2016-01-01')
+     *
+     *   // v2.0.0 onward
+     *   parseISO('2016-01-01')
+     *   ```
+     *
+     * - `parseISO` now validates separate date and time values in ISO-8601 strings
+     *   and returns `Invalid Date` if the date is invalid.
+     *
+     *   ```javascript
+     *   parseISO('2018-13-32')
+     *   //=> Invalid Date
+     *   ```
+     *
+     * - `parseISO` now doesn't fall back to `new Date` constructor
+     *   if it fails to parse a string argument. Instead, it returns `Invalid Date`.
+     *
+     * @param {String} argument - the value to convert
+     * @param {Object} [options] - an object with options.
+     * @param {0|1|2} [options.additionalDigits=2] - the additional number of digits in the extended year format
+     * @returns {Date} the parsed date in the local time zone
+     * @throws {TypeError} 1 argument required
+     * @throws {RangeError} `options.additionalDigits` must be 0, 1 or 2
+     *
+     * @example
+     * // Convert string '2014-02-11T11:30:30' to date:
+     * var result = parseISO('2014-02-11T11:30:30')
+     * //=> Tue Feb 11 2014 11:30:30
+     *
+     * @example
+     * // Convert string '+02014101' to date,
+     * // if the additional number of digits in the extended year format is 1:
+     * var result = parseISO('+02014101', { additionalDigits: 1 })
+     * //=> Fri Apr 11 2014 00:00:00
+     */
+
+    function parseISO(argument, dirtyOptions) {
+      requiredArgs(1, arguments);
+      var options = dirtyOptions || {};
+      var additionalDigits = options.additionalDigits == null ? DEFAULT_ADDITIONAL_DIGITS$1 : toInteger(options.additionalDigits);
+
+      if (additionalDigits !== 2 && additionalDigits !== 1 && additionalDigits !== 0) {
+        throw new RangeError('additionalDigits must be 0, 1 or 2');
+      }
+
+      if (!(typeof argument === 'string' || Object.prototype.toString.call(argument) === '[object String]')) {
+        return new Date(NaN);
+      }
+
+      var dateStrings = splitDateString$1(argument);
+      var date;
+
+      if (dateStrings.date) {
+        var parseYearResult = parseYear$1(dateStrings.date, additionalDigits);
+        date = parseDate$1(parseYearResult.restDateString, parseYearResult.year);
+      }
+
+      if (isNaN(date) || !date) {
+        return new Date(NaN);
+      }
+
+      var timestamp = date.getTime();
+      var time = 0;
+      var offset;
+
+      if (dateStrings.time) {
+        time = parseTime$1(dateStrings.time);
+
+        if (isNaN(time) || time === null) {
+          return new Date(NaN);
+        }
+      }
+
+      if (dateStrings.timezone) {
+        offset = parseTimezone(dateStrings.timezone);
+
+        if (isNaN(offset)) {
+          return new Date(NaN);
+        }
+      } else {
+        var dirtyDate = new Date(timestamp + time); // js parsed string assuming it's in UTC timezone
+        // but we need it to be parsed in our timezone
+        // so we use utc values to build date in our timezone.
+        // Year values from 0 to 99 map to the years 1900 to 1999
+        // so set year explicitly with setFullYear.
+
+        var result = new Date(dirtyDate.getUTCFullYear(), dirtyDate.getUTCMonth(), dirtyDate.getUTCDate(), dirtyDate.getUTCHours(), dirtyDate.getUTCMinutes(), dirtyDate.getUTCSeconds(), dirtyDate.getUTCMilliseconds());
+        result.setFullYear(dirtyDate.getUTCFullYear());
+        return result;
+      }
+
+      return new Date(timestamp + time + offset);
+    }
+
+    function splitDateString$1(dateString) {
+      var dateStrings = {};
+      var array = dateString.split(patterns$2.dateTimeDelimiter);
+      var timeString;
+
+      if (/:/.test(array[0])) {
+        dateStrings.date = null;
+        timeString = array[0];
+      } else {
+        dateStrings.date = array[0];
+        timeString = array[1];
+
+        if (patterns$2.timeZoneDelimiter.test(dateStrings.date)) {
+          dateStrings.date = dateString.split(patterns$2.timeZoneDelimiter)[0];
+          timeString = dateString.substr(dateStrings.date.length, dateString.length);
+        }
+      }
+
+      if (timeString) {
+        var token = patterns$2.timezone.exec(timeString);
+
+        if (token) {
+          dateStrings.time = timeString.replace(token[1], '');
+          dateStrings.timezone = token[1];
+        } else {
+          dateStrings.time = timeString;
+        }
+      }
+
+      return dateStrings;
+    }
+
+    function parseYear$1(dateString, additionalDigits) {
+      var regex = new RegExp('^(?:(\\d{4}|[+-]\\d{' + (4 + additionalDigits) + '})|(\\d{2}|[+-]\\d{' + (2 + additionalDigits) + '})$)');
+      var captures = dateString.match(regex); // Invalid ISO-formatted year
+
+      if (!captures) return {
+        year: null
+      };
+      var year = captures[1] && parseInt(captures[1]);
+      var century = captures[2] && parseInt(captures[2]);
+      return {
+        year: century == null ? year : century * 100,
+        restDateString: dateString.slice((captures[1] || captures[2]).length)
+      };
+    }
+
+    function parseDate$1(dateString, year) {
+      // Invalid ISO-formatted year
+      if (year === null) return null;
+      var captures = dateString.match(dateRegex); // Invalid ISO-formatted string
+
+      if (!captures) return null;
+      var isWeekDate = !!captures[4];
+      var dayOfYear = parseDateUnit(captures[1]);
+      var month = parseDateUnit(captures[2]) - 1;
+      var day = parseDateUnit(captures[3]);
+      var week = parseDateUnit(captures[4]);
+      var dayOfWeek = parseDateUnit(captures[5]) - 1;
+
+      if (isWeekDate) {
+        if (!validateWeekDate$1(year, week, dayOfWeek)) {
+          return new Date(NaN);
+        }
+
+        return dayOfISOWeekYear$1(year, week, dayOfWeek);
+      } else {
+        var date = new Date(0);
+
+        if (!validateDate$1(year, month, day) || !validateDayOfYearDate$1(year, dayOfYear)) {
+          return new Date(NaN);
+        }
+
+        date.setUTCFullYear(year, month, Math.max(dayOfYear, day));
+        return date;
+      }
+    }
+
+    function parseDateUnit(value) {
+      return value ? parseInt(value) : 1;
+    }
+
+    function parseTime$1(timeString) {
+      var captures = timeString.match(timeRegex);
+      if (!captures) return null; // Invalid ISO-formatted time
+
+      var hours = parseTimeUnit(captures[1]);
+      var minutes = parseTimeUnit(captures[2]);
+      var seconds = parseTimeUnit(captures[3]);
+
+      if (!validateTime$1(hours, minutes, seconds)) {
+        return NaN;
+      }
+
+      return hours * MILLISECONDS_IN_HOUR$2 + minutes * MILLISECONDS_IN_MINUTE$4 + seconds * 1000;
+    }
+
+    function parseTimeUnit(value) {
+      return value && parseFloat(value.replace(',', '.')) || 0;
+    }
+
+    function parseTimezone(timezoneString) {
+      if (timezoneString === 'Z') return 0;
+      var captures = timezoneString.match(timezoneRegex);
+      if (!captures) return 0;
+      var sign = captures[1] === '+' ? -1 : 1;
+      var hours = parseInt(captures[2]);
+      var minutes = captures[3] && parseInt(captures[3]) || 0;
+
+      if (!validateTimezone$1(hours, minutes)) {
+        return NaN;
+      }
+
+      return sign * (hours * MILLISECONDS_IN_HOUR$2 + minutes * MILLISECONDS_IN_MINUTE$4);
+    }
+
+    function dayOfISOWeekYear$1(isoWeekYear, week, day) {
+      var date = new Date(0);
+      date.setUTCFullYear(isoWeekYear, 0, 4);
+      var fourthOfJanuaryDay = date.getUTCDay() || 7;
+      var diff = (week - 1) * 7 + day + 1 - fourthOfJanuaryDay;
+      date.setUTCDate(date.getUTCDate() + diff);
+      return date;
+    } // Validation functions
+    // February is null to handle the leap year (using ||)
+
+
+    var daysInMonths = [31, null, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    function isLeapYearIndex$1(year) {
+      return year % 400 === 0 || year % 4 === 0 && year % 100;
+    }
+
+    function validateDate$1(year, month, date) {
+      return month >= 0 && month <= 11 && date >= 1 && date <= (daysInMonths[month] || (isLeapYearIndex$1(year) ? 29 : 28));
+    }
+
+    function validateDayOfYearDate$1(year, dayOfYear) {
+      return dayOfYear >= 1 && dayOfYear <= (isLeapYearIndex$1(year) ? 366 : 365);
+    }
+
+    function validateWeekDate$1(_year, week, day) {
+      return week >= 1 && week <= 53 && day >= 0 && day <= 6;
+    }
+
+    function validateTime$1(hours, minutes, seconds) {
+      if (hours === 24) {
+        return minutes === 0 && seconds === 0;
+      }
+
+      return seconds >= 0 && seconds < 60 && minutes >= 0 && minutes < 60 && hours >= 0 && hours < 25;
+    }
+
+    function validateTimezone$1(_hours, minutes) {
+      return minutes >= 0 && minutes <= 59;
     }
 
     var Australia = {
@@ -4191,288 +4983,24 @@ var SvelteTimezonePicker = (function () {
       ]
     };
 
-    /* src/IconWorld.svelte generated by Svelte v3.23.1 */
-
-    const file = "src/IconWorld.svelte";
-
-    function create_fragment(ctx) {
-    	let svg;
-    	let path;
-
-    	const block = {
-    		c: function create() {
-    			svg = svg_element("svg");
-    			path = svg_element("path");
-    			attr_dev(path, "d", "M484.681\n    213.47c-4.498-40.879-19.541-78.226-43.869-111.5-39.194-53.578-91.611-86.336-157.067-97.74-13.051-2.271-26.398-2.862-39.608-4.23h-2.622c-12.342\n    1.351-24.737 2.246-36.993 4.129C78.665 23.442-12.331 142.612 2.056 269.395\n    8.921 329.91 34.27 381.516 79.271 422.673c53.504 48.941 117.062 69.925\n    189.118 63.079 55.301-5.271 103.557-27.573 143.33-66.489 57.76-56.561\n    81.781-125.699 72.962-205.793zM433.4\n    338.072c-6.153-10.729-13.92-25.688-17.39-38.455-5.042-18.537-17.147-.627-18.158\n    11.479s-9.078 21.184-25.221\n    3.025c-16.143-18.157-19.169-14.126-24.211-14.126s-14.121 12.104-12.105\n    68.601c1.437 40.335 17.349 46.736 27.746 49.662-19.305 13.264-41.488\n    23.714-66.385 30.038-95.157\n    24.151-192.289-19.706-237.671-106.837-42.28-81.185-21.681-173.053\n    21.299-223.616 1.156 9.094 2.288 17.263 3.23 25.464 2.562 22.39.629\n    44.487-3.939 66.496-.976 4.69-.636 10.033.629 14.646.688 2.519 4.486 5.494\n    7.11 5.743 2.066.201 5.671-3.074 6.508-5.533 1.513-4.397 1.575-9.327\n    2.04-14.053.334-3.334.34-6.712.57-11.942 3.413 2.766 5.902 4.444 7.971 6.525\n    5.272 5.308 10.604 10.592 15.415 16.299 2.125 2.533 4.315 6.079 4.256\n    9.129-.133 6.525 2.73 10.962 6.227 16.086 3.886 5.698 5.636 12.862 8.136\n    19.459 1.046 2.766 1.265 5.887 2.512 8.547 2.663 5.697 6.688 9.599 13.607\n    10.024 7.279.461 10.004 3.286 11.05\n    10.733-1.862.213-3.715.462-5.574.633-8.878.846-13.278 4.924-12.927\n    13.879.694 17.785 7.11 33.324 20.312 45.678 3.638 3.411 7.503 6.579 11.038\n    10.072 8.074 7.974 10.891 17.342 7.01 28.354-1.859 5.249-4.407 10.403-5.231\n    15.83-.839 5.514-.845 11.508.432 16.904 1.324 5.615.756 17.897 6.555 16.881\n    10.258-1.803 16.154.219\n    16.952-11.266.151-2.188-.018-2.459-.6-4.48-3.05-10.781 10.799-41.387\n    19.109-46.967 7.099-4.776 14.218-9.635 20.652-15.244 9.276-8.062\n    13.429-18.477 9.531-30.605-3.668-11.414.623-19.795 8.603-27.143 8.14-7.489\n    13.477-16.119\n    12.921-27.645-.556-11.526-8.098-19.849-17.927-18.666-4.806.567-9.413\n    2.872-14.098 4.45-6.868 2.323-13.571 5.574-20.62 6.839-9.88\n    1.75-15.968-4.705-20.375-12.543-3.546-6.301-4.714-6.785-10.87-2.86-5.193\n    3.322-10.376 6.667-15.755 9.67-5.588 3.121-8.633\n    1.963-12.941-2.707-2.548-2.755-6.076-4.693-9.351-6.679-2.355-1.442-5.539-1.839-7.427-3.647-2.53-2.447-6.059-6.076-5.701-8.729.417-3.115\n    4.025-7.014 7.172-8.29 5.423-2.199 11.585-2.554 17.401-3.818 3.097-.674\n    6.239-1.375 9.167-2.53 4.008-1.599\n    3.839-4.232.771-6.703-1.513-1.215-3.384-2.069-5.208-2.802-8.866-3.57-17.782-6.984-26.643-10.568-2.202-.884-4.371-1.971-6.348-3.263-5.571-3.661-6.242-7.692-1.188-12.152\n    19.955-17.602 43.264-22.756 63.916.63 6.398 7.243 10.737 16.275 16.778\n    23.876 4.752 5.994 10.223 11.621 16.263 16.246 2.489 1.9 8.086 2.223\n    10.87.697 4.146-2.27 4.291-7.444\n    2.205-11.759-1.803-3.748-3.922-7.442-6.469-10.722-11.733-15.117-10.926-44.576\n    12.055-56.867 7.687-4.117 15.441-8.453 19.112-19.497-4.403 1.191-7.596\n    1.959-10.723 2.917-17.451 5.405-5.302-7.613 2.726-9.883\n    4.876-1.386-4.362-5.122-4.362-5.122.219-.381 6.135-2.069 12.714-4.874\n    4.527-1.924 9.155-4.09 12.915-7.152 2.436-1.998 3.375-5.816\n    4.977-8.819-.407-.473-.804-.934-1.217-1.407-4.611.621-9.216 1.303-13.838\n    1.824-7.832.877-9.67-.659-10.396-8.559-.503-5.394-6-8.334-11.133-5.568-3.473\n    1.883-6.476 4.613-9.818 6.773-7.716 4.998-13.485\n    3-16.512-5.618-1.803-5.13-4.314-6.1-9.034-3.227-2.374 1.442-4.354\n    3.549-6.768 4.897-3.958 2.211-7.982 4.43-12.232 5.932-4.14 1.466-9.126\n    2.53-11.943-2.01-3.026-4.882-.381-9.635 3.435-12.696 4.743-3.807\n    10.211-6.762 15.548-9.753 7.602-4.279 15.652-7.838 22.993-12.504 5.388-3.438\n    7.743-9.041 6-15.652-1.472-5.58-5.205-7.468-10.374-4.909-4.268 2.119-7.997\n    5.435-12.386 7.143-3.207 1.229-7.203\n    1.242-10.646.636-1.271-.225-2.622-3.747-2.657-5.792-.024-1.179 2.367-3.227\n    3.892-3.476 10.604-1.652 21.255-3.05 31.921-4.265 1.41-.154 3.529.718 4.413\n    1.844 7.045 8.893 16.875 13.208 27.216 16.287 8.688 2.58 9.947 1.351\n    11.142-7.764 11.159-2.627 22.502-7.803 33.732-.721 6.23 3.921 11.91 8.917\n    17.183 14.091 1.307 1.288.509 5.272-.118 7.838-.827 3.448-2.736 6.635-3.617\n    10.083-1.702 6.682 2.618 11.904 9.522 11.795 2.181-.047 4.356-.494\n    6.549-.603 6.378-.298 8.642 2.143 8.057 8.583-.828 9.126.691 10.223 9.9\n    8.665 2.647-.446 5.704.756 8.405 1.703 1.607.567 2.854 2.107 4.285 3.188\n    8.564 6.49 15.113 4.058 17.62-6.561.271-1.156.236-2.391.473-3.559.993-4.764\n    3.683-5.99 6.897-2.604 6.81 7.211 13.199 14.824 20.108 22.686-7.424\n    6.809-7.672 15.084-6.028 23.193 1.826 9.021-.55 16.858-4.108 24.805-3.41\n    7.613-7.157 15.179-9.434 23.144-3.404 11.955.461 17.416 12.602 20.062 11.585\n    2.529 13.482 4.858 13.92 16.184.585 15.448 8.518 26.11 22.071 32.914 3.009\n    1.501 6.206 2.642 9.279 3.919-1.519 23.814-8.317 48.598-19.949 72.111z");
-    			add_location(path, file, 6, 2, 113);
-    			attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
-    			attr_dev(svg, "viewBox", "0 0 487.015 487.015");
-    			attr_dev(svg, "width", "0.88em");
-    			attr_dev(svg, "height", "0.88em");
-    			add_location(svg, file, 0, 0, 0);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, svg, anchor);
-    			append_dev(svg, path);
-    		},
-    		p: noop,
-    		i: noop,
-    		o: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(svg);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function instance($$self, $$props) {
-    	const writable_props = [];
-
-    	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<IconWorld> was created with unknown prop '${key}'`);
-    	});
-
-    	let { $$slots = {}, $$scope } = $$props;
-    	validate_slots("IconWorld", $$slots, []);
-    	return [];
-    }
-
-    class IconWorld extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, {});
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "IconWorld",
-    			options,
-    			id: create_fragment.name
-    		});
-    	}
-    }
-
-    /* src/IconArrow.svelte generated by Svelte v3.23.1 */
-
-    const file$1 = "src/IconArrow.svelte";
-
-    function create_fragment$1(ctx) {
-    	let svg;
-    	let path;
-    	let path_transform_value;
-
-    	const block = {
-    		c: function create() {
-    			svg = svg_element("svg");
-    			path = svg_element("path");
-    			attr_dev(path, "d", "M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0 113.536-3.536l11.095\n    11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z");
-
-    			attr_dev(path, "transform", path_transform_value = /*transform*/ ctx[0]
-    			? "rotate(180, 15.3635, 15.3635)"
-    			: "rotate(0)");
-
-    			add_location(path, file$1, 10, 2, 163);
-    			attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
-    			attr_dev(svg, "viewBox", "0 0 30.727 30.727");
-    			attr_dev(svg, "width", "0.88em");
-    			attr_dev(svg, "height", "0.88em");
-    			add_location(svg, file$1, 4, 0, 52);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, svg, anchor);
-    			append_dev(svg, path);
-    		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*transform*/ 1 && path_transform_value !== (path_transform_value = /*transform*/ ctx[0]
-    			? "rotate(180, 15.3635, 15.3635)"
-    			: "rotate(0)")) {
-    				attr_dev(path, "transform", path_transform_value);
-    			}
-    		},
-    		i: noop,
-    		o: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(svg);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment$1.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function instance$1($$self, $$props, $$invalidate) {
-    	let { transform = false } = $$props;
-    	const writable_props = ["transform"];
-
-    	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<IconArrow> was created with unknown prop '${key}'`);
-    	});
-
-    	let { $$slots = {}, $$scope } = $$props;
-    	validate_slots("IconArrow", $$slots, []);
-
-    	$$self.$set = $$props => {
-    		if ("transform" in $$props) $$invalidate(0, transform = $$props.transform);
-    	};
-
-    	$$self.$capture_state = () => ({ transform });
-
-    	$$self.$inject_state = $$props => {
-    		if ("transform" in $$props) $$invalidate(0, transform = $$props.transform);
-    	};
-
-    	if ($$props && "$$inject" in $$props) {
-    		$$self.$inject_state($$props.$$inject);
-    	}
-
-    	return [transform];
-    }
-
-    class IconArrow extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { transform: 0 });
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "IconArrow",
-    			options,
-    			id: create_fragment$1.name
-    		});
-    	}
-
-    	get transform() {
-    		throw new Error("<IconArrow>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set transform(value) {
-    		throw new Error("<IconArrow>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-    }
-
-    /* src/IconClose.svelte generated by Svelte v3.23.1 */
-
-    const file$2 = "src/IconClose.svelte";
-
-    function create_fragment$2(ctx) {
-    	let svg;
-    	let path0;
-    	let path1;
-
-    	const block = {
-    		c: function create() {
-    			svg = svg_element("svg");
-    			path0 = svg_element("path");
-    			path1 = svg_element("path");
-    			attr_dev(path0, "fill", "transparent");
-    			attr_dev(path0, "strokewidth", "3");
-    			attr_dev(path0, "stroke", "hsl(0, 0%, 18%)");
-    			attr_dev(path0, "strokelinecap", "round");
-    			attr_dev(path0, "d", "M 3 16.5 L 17 2.5");
-    			add_location(path0, file$2, 1, 2, 59);
-    			attr_dev(path1, "fill", "transparent");
-    			attr_dev(path1, "strokewidth", "3");
-    			attr_dev(path1, "stroke", "hsl(0, 0%, 18%)");
-    			attr_dev(path1, "strokelinecap", "round");
-    			attr_dev(path1, "d", "M 3 2.5 L 17 16.346");
-    			add_location(path1, file$2, 8, 2, 202);
-    			attr_dev(svg, "width", "0.88em");
-    			attr_dev(svg, "height", "0.88em");
-    			attr_dev(svg, "viewBox", "0 0 23 23");
-    			add_location(svg, file$2, 0, 0, 0);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, svg, anchor);
-    			append_dev(svg, path0);
-    			append_dev(svg, path1);
-    		},
-    		p: noop,
-    		i: noop,
-    		o: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(svg);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment$2.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function instance$2($$self, $$props) {
-    	const writable_props = [];
-
-    	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<IconClose> was created with unknown prop '${key}'`);
-    	});
-
-    	let { $$slots = {}, $$scope } = $$props;
-    	validate_slots("IconClose", $$slots, []);
-    	return [];
-    }
-
-    class IconClose extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "IconClose",
-    			options,
-    			id: create_fragment$2.name
-    		});
-    	}
-    }
-
     /* src/Picker.svelte generated by Svelte v3.23.1 */
 
     const { Object: Object_1, console: console_1 } = globals;
-    const file$3 = "src/Picker.svelte";
+    const file = "src/Picker.svelte";
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[36] = list[i];
+    	child_ctx[38] = list[i];
     	return child_ctx;
     }
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[33] = list[i];
+    	child_ctx[35] = list[i];
     	return child_ctx;
     }
 
-    // (259:0) {#if open}
+    // (271:0) {#if open}
     function create_if_block_5(ctx) {
     	let div;
     	let mounted;
@@ -4482,7 +5010,7 @@ var SvelteTimezonePicker = (function () {
     		c: function create() {
     			div = element("div");
     			attr_dev(div, "class", "overlay svelte-22kpky");
-    			add_location(div, file$3, 259, 2, 8245);
+    			add_location(div, file, 271, 2, 8661);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -4504,18 +5032,18 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_5.name,
     		type: "if",
-    		source: "(259:0) {#if open}",
+    		source: "(271:0) {#if open}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (276:4) {#if datetime}
+    // (367:4) {#if utcDatetime}
     function create_if_block_4(ctx) {
     	let small;
     	let t0;
-    	let t1_value = format(/*getTimeForZone*/ ctx[13](/*datetime*/ ctx[0], /*timezone*/ ctx[1]), "h:mm aaaa") + "";
+    	let t1_value = format$1(utcToZonedTime(/*utcDatetime*/ ctx[3], /*timezone*/ ctx[0]), "h:mm aaaa", { timeZone: /*timezone*/ ctx[0] }) + "";
     	let t1;
     	let t2;
 
@@ -4526,7 +5054,7 @@ var SvelteTimezonePicker = (function () {
     			t1 = text(t1_value);
     			t2 = text(")");
     			attr_dev(small, "class", "svelte-22kpky");
-    			add_location(small, file$3, 276, 6, 8665);
+    			add_location(small, file, 367, 6, 14416);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, small, anchor);
@@ -4535,7 +5063,7 @@ var SvelteTimezonePicker = (function () {
     			append_dev(small, t2);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*datetime, timezone*/ 3 && t1_value !== (t1_value = format(/*getTimeForZone*/ ctx[13](/*datetime*/ ctx[0], /*timezone*/ ctx[1]), "h:mm aaaa") + "")) set_data_dev(t1, t1_value);
+    			if (dirty[0] & /*utcDatetime, timezone*/ 9 && t1_value !== (t1_value = format$1(utcToZonedTime(/*utcDatetime*/ ctx[3], /*timezone*/ ctx[0]), "h:mm aaaa", { timeZone: /*timezone*/ ctx[0] }) + "")) set_data_dev(t1, t1_value);
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(small);
@@ -4546,14 +5074,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_4.name,
     		type: "if",
-    		source: "(276:4) {#if datetime}",
+    		source: "(367:4) {#if utcDatetime}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (281:2) {#if open}
+    // (387:2) {#if open}
     function create_if_block(ctx) {
     	let div1;
     	let label;
@@ -4596,7 +5124,7 @@ var SvelteTimezonePicker = (function () {
 
     			attr_dev(label, "id", /*labelId*/ ctx[9]);
     			attr_dev(label, "class", "svelte-22kpky");
-    			add_location(label, file$3, 282, 6, 8894);
+    			add_location(label, file, 388, 6, 15051);
     			attr_dev(input, "id", /*searchInputId*/ ctx[11]);
     			attr_dev(input, "type", "search");
     			attr_dev(input, "aria-autocomplete", "list");
@@ -4607,16 +5135,16 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(input, "placeholder", "Search...");
     			input.autofocus = true;
     			attr_dev(input, "class", "svelte-22kpky");
-    			add_location(input, file$3, 288, 8, 9133);
+    			add_location(input, file, 394, 8, 15290);
     			attr_dev(div0, "class", "input-group svelte-22kpky");
-    			add_location(div0, file$3, 286, 6, 9053);
+    			add_location(div0, file, 392, 6, 15210);
     			attr_dev(ul, "tabindex", "-1");
     			attr_dev(ul, "class", "tz-groups svelte-22kpky");
     			attr_dev(ul, "id", /*listBoxId*/ ctx[10]);
     			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[9]);
-    			add_location(ul, file$3, 308, 6, 9665);
+    			add_location(ul, file, 430, 6, 16341);
     			attr_dev(div1, "class", "tz-dropdown svelte-22kpky");
-    			add_location(div1, file$3, 281, 4, 8816);
+    			add_location(div1, file, 387, 4, 14973);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -4640,7 +5168,7 @@ var SvelteTimezonePicker = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input, "input", /*input_input_handler*/ ctx[21]),
+    					listen_dev(input, "input", /*input_input_handler*/ ctx[22]),
     					listen_dev(div1, "keydown", /*handleKeydown*/ ctx[15], false, false, false)
     				];
 
@@ -4655,27 +5183,17 @@ var SvelteTimezonePicker = (function () {
     			if (/*userSearch*/ ctx[6] && /*userSearch*/ ctx[6].length > 0) {
     				if (if_block) {
     					if_block.p(ctx, dirty);
-
-    					if (dirty[0] & /*userSearch*/ 64) {
-    						transition_in(if_block, 1);
-    					}
     				} else {
     					if_block = create_if_block_3(ctx);
     					if_block.c();
-    					transition_in(if_block, 1);
     					if_block.m(div0, null);
     				}
     			} else if (if_block) {
-    				group_outros();
-
-    				transition_out(if_block, 1, 1, () => {
-    					if_block = null;
-    				});
-
-    				check_outros();
+    				if_block.d(1);
+    				if_block = null;
     			}
 
-    			if (dirty[0] & /*currentZone, highlightedZone, handleTimezoneUpdate, setHighlightedZone, datetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 291241) {
+    			if (dirty[0] & /*currentZone, highlightedZone, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 291244) {
     				each_value = Object.keys(groupedZones);
     				validate_each_argument(each_value);
     				let i;
@@ -4701,7 +5219,6 @@ var SvelteTimezonePicker = (function () {
     		},
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(if_block);
 
     			add_render_callback(() => {
     				if (!div1_transition) div1_transition = create_bidirectional_transition(div1, slide, {}, true);
@@ -4711,7 +5228,6 @@ var SvelteTimezonePicker = (function () {
     			current = true;
     		},
     		o: function outro(local) {
-    			transition_out(if_block);
     			if (!div1_transition) div1_transition = create_bidirectional_transition(div1, slide, {}, false);
     			div1_transition.run(0);
     			current = false;
@@ -4730,33 +5246,53 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(281:2) {#if open}",
+    		source: "(387:2) {#if open}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (302:8) {#if userSearch && userSearch.length > 0}
+    // (408:8) {#if userSearch && userSearch.length > 0}
     function create_if_block_3(ctx) {
     	let button;
-    	let current;
+    	let svg;
+    	let path0;
+    	let path1;
     	let mounted;
     	let dispose;
-    	const iconclose = new IconClose({ $$inline: true });
 
     	const block = {
     		c: function create() {
     			button = element("button");
-    			create_component(iconclose.$$.fragment);
+    			svg = svg_element("svg");
+    			path0 = svg_element("path");
+    			path1 = svg_element("path");
+    			attr_dev(path0, "fill", "transparent");
+    			attr_dev(path0, "strokewidth", "3");
+    			attr_dev(path0, "stroke", "hsl(0, 0%, 18%)");
+    			attr_dev(path0, "strokelinecap", "round");
+    			attr_dev(path0, "d", "M 3 16.5 L 17 2.5");
+    			add_location(path0, file, 410, 14, 15825);
+    			attr_dev(path1, "fill", "transparent");
+    			attr_dev(path1, "strokewidth", "3");
+    			attr_dev(path1, "stroke", "hsl(0, 0%, 18%)");
+    			attr_dev(path1, "strokelinecap", "round");
+    			attr_dev(path1, "d", "M 3 2.5 L 17 16.346");
+    			add_location(path1, file, 417, 14, 16052);
+    			attr_dev(svg, "width", "0.88em");
+    			attr_dev(svg, "height", "0.88em");
+    			attr_dev(svg, "viewBox", "0 0 23 23");
+    			add_location(svg, file, 409, 12, 15754);
     			attr_dev(button, "title", "Clear search text");
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file$3, 302, 10, 9525);
+    			add_location(button, file, 408, 10, 15682);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
-    			mount_component(iconclose, button, null);
-    			current = true;
+    			append_dev(button, svg);
+    			append_dev(svg, path0);
+    			append_dev(svg, path1);
 
     			if (!mounted) {
     				dispose = listen_dev(button, "click", /*clearSearch*/ ctx[17], false, false, false);
@@ -4764,18 +5300,8 @@ var SvelteTimezonePicker = (function () {
     			}
     		},
     		p: noop,
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(iconclose.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(iconclose.$$.fragment, local);
-    			current = false;
-    		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(button);
-    			destroy_component(iconclose);
     			mounted = false;
     			dispose();
     		}
@@ -4785,17 +5311,17 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_3.name,
     		type: "if",
-    		source: "(302:8) {#if userSearch && userSearch.length > 0}",
+    		source: "(408:8) {#if userSearch && userSearch.length > 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (317:12) {#if groupHasVisibleChildren(group, filteredZones)}
+    // (439:12) {#if groupHasVisibleChildren(group, filteredZones)}
     function create_if_block_2(ctx) {
     	let p;
-    	let t_value = /*group*/ ctx[33] + "";
+    	let t_value = /*group*/ ctx[35] + "";
     	let t;
 
     	const block = {
@@ -4803,7 +5329,7 @@ var SvelteTimezonePicker = (function () {
     			p = element("p");
     			t = text(t_value);
     			attr_dev(p, "class", "svelte-22kpky");
-    			add_location(p, file$3, 317, 14, 9930);
+    			add_location(p, file, 439, 14, 16606);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, p, anchor);
@@ -4819,22 +5345,22 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(317:12) {#if groupHasVisibleChildren(group, filteredZones)}",
+    		source: "(439:12) {#if groupHasVisibleChildren(group, filteredZones)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (325:16) {#if filteredZones.includes(name)}
+    // (447:16) {#if filteredZones.includes(name)}
     function create_if_block_1(ctx) {
     	let li;
     	let button;
-    	let t0_value = /*name*/ ctx[36] + "";
+    	let t0_value = /*name*/ ctx[38] + "";
     	let t0;
     	let t1;
     	let span;
-    	let t2_value = (/*datetime*/ ctx[0] && format(/*getTimeForZone*/ ctx[13](/*datetime*/ ctx[0], /*ungroupedZones*/ ctx[12][/*name*/ ctx[36]]), "h:mm aaaa")) + "";
+    	let t2_value = (/*utcDatetime*/ ctx[3] && format$1(/*getTimeForZone*/ ctx[13](/*utcDatetime*/ ctx[3], /*ungroupedZones*/ ctx[12][/*name*/ ctx[38]]), "h:mm aaaa")) + "";
     	let t2;
     	let button_aria_label_value;
     	let t3;
@@ -4844,11 +5370,11 @@ var SvelteTimezonePicker = (function () {
     	let dispose;
 
     	function click_handler(...args) {
-    		return /*click_handler*/ ctx[22](/*name*/ ctx[36], ...args);
+    		return /*click_handler*/ ctx[23](/*name*/ ctx[38], ...args);
     	}
 
     	function mouseover_handler(...args) {
-    		return /*mouseover_handler*/ ctx[23](/*name*/ ctx[36], ...args);
+    		return /*mouseover_handler*/ ctx[24](/*name*/ ctx[38], ...args);
     	}
 
     	const block = {
@@ -4860,15 +5386,15 @@ var SvelteTimezonePicker = (function () {
     			span = element("span");
     			t2 = text(t2_value);
     			t3 = space();
-    			add_location(span, file$3, 336, 22, 10713);
-    			attr_dev(button, "aria-label", button_aria_label_value = `Select ${/*name*/ ctx[36]}`);
+    			add_location(span, file, 458, 22, 17389);
+    			attr_dev(button, "aria-label", button_aria_label_value = `Select ${/*name*/ ctx[38]}`);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file$3, 330, 20, 10428);
-    			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[36])}`);
+    			add_location(button, file, 452, 20, 17104);
+    			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[38])}`);
     			attr_dev(li, "role", "option");
-    			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[7] === /*name*/ ctx[36]);
+    			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[7] === /*name*/ ctx[38]);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file$3, 325, 18, 10238);
+    			add_location(li, file, 447, 18, 16914);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -4890,9 +5416,9 @@ var SvelteTimezonePicker = (function () {
     		},
     		p: function update(new_ctx, dirty) {
     			ctx = new_ctx;
-    			if (dirty[0] & /*datetime*/ 1 && t2_value !== (t2_value = (/*datetime*/ ctx[0] && format(/*getTimeForZone*/ ctx[13](/*datetime*/ ctx[0], /*ungroupedZones*/ ctx[12][/*name*/ ctx[36]]), "h:mm aaaa")) + "")) set_data_dev(t2, t2_value);
+    			if (dirty[0] & /*utcDatetime*/ 8 && t2_value !== (t2_value = (/*utcDatetime*/ ctx[3] && format$1(/*getTimeForZone*/ ctx[13](/*utcDatetime*/ ctx[3], /*ungroupedZones*/ ctx[12][/*name*/ ctx[38]]), "h:mm aaaa")) + "")) set_data_dev(t2, t2_value);
 
-    			if (dirty[0] & /*highlightedZone*/ 128 && li_aria_selected_value !== (li_aria_selected_value = /*highlightedZone*/ ctx[7] === /*name*/ ctx[36])) {
+    			if (dirty[0] & /*highlightedZone*/ 128 && li_aria_selected_value !== (li_aria_selected_value = /*highlightedZone*/ ctx[7] === /*name*/ ctx[38])) {
     				attr_dev(li, "aria-selected", li_aria_selected_value);
     			}
     		},
@@ -4907,16 +5433,16 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(325:16) {#if filteredZones.includes(name)}",
+    		source: "(447:16) {#if filteredZones.includes(name)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (324:14) {#each Object.keys(groupedZones[group]) as name}
+    // (446:14) {#each Object.keys(groupedZones[group]) as name}
     function create_each_block_1(ctx) {
-    	let show_if = /*filteredZones*/ ctx[5].includes(/*name*/ ctx[36]);
+    	let show_if = /*filteredZones*/ ctx[5].includes(/*name*/ ctx[38]);
     	let if_block_anchor;
     	let if_block = show_if && create_if_block_1(ctx);
 
@@ -4930,7 +5456,7 @@ var SvelteTimezonePicker = (function () {
     			insert_dev(target, if_block_anchor, anchor);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 32) show_if = /*filteredZones*/ ctx[5].includes(/*name*/ ctx[36]);
+    			if (dirty[0] & /*filteredZones*/ 32) show_if = /*filteredZones*/ ctx[5].includes(/*name*/ ctx[38]);
 
     			if (show_if) {
     				if (if_block) {
@@ -4955,23 +5481,23 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(324:14) {#each Object.keys(groupedZones[group]) as name}",
+    		source: "(446:14) {#each Object.keys(groupedZones[group]) as name}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (315:8) {#each Object.keys(groupedZones) as group}
+    // (437:8) {#each Object.keys(groupedZones) as group}
     function create_each_block(ctx) {
     	let li;
-    	let show_if = /*groupHasVisibleChildren*/ ctx[14](/*group*/ ctx[33], /*filteredZones*/ ctx[5]);
+    	let show_if = /*groupHasVisibleChildren*/ ctx[14](/*group*/ ctx[35], /*filteredZones*/ ctx[5]);
     	let t0;
     	let ul;
     	let ul_aria_activedescendant_value;
     	let t1;
     	let if_block = show_if && create_if_block_2(ctx);
-    	let each_value_1 = Object.keys(groupedZones[/*group*/ ctx[33]]);
+    	let each_value_1 = Object.keys(groupedZones[/*group*/ ctx[35]]);
     	validate_each_argument(each_value_1);
     	let each_blocks = [];
 
@@ -4992,11 +5518,11 @@ var SvelteTimezonePicker = (function () {
 
     			t1 = space();
     			attr_dev(ul, "role", "listbox");
-    			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[3] && `tz-${slugify(/*currentZone*/ ctx[3])}`);
+    			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
     			attr_dev(ul, "class", "svelte-22kpky");
-    			add_location(ul, file$3, 319, 12, 9975);
+    			add_location(ul, file, 441, 12, 16651);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file$3, 315, 10, 9847);
+    			add_location(li, file, 437, 10, 16523);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5011,7 +5537,7 @@ var SvelteTimezonePicker = (function () {
     			append_dev(li, t1);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 32) show_if = /*groupHasVisibleChildren*/ ctx[14](/*group*/ ctx[33], /*filteredZones*/ ctx[5]);
+    			if (dirty[0] & /*filteredZones*/ 32) show_if = /*groupHasVisibleChildren*/ ctx[14](/*group*/ ctx[35], /*filteredZones*/ ctx[5]);
 
     			if (show_if) {
     				if (if_block) {
@@ -5026,8 +5552,8 @@ var SvelteTimezonePicker = (function () {
     				if_block = null;
     			}
 
-    			if (dirty[0] & /*highlightedZone, handleTimezoneUpdate, setHighlightedZone, datetime, getTimeForZone, ungroupedZones, filteredZones*/ 274849) {
-    				each_value_1 = Object.keys(groupedZones[/*group*/ ctx[33]]);
+    			if (dirty[0] & /*highlightedZone, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones*/ 274856) {
+    				each_value_1 = Object.keys(groupedZones[/*group*/ ctx[35]]);
     				validate_each_argument(each_value_1);
     				let i;
 
@@ -5050,7 +5576,7 @@ var SvelteTimezonePicker = (function () {
     				each_blocks.length = each_value_1.length;
     			}
 
-    			if (dirty[0] & /*currentZone*/ 8 && ul_aria_activedescendant_value !== (ul_aria_activedescendant_value = /*currentZone*/ ctx[3] && `tz-${slugify(/*currentZone*/ ctx[3])}`)) {
+    			if (dirty[0] & /*currentZone*/ 4 && ul_aria_activedescendant_value !== (ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`)) {
     				attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value);
     			}
     		},
@@ -5065,37 +5591,35 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(315:8) {#each Object.keys(groupedZones) as group}",
+    		source: "(437:8) {#each Object.keys(groupedZones) as group}",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$3(ctx) {
+    function create_fragment(ctx) {
     	let t0;
     	let div;
     	let button;
+    	let svg0;
+    	let path0;
     	let t1;
     	let span;
     	let t2;
     	let t3;
     	let t4;
+    	let svg1;
+    	let path1;
+    	let path1_transform_value;
     	let button_aria_label_value;
     	let t5;
     	let current;
     	let mounted;
     	let dispose;
-    	let if_block0 = /*open*/ ctx[2] && create_if_block_5(ctx);
-    	const iconworld = new IconWorld({ $$inline: true });
-    	let if_block1 = /*datetime*/ ctx[0] && create_if_block_4(ctx);
-
-    	const iconarrow = new IconArrow({
-    			props: { transform: /*open*/ ctx[2] },
-    			$$inline: true
-    		});
-
-    	let if_block2 = /*open*/ ctx[2] && create_if_block(ctx);
+    	let if_block0 = /*open*/ ctx[1] && create_if_block_5(ctx);
+    	let if_block1 = /*utcDatetime*/ ctx[3] && create_if_block_4(ctx);
+    	let if_block2 = /*open*/ ctx[1] && create_if_block(ctx);
 
     	const block = {
     		c: function create() {
@@ -5103,28 +5627,49 @@ var SvelteTimezonePicker = (function () {
     			t0 = space();
     			div = element("div");
     			button = element("button");
-    			create_component(iconworld.$$.fragment);
+    			svg0 = svg_element("svg");
+    			path0 = svg_element("path");
     			t1 = space();
     			span = element("span");
-    			t2 = text(/*currentZone*/ ctx[3]);
+    			t2 = text(/*currentZone*/ ctx[2]);
     			t3 = space();
     			if (if_block1) if_block1.c();
     			t4 = space();
-    			create_component(iconarrow.$$.fragment);
+    			svg1 = svg_element("svg");
+    			path1 = svg_element("path");
     			t5 = space();
     			if (if_block2) if_block2.c();
+    			attr_dev(path0, "d", "M484.681\n        213.47c-4.498-40.879-19.541-78.226-43.869-111.5-39.194-53.578-91.611-86.336-157.067-97.74-13.051-2.271-26.398-2.862-39.608-4.23h-2.622c-12.342\n        1.351-24.737 2.246-36.993 4.129C78.665 23.442-12.331 142.612 2.056\n        269.395 8.921 329.91 34.27 381.516 79.271 422.673c53.504 48.941 117.062\n        69.925 189.118 63.079 55.301-5.271 103.557-27.573 143.33-66.489\n        57.76-56.561 81.781-125.699 72.962-205.793zM433.4\n        338.072c-6.153-10.729-13.92-25.688-17.39-38.455-5.042-18.537-17.147-.627-18.158\n        11.479s-9.078 21.184-25.221\n        3.025c-16.143-18.157-19.169-14.126-24.211-14.126s-14.121 12.104-12.105\n        68.601c1.437 40.335 17.349 46.736 27.746 49.662-19.305 13.264-41.488\n        23.714-66.385 30.038-95.157\n        24.151-192.289-19.706-237.671-106.837-42.28-81.185-21.681-173.053\n        21.299-223.616 1.156 9.094 2.288 17.263 3.23 25.464 2.562 22.39.629\n        44.487-3.939 66.496-.976 4.69-.636 10.033.629 14.646.688 2.519 4.486\n        5.494 7.11 5.743 2.066.201 5.671-3.074 6.508-5.533 1.513-4.397\n        1.575-9.327 2.04-14.053.334-3.334.34-6.712.57-11.942 3.413 2.766 5.902\n        4.444 7.971 6.525 5.272 5.308 10.604 10.592 15.415 16.299 2.125 2.533\n        4.315 6.079 4.256 9.129-.133 6.525 2.73 10.962 6.227 16.086 3.886 5.698\n        5.636 12.862 8.136 19.459 1.046 2.766 1.265 5.887 2.512 8.547 2.663\n        5.697 6.688 9.599 13.607 10.024 7.279.461 10.004 3.286 11.05\n        10.733-1.862.213-3.715.462-5.574.633-8.878.846-13.278 4.924-12.927\n        13.879.694 17.785 7.11 33.324 20.312 45.678 3.638 3.411 7.503 6.579\n        11.038 10.072 8.074 7.974 10.891 17.342 7.01 28.354-1.859 5.249-4.407\n        10.403-5.231 15.83-.839 5.514-.845 11.508.432 16.904 1.324 5.615.756\n        17.897 6.555 16.881 10.258-1.803 16.154.219\n        16.952-11.266.151-2.188-.018-2.459-.6-4.48-3.05-10.781 10.799-41.387\n        19.109-46.967 7.099-4.776 14.218-9.635 20.652-15.244 9.276-8.062\n        13.429-18.477 9.531-30.605-3.668-11.414.623-19.795 8.603-27.143\n        8.14-7.489 13.477-16.119\n        12.921-27.645-.556-11.526-8.098-19.849-17.927-18.666-4.806.567-9.413\n        2.872-14.098 4.45-6.868 2.323-13.571 5.574-20.62 6.839-9.88\n        1.75-15.968-4.705-20.375-12.543-3.546-6.301-4.714-6.785-10.87-2.86-5.193\n        3.322-10.376 6.667-15.755 9.67-5.588 3.121-8.633\n        1.963-12.941-2.707-2.548-2.755-6.076-4.693-9.351-6.679-2.355-1.442-5.539-1.839-7.427-3.647-2.53-2.447-6.059-6.076-5.701-8.729.417-3.115\n        4.025-7.014 7.172-8.29 5.423-2.199 11.585-2.554 17.401-3.818 3.097-.674\n        6.239-1.375 9.167-2.53 4.008-1.599\n        3.839-4.232.771-6.703-1.513-1.215-3.384-2.069-5.208-2.802-8.866-3.57-17.782-6.984-26.643-10.568-2.202-.884-4.371-1.971-6.348-3.263-5.571-3.661-6.242-7.692-1.188-12.152\n        19.955-17.602 43.264-22.756 63.916.63 6.398 7.243 10.737 16.275 16.778\n        23.876 4.752 5.994 10.223 11.621 16.263 16.246 2.489 1.9 8.086 2.223\n        10.87.697 4.146-2.27 4.291-7.444\n        2.205-11.759-1.803-3.748-3.922-7.442-6.469-10.722-11.733-15.117-10.926-44.576\n        12.055-56.867 7.687-4.117 15.441-8.453 19.112-19.497-4.403 1.191-7.596\n        1.959-10.723 2.917-17.451 5.405-5.302-7.613 2.726-9.883\n        4.876-1.386-4.362-5.122-4.362-5.122.219-.381 6.135-2.069 12.714-4.874\n        4.527-1.924 9.155-4.09 12.915-7.152 2.436-1.998 3.375-5.816\n        4.977-8.819-.407-.473-.804-.934-1.217-1.407-4.611.621-9.216 1.303-13.838\n        1.824-7.832.877-9.67-.659-10.396-8.559-.503-5.394-6-8.334-11.133-5.568-3.473\n        1.883-6.476 4.613-9.818 6.773-7.716 4.998-13.485\n        3-16.512-5.618-1.803-5.13-4.314-6.1-9.034-3.227-2.374 1.442-4.354\n        3.549-6.768 4.897-3.958 2.211-7.982 4.43-12.232 5.932-4.14 1.466-9.126\n        2.53-11.943-2.01-3.026-4.882-.381-9.635 3.435-12.696 4.743-3.807\n        10.211-6.762 15.548-9.753 7.602-4.279 15.652-7.838 22.993-12.504\n        5.388-3.438 7.743-9.041\n        6-15.652-1.472-5.58-5.205-7.468-10.374-4.909-4.268 2.119-7.997\n        5.435-12.386 7.143-3.207 1.229-7.203\n        1.242-10.646.636-1.271-.225-2.622-3.747-2.657-5.792-.024-1.179\n        2.367-3.227 3.892-3.476 10.604-1.652 21.255-3.05 31.921-4.265 1.41-.154\n        3.529.718 4.413 1.844 7.045 8.893 16.875 13.208 27.216 16.287 8.688 2.58\n        9.947 1.351 11.142-7.764 11.159-2.627 22.502-7.803 33.732-.721 6.23\n        3.921 11.91 8.917 17.183 14.091 1.307 1.288.509 5.272-.118 7.838-.827\n        3.448-2.736 6.635-3.617 10.083-1.702 6.682 2.618 11.904 9.522 11.795\n        2.181-.047 4.356-.494 6.549-.603 6.378-.298 8.642 2.143 8.057 8.583-.828\n        9.126.691 10.223 9.9 8.665 2.647-.446 5.704.756 8.405 1.703 1.607.567\n        2.854 2.107 4.285 3.188 8.564 6.49 15.113 4.058\n        17.62-6.561.271-1.156.236-2.391.473-3.559.993-4.764 3.683-5.99\n        6.897-2.604 6.81 7.211 13.199 14.824 20.108 22.686-7.424 6.809-7.672\n        15.084-6.028 23.193 1.826 9.021-.55 16.858-4.108 24.805-3.41 7.613-7.157\n        15.179-9.434 23.144-3.404 11.955.461 17.416 12.602 20.062 11.585 2.529\n        13.482 4.858 13.92 16.184.585 15.448 8.518 26.11 22.071 32.914 3.009\n        1.501 6.206 2.642 9.279 3.919-1.519 23.814-8.317 48.598-19.949 72.111z");
+    			add_location(path0, file, 291, 6, 9148);
+    			attr_dev(svg0, "xmlns", "http://www.w3.org/2000/svg");
+    			attr_dev(svg0, "viewBox", "0 0 487.015 487.015");
+    			attr_dev(svg0, "width", "0.88em");
+    			attr_dev(svg0, "height", "0.88em");
+    			add_location(svg0, file, 285, 4, 9011);
     			attr_dev(span, "class", "svelte-22kpky");
-    			add_location(span, file$3, 274, 4, 8613);
+    			add_location(span, file, 365, 4, 14361);
+    			attr_dev(path1, "d", "M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0\n        113.536-3.536l11.095 11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z");
+
+    			attr_dev(path1, "transform", path1_transform_value = /*open*/ ctx[1]
+    			? "rotate(180, 15.3635, 15.3635)"
+    			: "rotate(0)");
+
+    			add_location(path1, file, 379, 6, 14701);
+    			attr_dev(svg1, "xmlns", "http://www.w3.org/2000/svg");
+    			attr_dev(svg1, "viewBox", "0 0 30.727 30.727");
+    			attr_dev(svg1, "width", "0.88em");
+    			attr_dev(svg1, "height", "0.88em");
+    			add_location(svg1, file, 373, 4, 14566);
     			attr_dev(button, "type", "button");
     			attr_dev(button, "role", "button");
-    			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[3]} is currently selected. Change timezone`);
+    			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`);
     			attr_dev(button, "aria-haspopup", "listbox");
     			attr_dev(button, "data-toggle", "true");
-    			attr_dev(button, "aria-expanded", /*open*/ ctx[2]);
+    			attr_dev(button, "aria-expanded", /*open*/ ctx[1]);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file$3, 263, 2, 8328);
+    			add_location(button, file, 275, 2, 8744);
     			attr_dev(div, "class", "tz-container svelte-22kpky");
-    			add_location(div, file$3, 262, 0, 8299);
+    			add_location(div, file, 274, 0, 8715);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -5134,15 +5679,17 @@ var SvelteTimezonePicker = (function () {
     			insert_dev(target, t0, anchor);
     			insert_dev(target, div, anchor);
     			append_dev(div, button);
-    			mount_component(iconworld, button, null);
+    			append_dev(button, svg0);
+    			append_dev(svg0, path0);
     			append_dev(button, t1);
     			append_dev(button, span);
     			append_dev(span, t2);
     			append_dev(button, t3);
     			if (if_block1) if_block1.m(button, null);
     			append_dev(button, t4);
-    			mount_component(iconarrow, button, null);
-    			/*button_binding*/ ctx[20](button);
+    			append_dev(button, svg1);
+    			append_dev(svg1, path1);
+    			/*button_binding*/ ctx[21](button);
     			append_dev(div, t5);
     			if (if_block2) if_block2.m(div, null);
     			current = true;
@@ -5153,7 +5700,7 @@ var SvelteTimezonePicker = (function () {
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (/*open*/ ctx[2]) {
+    			if (/*open*/ ctx[1]) {
     				if (if_block0) {
     					if_block0.p(ctx, dirty);
     				} else {
@@ -5166,9 +5713,9 @@ var SvelteTimezonePicker = (function () {
     				if_block0 = null;
     			}
 
-    			if (!current || dirty[0] & /*currentZone*/ 8) set_data_dev(t2, /*currentZone*/ ctx[3]);
+    			if (!current || dirty[0] & /*currentZone*/ 4) set_data_dev(t2, /*currentZone*/ ctx[2]);
 
-    			if (/*datetime*/ ctx[0]) {
+    			if (/*utcDatetime*/ ctx[3]) {
     				if (if_block1) {
     					if_block1.p(ctx, dirty);
     				} else {
@@ -5181,23 +5728,25 @@ var SvelteTimezonePicker = (function () {
     				if_block1 = null;
     			}
 
-    			const iconarrow_changes = {};
-    			if (dirty[0] & /*open*/ 4) iconarrow_changes.transform = /*open*/ ctx[2];
-    			iconarrow.$set(iconarrow_changes);
+    			if (!current || dirty[0] & /*open*/ 2 && path1_transform_value !== (path1_transform_value = /*open*/ ctx[1]
+    			? "rotate(180, 15.3635, 15.3635)"
+    			: "rotate(0)")) {
+    				attr_dev(path1, "transform", path1_transform_value);
+    			}
 
-    			if (!current || dirty[0] & /*currentZone*/ 8 && button_aria_label_value !== (button_aria_label_value = `${/*currentZone*/ ctx[3]} is currently selected. Change timezone`)) {
+    			if (!current || dirty[0] & /*currentZone*/ 4 && button_aria_label_value !== (button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`)) {
     				attr_dev(button, "aria-label", button_aria_label_value);
     			}
 
-    			if (!current || dirty[0] & /*open*/ 4) {
-    				attr_dev(button, "aria-expanded", /*open*/ ctx[2]);
+    			if (!current || dirty[0] & /*open*/ 2) {
+    				attr_dev(button, "aria-expanded", /*open*/ ctx[1]);
     			}
 
-    			if (/*open*/ ctx[2]) {
+    			if (/*open*/ ctx[1]) {
     				if (if_block2) {
     					if_block2.p(ctx, dirty);
 
-    					if (dirty[0] & /*open*/ 4) {
+    					if (dirty[0] & /*open*/ 2) {
     						transition_in(if_block2, 1);
     					}
     				} else {
@@ -5218,14 +5767,10 @@ var SvelteTimezonePicker = (function () {
     		},
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(iconworld.$$.fragment, local);
-    			transition_in(iconarrow.$$.fragment, local);
     			transition_in(if_block2);
     			current = true;
     		},
     		o: function outro(local) {
-    			transition_out(iconworld.$$.fragment, local);
-    			transition_out(iconarrow.$$.fragment, local);
     			transition_out(if_block2);
     			current = false;
     		},
@@ -5233,10 +5778,8 @@ var SvelteTimezonePicker = (function () {
     			if (if_block0) if_block0.d(detaching);
     			if (detaching) detach_dev(t0);
     			if (detaching) detach_dev(div);
-    			destroy_component(iconworld);
     			if (if_block1) if_block1.d();
-    			destroy_component(iconarrow);
-    			/*button_binding*/ ctx[20](null);
+    			/*button_binding*/ ctx[21](null);
     			if (if_block2) if_block2.d();
     			mounted = false;
     			dispose();
@@ -5245,7 +5788,7 @@ var SvelteTimezonePicker = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$3.name,
+    		id: create_fragment.name,
     		type: "component",
     		source: "",
     		ctx
@@ -5254,7 +5797,7 @@ var SvelteTimezonePicker = (function () {
     	return block;
     }
 
-    function instance$3($$self, $$props, $$invalidate) {
+    function instance($$self, $$props, $$invalidate) {
     	let { datetime = null } = $$props;
     	let { timezone = null } = $$props;
     	let { open = false } = $$props;
@@ -5266,18 +5809,23 @@ var SvelteTimezonePicker = (function () {
     	// What is the current zone?
     	let currentZone;
 
+    	// We will always convert the datetime to UTC
+    	let utcDatetime;
+
     	// We will get a ref to the toggleButton so that we can manage focus
     	let toggleButtonRef;
 
     	// Emit the event back to the consumer
     	const handleTimezoneUpdate = (event, zoneId) => {
-    		$$invalidate(3, currentZone = zoneId);
-    		$$invalidate(1, timezone = ungroupedZones[zoneId]);
+    		$$invalidate(2, currentZone = zoneId);
+    		$$invalidate(0, timezone = ungroupedZones[zoneId]);
     		reset();
 
     		dispatch("update", {
     			timezone,
-    			datetime: zonedTimeToUtc(datetime, timezone)
+    			datetime,
+    			utcDatetime,
+    			zonedDatetime: utcToZonedTime(utcDatetime, timezone)
     		});
 
     		toggleButtonRef.focus();
@@ -5394,7 +5942,7 @@ var SvelteTimezonePicker = (function () {
 
     	// Reset the dropdown and all internal state to the initial values
     	const reset = () => {
-    		$$invalidate(2, open = initialState.open);
+    		$$invalidate(1, open = initialState.open);
     		$$invalidate(6, userSearch = initialState.userSearch);
     	};
 
@@ -5412,7 +5960,7 @@ var SvelteTimezonePicker = (function () {
     	};
 
     	const toggleOpen = () => {
-    		$$invalidate(2, open = !open);
+    		$$invalidate(1, open = !open);
     	};
 
     	// ***** Lifecycle methods *****
@@ -5422,6 +5970,13 @@ var SvelteTimezonePicker = (function () {
 
     	const UPDATE_INTERVAL = 1000 * 60; // 1 minute
 
+    	// We update the datetime and utcDatetime if there is no datetime provided
+    	// We do this onMount in setInterval
+    	const updateCurrentDatetime = () => {
+    		$$invalidate(20, datetime = new Date());
+    		$$invalidate(3, utcDatetime = zonedTimeToUtc(datetime, timezone));
+    	};
+
     	onMount(() => {
     		const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -5429,30 +5984,29 @@ var SvelteTimezonePicker = (function () {
     			// The timezone must be a valid timezone, so we check it against our list of values in flat
     			if (!Object.values(ungroupedZones).includes(timezone)) {
     				console.warn(`The timezone provided is not valid: ${timezone}!`, `Valid zones are: ${validZones}`);
-    				$$invalidate(1, timezone = userTimezone);
+    				$$invalidate(0, timezone = userTimezone);
     			}
     		} else {
-    			$$invalidate(1, timezone = userTimezone);
+    			$$invalidate(0, timezone = userTimezone);
     		}
 
-    		$$invalidate(3, currentZone = getKeyByValue(ungroupedZones, timezone));
+    		$$invalidate(2, currentZone = getKeyByValue(ungroupedZones, timezone));
 
-    		if (datetime && !isValid(datetime)) {
+    		// Warn the user if the datetime is invalid
+    		if (datetime && !isValid(parseISO(datetime))) {
     			console.warn(`The datetime provided is not a valid date: ${datetime}`);
-    			$$invalidate(0, datetime = new Date());
+    		}
+
+    		// If there is a valid datetime, update the utcDatetime
+    		if (datetime && isValid(parseISO(datetime))) {
+    			$$invalidate(3, utcDatetime = zonedTimeToUtc(parseISO(datetime), timezone));
     		}
 
     		// If the user didn't pass a date, then we assume it's a picker,
     		// and we update the time for each timezone every minute
     		if (!datetime) {
-    			$$invalidate(0, datetime = new Date());
-
-    			intervalId = setInterval(
-    				() => {
-    					$$invalidate(0, datetime = new Date());
-    				},
-    				UPDATE_INTERVAL
-    			);
+    			updateCurrentDatetime();
+    			intervalId = setInterval(updateCurrentDatetime, UPDATE_INTERVAL);
     		}
     	});
 
@@ -5497,9 +6051,9 @@ var SvelteTimezonePicker = (function () {
     	const mouseover_handler = name => setHighlightedZone(name);
 
     	$$self.$set = $$props => {
-    		if ("datetime" in $$props) $$invalidate(0, datetime = $$props.datetime);
-    		if ("timezone" in $$props) $$invalidate(1, timezone = $$props.timezone);
-    		if ("open" in $$props) $$invalidate(2, open = $$props.open);
+    		if ("datetime" in $$props) $$invalidate(20, datetime = $$props.datetime);
+    		if ("timezone" in $$props) $$invalidate(0, timezone = $$props.timezone);
+    		if ("open" in $$props) $$invalidate(1, open = $$props.open);
     	};
 
     	$$self.$capture_state = () => ({
@@ -5510,22 +6064,21 @@ var SvelteTimezonePicker = (function () {
     		slide,
     		utcToZonedTime,
     		zonedTimeToUtc,
-    		format,
+    		format: format$1,
     		isValid,
+    		parseISO,
     		groupedZones,
     		scrollIntoView,
     		uid,
     		getKeyByValue,
     		slugify,
     		keyCodes,
-    		IconWorld,
-    		IconArrow,
-    		IconClose,
     		datetime,
     		timezone,
     		open,
     		dispatch,
     		currentZone,
+    		utcDatetime,
     		toggleButtonRef,
     		handleTimezoneUpdate,
     		initialState,
@@ -5549,14 +6102,16 @@ var SvelteTimezonePicker = (function () {
     		setHighlightedZone,
     		toggleOpen,
     		intervalId,
-    		UPDATE_INTERVAL
+    		UPDATE_INTERVAL,
+    		updateCurrentDatetime
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("datetime" in $$props) $$invalidate(0, datetime = $$props.datetime);
-    		if ("timezone" in $$props) $$invalidate(1, timezone = $$props.timezone);
-    		if ("open" in $$props) $$invalidate(2, open = $$props.open);
-    		if ("currentZone" in $$props) $$invalidate(3, currentZone = $$props.currentZone);
+    		if ("datetime" in $$props) $$invalidate(20, datetime = $$props.datetime);
+    		if ("timezone" in $$props) $$invalidate(0, timezone = $$props.timezone);
+    		if ("open" in $$props) $$invalidate(1, open = $$props.open);
+    		if ("currentZone" in $$props) $$invalidate(2, currentZone = $$props.currentZone);
+    		if ("utcDatetime" in $$props) $$invalidate(3, utcDatetime = $$props.utcDatetime);
     		if ("toggleButtonRef" in $$props) $$invalidate(4, toggleButtonRef = $$props.toggleButtonRef);
     		if ("filteredZones" in $$props) $$invalidate(5, filteredZones = $$props.filteredZones);
     		if ("userSearch" in $$props) $$invalidate(6, userSearch = $$props.userSearch);
@@ -5579,10 +6134,10 @@ var SvelteTimezonePicker = (function () {
     	};
 
     	return [
-    		datetime,
     		timezone,
     		open,
     		currentZone,
+    		utcDatetime,
     		toggleButtonRef,
     		filteredZones,
     		userSearch,
@@ -5599,6 +6154,7 @@ var SvelteTimezonePicker = (function () {
     		clearSearch,
     		setHighlightedZone,
     		toggleOpen,
+    		datetime,
     		button_binding,
     		input_input_handler,
     		click_handler,
@@ -5609,13 +6165,13 @@ var SvelteTimezonePicker = (function () {
     class Picker extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$3, create_fragment$3, safe_not_equal, { datetime: 0, timezone: 1, open: 2 }, [-1, -1]);
+    		init(this, options, instance, create_fragment, safe_not_equal, { datetime: 20, timezone: 0, open: 1 }, [-1, -1]);
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Picker",
     			options,
-    			id: create_fragment$3.name
+    			id: create_fragment.name
     		});
     	}
 
@@ -5645,26 +6201,112 @@ var SvelteTimezonePicker = (function () {
     }
 
     /* demo/Demo.svelte generated by Svelte v3.23.1 */
-    const file$4 = "demo/Demo.svelte";
 
-    function create_fragment$4(ctx) {
-    	let div2;
-    	let div0;
+    const { Object: Object_1$1 } = globals;
+    const file$1 = "demo/Demo.svelte";
+
+    // (27:2) {#if Object.keys(payload).length}
+    function create_if_block$1(ctx) {
+    	let div;
     	let p0;
+    	let t1;
+    	let pre;
+    	let t2_value = JSON.stringify(/*payload*/ ctx[0], null, 2) + "";
+    	let t2;
+    	let t3;
+    	let p1;
+    	let t4;
+    	let t5_value = format(/*payload*/ ctx[0].zonedDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "";
+    	let t5;
+    	let t6;
+    	let t7_value = /*payload*/ ctx[0].timezone + "";
+    	let t7;
+    	let t8;
+    	let t9;
+    	let p2;
+    	let t10;
+    	let t11_value = format(/*payload*/ ctx[0].utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "";
+    	let t11;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			p0 = element("p");
+    			p0.textContent = "The payload for the server will be:";
+    			t1 = space();
+    			pre = element("pre");
+    			t2 = text(t2_value);
+    			t3 = space();
+    			p1 = element("p");
+    			t4 = text("It will be ");
+    			t5 = text(t5_value);
+    			t6 = text("\n        in ");
+    			t7 = text(t7_value);
+    			t8 = text(".");
+    			t9 = space();
+    			p2 = element("p");
+    			t10 = text("UTC: ");
+    			t11 = text(t11_value);
+    			attr_dev(p0, "class", "svelte-1vrlhjq");
+    			add_location(p0, file$1, 28, 6, 790);
+    			attr_dev(pre, "class", "svelte-1vrlhjq");
+    			add_location(pre, file$1, 29, 6, 839);
+    			attr_dev(p1, "class", "svelte-1vrlhjq");
+    			add_location(p1, file$1, 30, 6, 891);
+    			attr_dev(p2, "class", "svelte-1vrlhjq");
+    			add_location(p2, file$1, 34, 6, 1027);
+    			attr_dev(div, "class", "col svelte-1vrlhjq");
+    			add_location(div, file$1, 27, 4, 766);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, p0);
+    			append_dev(div, t1);
+    			append_dev(div, pre);
+    			append_dev(pre, t2);
+    			append_dev(div, t3);
+    			append_dev(div, p1);
+    			append_dev(p1, t4);
+    			append_dev(p1, t5);
+    			append_dev(p1, t6);
+    			append_dev(p1, t7);
+    			append_dev(p1, t8);
+    			append_dev(div, t9);
+    			append_dev(div, p2);
+    			append_dev(p2, t10);
+    			append_dev(p2, t11);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*payload*/ 1 && t2_value !== (t2_value = JSON.stringify(/*payload*/ ctx[0], null, 2) + "")) set_data_dev(t2, t2_value);
+    			if (dirty & /*payload*/ 1 && t5_value !== (t5_value = format(/*payload*/ ctx[0].zonedDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "")) set_data_dev(t5, t5_value);
+    			if (dirty & /*payload*/ 1 && t7_value !== (t7_value = /*payload*/ ctx[0].timezone + "")) set_data_dev(t7, t7_value);
+    			if (dirty & /*payload*/ 1 && t11_value !== (t11_value = format(/*payload*/ ctx[0].utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "")) set_data_dev(t11, t11_value);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$1.name,
+    		type: "if",
+    		source: "(27:2) {#if Object.keys(payload).length}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$1(ctx) {
+    	let div1;
+    	let div0;
+    	let p;
     	let t1;
     	let input;
     	let t2;
     	let t3;
-    	let div1;
-    	let p1;
-    	let t5;
-    	let pre;
-    	let t6_value = JSON.stringify(/*payload*/ ctx[0], null, 2) + "";
-    	let t6;
-    	let t7;
-    	let p2;
-    	let t8_value = format(/*payload*/ ctx[0].dt, "MMMM do, yyyy 'at' HH:mm aaaa") + "";
-    	let t8;
+    	let show_if = Object.keys(/*payload*/ ctx[0]).length;
     	let current;
 
     	const picker = new Picker({
@@ -5676,71 +6318,61 @@ var SvelteTimezonePicker = (function () {
     		});
 
     	picker.$on("update", /*update*/ ctx[3]);
+    	let if_block = show_if && create_if_block$1(ctx);
 
     	const block = {
     		c: function create() {
-    			div2 = element("div");
+    			div1 = element("div");
     			div0 = element("div");
-    			p0 = element("p");
-    			p0.textContent = "Somewhere in Haikuland...";
+    			p = element("p");
+    			p.textContent = "Somewhere in user land...";
     			t1 = space();
     			input = element("input");
     			t2 = space();
     			create_component(picker.$$.fragment);
     			t3 = space();
-    			div1 = element("div");
-    			p1 = element("p");
-    			p1.textContent = "The payload for the server will be:";
-    			t5 = space();
-    			pre = element("pre");
-    			t6 = text(t6_value);
-    			t7 = space();
-    			p2 = element("p");
-    			t8 = text(t8_value);
-    			attr_dev(p0, "class", "svelte-1vrlhjq");
-    			add_location(p0, file$4, 24, 4, 485);
+    			if (if_block) if_block.c();
+    			attr_dev(p, "class", "svelte-1vrlhjq");
+    			add_location(p, file$1, 22, 4, 571);
     			attr_dev(input, "type", "datetime-local");
     			input.value = /*datetime*/ ctx[1];
     			attr_dev(input, "class", "svelte-1vrlhjq");
-    			add_location(input, file$4, 25, 4, 522);
+    			add_location(input, file$1, 23, 4, 608);
     			attr_dev(div0, "class", "col svelte-1vrlhjq");
-    			add_location(div0, file$4, 23, 2, 463);
-    			attr_dev(p1, "class", "svelte-1vrlhjq");
-    			add_location(p1, file$4, 29, 4, 664);
-    			attr_dev(pre, "class", "svelte-1vrlhjq");
-    			add_location(pre, file$4, 30, 4, 711);
-    			attr_dev(p2, "class", "svelte-1vrlhjq");
-    			add_location(p2, file$4, 31, 4, 761);
-    			attr_dev(div1, "class", "col svelte-1vrlhjq");
-    			add_location(div1, file$4, 28, 2, 642);
-    			attr_dev(div2, "class", "cols svelte-1vrlhjq");
-    			add_location(div2, file$4, 22, 0, 442);
+    			add_location(div0, file$1, 21, 2, 549);
+    			attr_dev(div1, "class", "cols svelte-1vrlhjq");
+    			add_location(div1, file$1, 20, 0, 528);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div2, anchor);
-    			append_dev(div2, div0);
-    			append_dev(div0, p0);
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			append_dev(div0, p);
     			append_dev(div0, t1);
     			append_dev(div0, input);
     			append_dev(div0, t2);
     			mount_component(picker, div0, null);
-    			append_dev(div2, t3);
-    			append_dev(div2, div1);
-    			append_dev(div1, p1);
-    			append_dev(div1, t5);
-    			append_dev(div1, pre);
-    			append_dev(pre, t6);
-    			append_dev(div1, t7);
-    			append_dev(div1, p2);
-    			append_dev(p2, t8);
+    			append_dev(div1, t3);
+    			if (if_block) if_block.m(div1, null);
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
-    			if ((!current || dirty & /*payload*/ 1) && t6_value !== (t6_value = JSON.stringify(/*payload*/ ctx[0], null, 2) + "")) set_data_dev(t6, t6_value);
-    			if ((!current || dirty & /*payload*/ 1) && t8_value !== (t8_value = format(/*payload*/ ctx[0].dt, "MMMM do, yyyy 'at' HH:mm aaaa") + "")) set_data_dev(t8, t8_value);
+    			if (dirty & /*payload*/ 1) show_if = Object.keys(/*payload*/ ctx[0]).length;
+
+    			if (show_if) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+    				} else {
+    					if_block = create_if_block$1(ctx);
+    					if_block.c();
+    					if_block.m(div1, null);
+    				}
+    			} else if (if_block) {
+    				if_block.d(1);
+    				if_block = null;
+    			}
     		},
     		i: function intro(local) {
     			if (current) return;
@@ -5752,14 +6384,15 @@ var SvelteTimezonePicker = (function () {
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div2);
+    			if (detaching) detach_dev(div1);
     			destroy_component(picker);
+    			if (if_block) if_block.d();
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$4.name,
+    		id: create_fragment$1.name,
     		type: "component",
     		source: "",
     		ctx
@@ -5768,20 +6401,24 @@ var SvelteTimezonePicker = (function () {
     	return block;
     }
 
-    function instance$4($$self, $$props, $$invalidate) {
-    	let datetime = "2020-06-10T19:30";
+    function instance$1($$self, $$props, $$invalidate) {
+    	let datetime = "2016-06-19T08:30";
     	let timezone = "Europe/London";
-    	let dt = zonedTimeToUtc(datetime, timezone);
-    	let payload = { datetime, timezone, dt };
+
+    	// let datetime;
+    	// let timezone;
+    	let payload = {};
 
     	const update = ev => {
+    		$$invalidate(0, payload.datetime = ev.detail.datetime, payload);
     		$$invalidate(0, payload.timezone = ev.detail.timezone, payload);
-    		$$invalidate(0, payload.dt = ev.detail.datetime, payload);
+    		$$invalidate(0, payload.utcDatetime = ev.detail.utcDatetime, payload);
+    		$$invalidate(0, payload.zonedDatetime = ev.detail.zonedDatetime, payload);
     	};
 
     	const writable_props = [];
 
-    	Object.keys($$props).forEach(key => {
+    	Object_1$1.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Demo> was created with unknown prop '${key}'`);
     	});
 
@@ -5790,11 +6427,12 @@ var SvelteTimezonePicker = (function () {
 
     	$$self.$capture_state = () => ({
     		Picker,
+    		utcToZonedTime,
     		zonedTimeToUtc,
     		format,
+    		parseISO,
     		datetime,
     		timezone,
-    		dt,
     		payload,
     		update
     	});
@@ -5802,7 +6440,6 @@ var SvelteTimezonePicker = (function () {
     	$$self.$inject_state = $$props => {
     		if ("datetime" in $$props) $$invalidate(1, datetime = $$props.datetime);
     		if ("timezone" in $$props) $$invalidate(2, timezone = $$props.timezone);
-    		if ("dt" in $$props) dt = $$props.dt;
     		if ("payload" in $$props) $$invalidate(0, payload = $$props.payload);
     	};
 
@@ -5816,13 +6453,13 @@ var SvelteTimezonePicker = (function () {
     class Demo extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Demo",
     			options,
-    			id: create_fragment$4.name
+    			id: create_fragment$1.name
     		});
     	}
     }
