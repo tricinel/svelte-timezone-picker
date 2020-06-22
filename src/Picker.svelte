@@ -204,17 +204,10 @@
 
   // ***** Lifecycle methods *****
 
-  // Just in case we need to auto-update the date, we keep track of the intervalId
+  // Just in case we need to auto-update the date, we keep track of the animationFrameId
   // so that we can clear it and prevent memory leaks
-  let intervalId;
+  let animationFrameId;
   const UPDATE_INTERVAL = 1000 * 60; // 1 minute
-
-  // We update the datetime and utcDatetime if there is no datetime provided
-  // We do this onMount in setInterval
-  const updateCurrentDatetime = () => {
-    datetime = new Date();
-    utcDatetime = zonedTimeToUtc(datetime, timezone);
-  };
 
   onMount(() => {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -246,8 +239,20 @@
     // If the user didn't pass a date, then we assume it's a picker,
     // and we update the time for each timezone every minute
     if (!datetime) {
+      let nextTimeToUpdate = Date.now();
+      const updateCurrentDatetime = () => {
+        const now = Date.now();
+
+        if (nextTimeToUpdate <= now) {
+          datetime = new Date();
+          utcDatetime = zonedTimeToUtc(datetime, timezone);
+          nextTimeToUpdate = now + UPDATE_INTERVAL;
+          console.log('updating...');
+        }
+        animationFrameId = requestAnimationFrame(updateCurrentDatetime);
+      };
+
       updateCurrentDatetime();
-      intervalId = setInterval(updateCurrentDatetime, UPDATE_INTERVAL);
     }
   });
 
@@ -261,9 +266,9 @@
   });
 
   onDestroy(() => {
-    // Prevent memory leaks and clean up the interval
-    if (intervalId) {
-      clearInterval(intervalId);
+    // Prevent memory leaks and clean up the requested anmation frame
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
     }
   });
 </script>
