@@ -584,6 +584,10 @@ var SvelteTimezonePicker = (function () {
         else
             dispatch_dev("SvelteDOMSetAttribute", { node, attribute, value });
     }
+    function prop_dev(node, property, value) {
+        node[property] = value;
+        dispatch_dev("SvelteDOMSetProperty", { node, property, value });
+    }
     function set_data_dev(text, data) {
         data = '' + data;
         if (text.data === data)
@@ -4547,144 +4551,136 @@ var SvelteTimezonePicker = (function () {
       return minutes >= 0 && minutes <= 59;
     }
 
-    var Australia = {
-    	Sydney: "Australia/Sydney",
-    	Eucla: "Australia/Eucla",
-    	"Lord Howe": "Australia/Lord_Howe",
-    	Darwin: "Australia/Darwin",
-    	Brisbane: "Australia/Brisbane",
-    	Adelaide: "Australia/Adelaide",
-    	Hobart: "Australia/Hobart",
-    	Melbourne: "Australia/Melbourne",
-    	Perth: "Australia/Perth"
-    };
-    var Asia = {
-    	"Jordan Time": "Asia/Amman",
-    	"Baghdad, East Africa Time": "Asia/Baghdad",
-    	"Dubai Time": "Asia/Dubai",
-    	"Hong Kong": "Asia/Hong_Kong",
-    	Tehran: "Asia/Tehran",
-    	Jerusalem: "Asia/Jerusalem",
-    	Tokyo: "Asia/Tokyo",
-    	Shanghai: "Asia/Shanghai",
-    	Taipei: "Asia/Taipei",
-    	Seoul: "Asia/Seoul",
-    	Singapore: "Asia/Singapore",
-    	Baku: "Asia/Baku",
-    	Dhaka: "Asia/Dhaka",
-    	Gaza: "Asia/Gaza",
-    	Irkutsk: "Asia/Irkutsk",
-    	Omsk: "Asia/Omsk",
-    	Rangoon: "Asia/Rangoon",
-    	Vladivostok: "Asia/Vladivostok",
-    	Yakutsk: "Asia/Yakutsk",
-    	Yerevan: "Asia/Yerevan",
-    	"Pacific/Majuro": "Asia/Kamchatka"
-    };
-    var Europe = {
-    	"Central European Time": "Europe/Berlin",
-    	"Eastern European Time": "Europe/Helsinki",
-    	Helsinki: "Europe/Helsinki",
-    	Berlin: "Europe/Berlin",
-    	Paris: "Europe/Paris",
-    	Sofia: "Europe/Sofia",
-    	Dublin: "Europe/Dublin",
-    	London: "Europe/London",
-    	Warsaw: "Europe/Warsaw",
-    	Istanbul: "Europe/Istanbul",
-    	Lisbon: "Europe/Lisbon",
-    	Moscow: "Europe/Moscow"
-    };
-    var Atlantic = {
-    	Reykjavik: "Atlantic/Reykjavik",
-    	"Azores Time": "Atlantic/Azores",
-    	"Cape Verde Time": "Atlantic/Cape_Verde",
-    	"Atlantic Time": "America/Goose_Bay",
-    	"Atlantic Standard Time": "America/Santo_Domingo"
-    };
-    var Pacific = {
-    	Apia: "Pacific/Apia",
-    	Auckland: "Pacific/Auckland",
-    	Chatham: "Pacific/Chatham",
-    	Easter: "Pacific/Easter",
-    	Fiji: "Pacific/Fiji",
-    	Gambier: "Pacific/Gambier",
-    	Kiritimati: "Pacific/Kiritimati",
-    	Majuro: "Pacific/Majuro",
-    	Marquesas: "Pacific/Marquesas",
-    	Norfolk: "Pacific/Norfolk",
-    	Noumea: "Pacific/Noumea",
-    	Pitcairn: "Pacific/Pitcairn",
-    	Tarawa: "Pacific/Tarawa",
-    	Tongatapu: "Pacific/Tongatapu",
-    	Honolulu: "Pacific/Honolulu",
-    	Kwajalein: "Pacific/Kwajalein",
-    	"Pago Pago": "Pacific/Pago_Pago"
-    };
-    var America = {
-    	"Rio Branco": "America/Rio_Branco",
-    	Noronha: "America/Noronha",
-    	"Sao Paulo": "America/Sao_Paulo",
-    	Manaus: "America/Manaus",
-    	Halifax: "America/Halifax",
-    	Winnipeg: "America/Winnipeg",
-    	Toronto: "America/Toronto",
-    	Edmonton: "America/Edmonton",
-    	Santiago: "America/Santiago",
-    	"St Johns": "America/St_Johns",
-    	Vancouver: "America/Vancouver",
-    	Regina: "America/Regina",
-    	Whitehorse: "America/Whitehorse",
-    	Cancun: "America/Cancun",
-    	"New York": "America/New_York",
-    	Jamaica: "America/Jamaica",
-    	Tijuana: "America/Tijuana",
-    	Mazatlan: "America/Mazatlan",
-    	"Mexico City": "America/Mexico_City",
-    	Phoenix: "America/Phoenix",
-    	Denver: "America/Denver",
-    	Anchorage: "America/Anchorage",
-    	Adak: "America/Adak",
-    	Chicago: "America/Chicago",
-    	Indianapolis: "America/Indiana/Indianapolis",
-    	Knox: "America/Indiana/Knox",
-    	Detroit: "America/Detroit",
-    	"Los Angeles": "America/Los_Angeles",
-    	"Bogota, Jamaica, Lima Time": "America/Bogota",
-    	"Caracas Time": "America/Caracas",
-    	Havana: "America/Havana",
-    	"Santa Isabel": "America/Santa_Isabel",
-    	"Brasilia Time": "America/Sao_Paulo"
-    };
-    var Africa = {
-    	Cairo: "Africa/Cairo",
-    	"Central Africa Time": "Africa/Johannesburg",
-    	"West Africa Time": "Africa/Lagos",
-    	Windhoek: "Africa/Windhoek",
-    	Tripoli: "Africa/Tripoli"
-    };
-    var UTC = {
-    	"UTC Time": "UTC"
-    };
-    var groupedZones = {
-    	Australia: Australia,
-    	Asia: Asia,
-    	Europe: Europe,
-    	Atlantic: Atlantic,
-    	Pacific: Pacific,
-    	"US/Canada": {
-    	"Pacific Time": "America/Los_Angeles",
-    	"Mountain Time": "America/Denver",
-    	"Central Time": "America/Chicago",
-    	"Eastern Time": "America/New_York",
-    	"Alaska Time": "America/Anchorage",
-    	"Arizona Time": "America/Phoenix",
-    	"Newfoundland Time": "America/St_Johns",
-    	"Hawaii Time": "Pacific/Honolulu"
-    },
-    	America: America,
-    	Africa: Africa,
-    	UTC: UTC
+    const timezones = {
+      Australia: {
+        Sydney: 'Australia/Sydney',
+        Eucla: 'Australia/Eucla',
+        'Lord Howe': 'Australia/Lord_Howe',
+        Darwin: 'Australia/Darwin',
+        Brisbane: 'Australia/Brisbane',
+        Adelaide: 'Australia/Adelaide',
+        Hobart: 'Australia/Hobart',
+        Melbourne: 'Australia/Melbourne',
+        Perth: 'Australia/Perth'
+      },
+      Asia: {
+        'Jordan Time': 'Asia/Amman',
+        'Baghdad, East Africa Time': 'Asia/Baghdad',
+        'Dubai Time': 'Asia/Dubai',
+        'Hong Kong': 'Asia/Hong_Kong',
+        Tehran: 'Asia/Tehran',
+        Jerusalem: 'Asia/Jerusalem',
+        Tokyo: 'Asia/Tokyo',
+        Shanghai: 'Asia/Shanghai',
+        Taipei: 'Asia/Taipei',
+        Seoul: 'Asia/Seoul',
+        Singapore: 'Asia/Singapore',
+        Baku: 'Asia/Baku',
+        Dhaka: 'Asia/Dhaka',
+        Gaza: 'Asia/Gaza',
+        Irkutsk: 'Asia/Irkutsk',
+        Omsk: 'Asia/Omsk',
+        Rangoon: 'Asia/Rangoon',
+        Vladivostok: 'Asia/Vladivostok',
+        Yakutsk: 'Asia/Yakutsk',
+        Yerevan: 'Asia/Yerevan',
+        'Pacific/Majuro': 'Asia/Kamchatka'
+      },
+      Europe: {
+        'Central European Time': 'Europe/Berlin',
+        'Eastern European Time': 'Europe/Helsinki',
+        Helsinki: 'Europe/Helsinki',
+        Berlin: 'Europe/Berlin',
+        Paris: 'Europe/Paris',
+        Sofia: 'Europe/Sofia',
+        Dublin: 'Europe/Dublin',
+        London: 'Europe/London',
+        Warsaw: 'Europe/Warsaw',
+        Istanbul: 'Europe/Istanbul',
+        Lisbon: 'Europe/Lisbon',
+        Moscow: 'Europe/Moscow'
+      },
+      Atlantic: {
+        Reykjavik: 'Atlantic/Reykjavik',
+        'Azores Time': 'Atlantic/Azores',
+        'Cape Verde Time': 'Atlantic/Cape_Verde',
+        'Atlantic Time': 'America/Goose_Bay',
+        'Atlantic Standard Time': 'America/Santo_Domingo'
+      },
+      Pacific: {
+        Apia: 'Pacific/Apia',
+        Auckland: 'Pacific/Auckland',
+        Chatham: 'Pacific/Chatham',
+        Easter: 'Pacific/Easter',
+        Fiji: 'Pacific/Fiji',
+        Gambier: 'Pacific/Gambier',
+        Kiritimati: 'Pacific/Kiritimati',
+        Majuro: 'Pacific/Majuro',
+        Marquesas: 'Pacific/Marquesas',
+        Norfolk: 'Pacific/Norfolk',
+        Noumea: 'Pacific/Noumea',
+        Pitcairn: 'Pacific/Pitcairn',
+        Tarawa: 'Pacific/Tarawa',
+        Tongatapu: 'Pacific/Tongatapu',
+        Honolulu: 'Pacific/Honolulu',
+        Kwajalein: 'Pacific/Kwajalein',
+        'Pago Pago': 'Pacific/Pago_Pago'
+      },
+      'US/Canada': {
+        'Pacific Time': 'America/Los_Angeles',
+        'Mountain Time': 'America/Denver',
+        'Central Time': 'America/Chicago',
+        'Eastern Time': 'America/New_York',
+        'Alaska Time': 'America/Anchorage',
+        'Arizona Time': 'America/Phoenix',
+        'Newfoundland Time': 'America/St_Johns',
+        'Hawaii Time': 'Pacific/Honolulu'
+      },
+      America: {
+        'Rio Branco': 'America/Rio_Branco',
+        Noronha: 'America/Noronha',
+        'Sao Paulo': 'America/Sao_Paulo',
+        Manaus: 'America/Manaus',
+        Halifax: 'America/Halifax',
+        Winnipeg: 'America/Winnipeg',
+        Toronto: 'America/Toronto',
+        Edmonton: 'America/Edmonton',
+        Santiago: 'America/Santiago',
+        'St Johns': 'America/St_Johns',
+        Vancouver: 'America/Vancouver',
+        Regina: 'America/Regina',
+        Whitehorse: 'America/Whitehorse',
+        Cancun: 'America/Cancun',
+        'New York': 'America/New_York',
+        Jamaica: 'America/Jamaica',
+        Tijuana: 'America/Tijuana',
+        Mazatlan: 'America/Mazatlan',
+        'Mexico City': 'America/Mexico_City',
+        Phoenix: 'America/Phoenix',
+        Denver: 'America/Denver',
+        Anchorage: 'America/Anchorage',
+        Adak: 'America/Adak',
+        Chicago: 'America/Chicago',
+        Indianapolis: 'America/Indiana/Indianapolis',
+        Knox: 'America/Indiana/Knox',
+        Detroit: 'America/Detroit',
+        'Los Angeles': 'America/Los_Angeles',
+        'Bogota, Jamaica, Lima Time': 'America/Bogota',
+        'Caracas Time': 'America/Caracas',
+        Havana: 'America/Havana',
+        'Santa Isabel': 'America/Santa_Isabel',
+        'Brasilia Time': 'America/Sao_Paulo'
+      },
+      Africa: {
+        Cairo: 'Africa/Cairo',
+        'Central Africa Time': 'Africa/Johannesburg',
+        'West Africa Time': 'Africa/Lagos',
+        Windhoek: 'Africa/Windhoek',
+        Tripoli: 'Africa/Tripoli'
+      },
+      UTC: {
+        'UTC Time': 'UTC'
+      }
     };
 
     function isElement(el) {
@@ -5000,7 +4996,7 @@ var SvelteTimezonePicker = (function () {
     	return child_ctx;
     }
 
-    // (288:0) {#if open}
+    // (290:0) {#if open}
     function create_if_block_5(ctx) {
     	let div;
     	let mounted;
@@ -5010,7 +5006,7 @@ var SvelteTimezonePicker = (function () {
     		c: function create() {
     			div = element("div");
     			attr_dev(div, "class", "overlay svelte-22kpky");
-    			add_location(div, file, 288, 2, 9070);
+    			add_location(div, file, 290, 2, 9095);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -5032,14 +5028,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_5.name,
     		type: "if",
-    		source: "(288:0) {#if open}",
+    		source: "(290:0) {#if open}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (384:4) {#if utcDatetime}
+    // (387:4) {#if utcDatetime}
     function create_if_block_4(ctx) {
     	let small;
     	let t0;
@@ -5054,7 +5050,7 @@ var SvelteTimezonePicker = (function () {
     			t1 = text(t1_value);
     			t2 = text(")");
     			attr_dev(small, "class", "svelte-22kpky");
-    			add_location(small, file, 384, 6, 14825);
+    			add_location(small, file, 387, 6, 14878);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, small, anchor);
@@ -5074,14 +5070,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_4.name,
     		type: "if",
-    		source: "(384:4) {#if utcDatetime}",
+    		source: "(387:4) {#if utcDatetime}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (404:2) {#if open}
+    // (407:2) {#if open}
     function create_if_block(ctx) {
     	let div1;
     	let label;
@@ -5096,8 +5092,8 @@ var SvelteTimezonePicker = (function () {
     	let current;
     	let mounted;
     	let dispose;
-    	let if_block = /*userSearch*/ ctx[10] && /*userSearch*/ ctx[10].length > 0 && create_if_block_3(ctx);
-    	let each_value = Object.keys(groupedZones);
+    	let if_block = /*userSearch*/ ctx[5] && /*userSearch*/ ctx[5].length > 0 && create_if_block_3(ctx);
+    	let each_value = Object.keys(timezones);
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
@@ -5124,7 +5120,7 @@ var SvelteTimezonePicker = (function () {
 
     			attr_dev(label, "id", /*labelId*/ ctx[13]);
     			attr_dev(label, "class", "svelte-22kpky");
-    			add_location(label, file, 405, 6, 15460);
+    			add_location(label, file, 408, 6, 15484);
     			attr_dev(input, "id", /*searchInputId*/ ctx[15]);
     			attr_dev(input, "type", "search");
     			attr_dev(input, "aria-autocomplete", "list");
@@ -5133,18 +5129,18 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(input, "autocomplete", "off");
     			attr_dev(input, "autocorrect", "off");
     			attr_dev(input, "placeholder", "Search...");
-    			input.autofocus = true;
+    			input.autofocus = /*open*/ ctx[1];
     			attr_dev(input, "class", "svelte-22kpky");
-    			add_location(input, file, 411, 8, 15699);
+    			add_location(input, file, 414, 8, 15723);
     			attr_dev(div0, "class", "input-group svelte-22kpky");
-    			add_location(div0, file, 409, 6, 15619);
+    			add_location(div0, file, 412, 6, 15643);
     			attr_dev(ul, "tabindex", "-1");
     			attr_dev(ul, "class", "tz-groups svelte-22kpky");
     			attr_dev(ul, "id", /*listBoxId*/ ctx[14]);
     			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[13]);
-    			add_location(ul, file, 452, 6, 16865);
+    			add_location(ul, file, 455, 6, 16898);
     			attr_dev(div1, "class", "tz-dropdown svelte-22kpky");
-    			add_location(div1, file, 404, 4, 15382);
+    			add_location(div1, file, 407, 4, 15435);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -5154,7 +5150,7 @@ var SvelteTimezonePicker = (function () {
     			append_dev(div1, div0);
     			append_dev(div0, input);
     			/*input_binding*/ ctx[26](input);
-    			set_input_value(input, /*userSearch*/ ctx[10]);
+    			set_input_value(input, /*userSearch*/ ctx[5]);
     			append_dev(div0, t2);
     			if (if_block) if_block.m(div0, null);
     			append_dev(div1, t3);
@@ -5166,23 +5162,22 @@ var SvelteTimezonePicker = (function () {
 
     			/*ul_binding*/ ctx[32](ul);
     			current = true;
-    			input.focus();
 
     			if (!mounted) {
-    				dispose = [
-    					listen_dev(input, "input", /*input_input_handler*/ ctx[27]),
-    					listen_dev(div1, "keydown", /*handleKeydown*/ ctx[19], false, false, false)
-    				];
-
+    				dispose = listen_dev(input, "input", /*input_input_handler*/ ctx[27]);
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*userSearch*/ 1024) {
-    				set_input_value(input, /*userSearch*/ ctx[10]);
+    			if (!current || dirty[0] & /*open*/ 2) {
+    				prop_dev(input, "autofocus", /*open*/ ctx[1]);
     			}
 
-    			if (/*userSearch*/ ctx[10] && /*userSearch*/ ctx[10].length > 0) {
+    			if (dirty[0] & /*userSearch*/ 32) {
+    				set_input_value(input, /*userSearch*/ ctx[5]);
+    			}
+
+    			if (/*userSearch*/ ctx[5] && /*userSearch*/ ctx[5].length > 0) {
     				if (if_block) {
     					if_block.p(ctx, dirty);
     				} else {
@@ -5195,8 +5190,8 @@ var SvelteTimezonePicker = (function () {
     				if_block = null;
     			}
 
-    			if (dirty[0] & /*currentZone, highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 4659980) {
-    				each_value = Object.keys(groupedZones);
+    			if (dirty[0] & /*currentZone, highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 4659292) {
+    				each_value = Object.keys(timezones);
     				validate_each_argument(each_value);
     				let i;
 
@@ -5242,7 +5237,7 @@ var SvelteTimezonePicker = (function () {
     			/*ul_binding*/ ctx[32](null);
     			if (detaching && div1_transition) div1_transition.end();
     			mounted = false;
-    			run_all(dispose);
+    			dispose();
     		}
     	};
 
@@ -5250,14 +5245,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(404:2) {#if open}",
+    		source: "(407:2) {#if open}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (426:8) {#if userSearch && userSearch.length > 0}
+    // (429:8) {#if userSearch && userSearch.length > 0}
     function create_if_block_3(ctx) {
     	let button;
     	let svg;
@@ -5277,20 +5272,20 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(path0, "stroke", "hsl(0, 0%, 18%)");
     			attr_dev(path0, "strokelinecap", "round");
     			attr_dev(path0, "d", "M 3 16.5 L 17 2.5");
-    			add_location(path0, file, 432, 14, 16349);
+    			add_location(path0, file, 435, 14, 16382);
     			attr_dev(path1, "fill", "transparent");
     			attr_dev(path1, "strokewidth", "3");
     			attr_dev(path1, "stroke", "hsl(0, 0%, 18%)");
     			attr_dev(path1, "strokelinecap", "round");
     			attr_dev(path1, "d", "M 3 2.5 L 17 16.346");
-    			add_location(path1, file, 439, 14, 16576);
+    			add_location(path1, file, 442, 14, 16609);
     			attr_dev(svg, "width", "0.88em");
     			attr_dev(svg, "height", "0.88em");
     			attr_dev(svg, "viewBox", "0 0 23 23");
-    			add_location(svg, file, 431, 12, 16278);
+    			add_location(svg, file, 434, 12, 16311);
     			attr_dev(button, "title", "Clear search text");
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 426, 10, 16130);
+    			add_location(button, file, 429, 10, 16163);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -5317,14 +5312,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_3.name,
     		type: "if",
-    		source: "(426:8) {#if userSearch && userSearch.length > 0}",
+    		source: "(429:8) {#if userSearch && userSearch.length > 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (462:12) {#if groupHasVisibleChildren(group, filteredZones)}
+    // (465:12) {#if groupHasVisibleChildren(group, filteredZones)}
     function create_if_block_2(ctx) {
     	let p;
     	let t_value = /*group*/ ctx[42] + "";
@@ -5335,7 +5330,7 @@ var SvelteTimezonePicker = (function () {
     			p = element("p");
     			t = text(t_value);
     			attr_dev(p, "class", "svelte-22kpky");
-    			add_location(p, file, 462, 14, 17163);
+    			add_location(p, file, 465, 14, 17196);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, p, anchor);
@@ -5351,14 +5346,14 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(462:12) {#if groupHasVisibleChildren(group, filteredZones)}",
+    		source: "(465:12) {#if groupHasVisibleChildren(group, filteredZones)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (470:16) {#if filteredZones.includes(name)}
+    // (473:16) {#if filteredZones.includes(name)}
     function create_if_block_1(ctx) {
     	let li;
     	let button;
@@ -5396,15 +5391,15 @@ var SvelteTimezonePicker = (function () {
     			span = element("span");
     			t2 = text(t2_value);
     			t3 = space();
-    			add_location(span, file, 482, 22, 18004);
+    			add_location(span, file, 485, 22, 18037);
     			attr_dev(button, "aria-label", button_aria_label_value = `Select ${/*name*/ ctx[45]}`);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 476, 20, 17719);
+    			add_location(button, file, 479, 20, 17752);
     			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[45])}`);
     			attr_dev(li, "role", "option");
-    			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[11] === /*name*/ ctx[45]);
+    			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[6] === /*name*/ ctx[45]);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 470, 18, 17471);
+    			add_location(li, file, 473, 18, 17504);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5429,7 +5424,7 @@ var SvelteTimezonePicker = (function () {
     			ctx = new_ctx;
     			if (dirty[0] & /*utcDatetime*/ 8 && t2_value !== (t2_value = (/*utcDatetime*/ ctx[3] && format$1(/*getTimeForZone*/ ctx[17](/*utcDatetime*/ ctx[3], /*ungroupedZones*/ ctx[16][/*name*/ ctx[45]]), "h:mm aaaa")) + "")) set_data_dev(t2, t2_value);
 
-    			if (dirty[0] & /*highlightedZone*/ 2048 && li_aria_selected_value !== (li_aria_selected_value = /*highlightedZone*/ ctx[11] === /*name*/ ctx[45])) {
+    			if (dirty[0] & /*highlightedZone*/ 64 && li_aria_selected_value !== (li_aria_selected_value = /*highlightedZone*/ ctx[6] === /*name*/ ctx[45])) {
     				attr_dev(li, "aria-selected", li_aria_selected_value);
     			}
 
@@ -5451,16 +5446,16 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(470:16) {#if filteredZones.includes(name)}",
+    		source: "(473:16) {#if filteredZones.includes(name)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (469:14) {#each Object.keys(groupedZones[group]) as name}
+    // (472:14) {#each Object.keys(groupedZones[group]) as name}
     function create_each_block_1(ctx) {
-    	let show_if = /*filteredZones*/ ctx[9].includes(/*name*/ ctx[45]);
+    	let show_if = /*filteredZones*/ ctx[4].includes(/*name*/ ctx[45]);
     	let if_block_anchor;
     	let if_block = show_if && create_if_block_1(ctx);
 
@@ -5474,7 +5469,7 @@ var SvelteTimezonePicker = (function () {
     			insert_dev(target, if_block_anchor, anchor);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 512) show_if = /*filteredZones*/ ctx[9].includes(/*name*/ ctx[45]);
+    			if (dirty[0] & /*filteredZones*/ 16) show_if = /*filteredZones*/ ctx[4].includes(/*name*/ ctx[45]);
 
     			if (show_if) {
     				if (if_block) {
@@ -5499,23 +5494,23 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(469:14) {#each Object.keys(groupedZones[group]) as name}",
+    		source: "(472:14) {#each Object.keys(groupedZones[group]) as name}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (460:8) {#each Object.keys(groupedZones) as group}
+    // (463:8) {#each Object.keys(groupedZones) as group}
     function create_each_block(ctx) {
     	let li;
-    	let show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[9]);
+    	let show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[4]);
     	let t0;
     	let ul;
     	let ul_aria_activedescendant_value;
     	let t1;
     	let if_block = show_if && create_if_block_2(ctx);
-    	let each_value_1 = Object.keys(groupedZones[/*group*/ ctx[42]]);
+    	let each_value_1 = Object.keys(timezones[/*group*/ ctx[42]]);
     	validate_each_argument(each_value_1);
     	let each_blocks = [];
 
@@ -5538,9 +5533,9 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(ul, "role", "listbox");
     			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
     			attr_dev(ul, "class", "svelte-22kpky");
-    			add_location(ul, file, 464, 12, 17208);
+    			add_location(ul, file, 467, 12, 17241);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 460, 10, 17080);
+    			add_location(li, file, 463, 10, 17113);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5555,7 +5550,7 @@ var SvelteTimezonePicker = (function () {
     			append_dev(li, t1);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 512) show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[9]);
+    			if (dirty[0] & /*filteredZones*/ 16) show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[4]);
 
     			if (show_if) {
     				if (if_block) {
@@ -5570,8 +5565,8 @@ var SvelteTimezonePicker = (function () {
     				if_block = null;
     			}
 
-    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones*/ 4397832) {
-    				each_value_1 = Object.keys(groupedZones[/*group*/ ctx[42]]);
+    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones*/ 4397144) {
+    				each_value_1 = Object.keys(timezones[/*group*/ ctx[42]]);
     				validate_each_argument(each_value_1);
     				let i;
 
@@ -5609,7 +5604,7 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(460:8) {#each Object.keys(groupedZones) as group}",
+    		source: "(463:8) {#each Object.keys(groupedZones) as group}",
     		ctx
     	});
 
@@ -5658,26 +5653,26 @@ var SvelteTimezonePicker = (function () {
     			t5 = space();
     			if (if_block2) if_block2.c();
     			attr_dev(path0, "d", "M484.681\n        213.47c-4.498-40.879-19.541-78.226-43.869-111.5-39.194-53.578-91.611-86.336-157.067-97.74-13.051-2.271-26.398-2.862-39.608-4.23h-2.622c-12.342\n        1.351-24.737 2.246-36.993 4.129C78.665 23.442-12.331 142.612 2.056\n        269.395 8.921 329.91 34.27 381.516 79.271 422.673c53.504 48.941 117.062\n        69.925 189.118 63.079 55.301-5.271 103.557-27.573 143.33-66.489\n        57.76-56.561 81.781-125.699 72.962-205.793zM433.4\n        338.072c-6.153-10.729-13.92-25.688-17.39-38.455-5.042-18.537-17.147-.627-18.158\n        11.479s-9.078 21.184-25.221\n        3.025c-16.143-18.157-19.169-14.126-24.211-14.126s-14.121 12.104-12.105\n        68.601c1.437 40.335 17.349 46.736 27.746 49.662-19.305 13.264-41.488\n        23.714-66.385 30.038-95.157\n        24.151-192.289-19.706-237.671-106.837-42.28-81.185-21.681-173.053\n        21.299-223.616 1.156 9.094 2.288 17.263 3.23 25.464 2.562 22.39.629\n        44.487-3.939 66.496-.976 4.69-.636 10.033.629 14.646.688 2.519 4.486\n        5.494 7.11 5.743 2.066.201 5.671-3.074 6.508-5.533 1.513-4.397\n        1.575-9.327 2.04-14.053.334-3.334.34-6.712.57-11.942 3.413 2.766 5.902\n        4.444 7.971 6.525 5.272 5.308 10.604 10.592 15.415 16.299 2.125 2.533\n        4.315 6.079 4.256 9.129-.133 6.525 2.73 10.962 6.227 16.086 3.886 5.698\n        5.636 12.862 8.136 19.459 1.046 2.766 1.265 5.887 2.512 8.547 2.663\n        5.697 6.688 9.599 13.607 10.024 7.279.461 10.004 3.286 11.05\n        10.733-1.862.213-3.715.462-5.574.633-8.878.846-13.278 4.924-12.927\n        13.879.694 17.785 7.11 33.324 20.312 45.678 3.638 3.411 7.503 6.579\n        11.038 10.072 8.074 7.974 10.891 17.342 7.01 28.354-1.859 5.249-4.407\n        10.403-5.231 15.83-.839 5.514-.845 11.508.432 16.904 1.324 5.615.756\n        17.897 6.555 16.881 10.258-1.803 16.154.219\n        16.952-11.266.151-2.188-.018-2.459-.6-4.48-3.05-10.781 10.799-41.387\n        19.109-46.967 7.099-4.776 14.218-9.635 20.652-15.244 9.276-8.062\n        13.429-18.477 9.531-30.605-3.668-11.414.623-19.795 8.603-27.143\n        8.14-7.489 13.477-16.119\n        12.921-27.645-.556-11.526-8.098-19.849-17.927-18.666-4.806.567-9.413\n        2.872-14.098 4.45-6.868 2.323-13.571 5.574-20.62 6.839-9.88\n        1.75-15.968-4.705-20.375-12.543-3.546-6.301-4.714-6.785-10.87-2.86-5.193\n        3.322-10.376 6.667-15.755 9.67-5.588 3.121-8.633\n        1.963-12.941-2.707-2.548-2.755-6.076-4.693-9.351-6.679-2.355-1.442-5.539-1.839-7.427-3.647-2.53-2.447-6.059-6.076-5.701-8.729.417-3.115\n        4.025-7.014 7.172-8.29 5.423-2.199 11.585-2.554 17.401-3.818 3.097-.674\n        6.239-1.375 9.167-2.53 4.008-1.599\n        3.839-4.232.771-6.703-1.513-1.215-3.384-2.069-5.208-2.802-8.866-3.57-17.782-6.984-26.643-10.568-2.202-.884-4.371-1.971-6.348-3.263-5.571-3.661-6.242-7.692-1.188-12.152\n        19.955-17.602 43.264-22.756 63.916.63 6.398 7.243 10.737 16.275 16.778\n        23.876 4.752 5.994 10.223 11.621 16.263 16.246 2.489 1.9 8.086 2.223\n        10.87.697 4.146-2.27 4.291-7.444\n        2.205-11.759-1.803-3.748-3.922-7.442-6.469-10.722-11.733-15.117-10.926-44.576\n        12.055-56.867 7.687-4.117 15.441-8.453 19.112-19.497-4.403 1.191-7.596\n        1.959-10.723 2.917-17.451 5.405-5.302-7.613 2.726-9.883\n        4.876-1.386-4.362-5.122-4.362-5.122.219-.381 6.135-2.069 12.714-4.874\n        4.527-1.924 9.155-4.09 12.915-7.152 2.436-1.998 3.375-5.816\n        4.977-8.819-.407-.473-.804-.934-1.217-1.407-4.611.621-9.216 1.303-13.838\n        1.824-7.832.877-9.67-.659-10.396-8.559-.503-5.394-6-8.334-11.133-5.568-3.473\n        1.883-6.476 4.613-9.818 6.773-7.716 4.998-13.485\n        3-16.512-5.618-1.803-5.13-4.314-6.1-9.034-3.227-2.374 1.442-4.354\n        3.549-6.768 4.897-3.958 2.211-7.982 4.43-12.232 5.932-4.14 1.466-9.126\n        2.53-11.943-2.01-3.026-4.882-.381-9.635 3.435-12.696 4.743-3.807\n        10.211-6.762 15.548-9.753 7.602-4.279 15.652-7.838 22.993-12.504\n        5.388-3.438 7.743-9.041\n        6-15.652-1.472-5.58-5.205-7.468-10.374-4.909-4.268 2.119-7.997\n        5.435-12.386 7.143-3.207 1.229-7.203\n        1.242-10.646.636-1.271-.225-2.622-3.747-2.657-5.792-.024-1.179\n        2.367-3.227 3.892-3.476 10.604-1.652 21.255-3.05 31.921-4.265 1.41-.154\n        3.529.718 4.413 1.844 7.045 8.893 16.875 13.208 27.216 16.287 8.688 2.58\n        9.947 1.351 11.142-7.764 11.159-2.627 22.502-7.803 33.732-.721 6.23\n        3.921 11.91 8.917 17.183 14.091 1.307 1.288.509 5.272-.118 7.838-.827\n        3.448-2.736 6.635-3.617 10.083-1.702 6.682 2.618 11.904 9.522 11.795\n        2.181-.047 4.356-.494 6.549-.603 6.378-.298 8.642 2.143 8.057 8.583-.828\n        9.126.691 10.223 9.9 8.665 2.647-.446 5.704.756 8.405 1.703 1.607.567\n        2.854 2.107 4.285 3.188 8.564 6.49 15.113 4.058\n        17.62-6.561.271-1.156.236-2.391.473-3.559.993-4.764 3.683-5.99\n        6.897-2.604 6.81 7.211 13.199 14.824 20.108 22.686-7.424 6.809-7.672\n        15.084-6.028 23.193 1.826 9.021-.55 16.858-4.108 24.805-3.41 7.613-7.157\n        15.179-9.434 23.144-3.404 11.955.461 17.416 12.602 20.062 11.585 2.529\n        13.482 4.858 13.92 16.184.585 15.448 8.518 26.11 22.071 32.914 3.009\n        1.501 6.206 2.642 9.279 3.919-1.519 23.814-8.317 48.598-19.949 72.111z");
-    			add_location(path0, file, 308, 6, 9557);
+    			add_location(path0, file, 311, 6, 9610);
     			attr_dev(svg0, "xmlns", "http://www.w3.org/2000/svg");
     			attr_dev(svg0, "viewBox", "0 0 487.015 487.015");
     			attr_dev(svg0, "width", "0.88em");
     			attr_dev(svg0, "height", "0.88em");
-    			add_location(svg0, file, 302, 4, 9420);
+    			add_location(svg0, file, 305, 4, 9473);
     			attr_dev(span, "class", "svelte-22kpky");
-    			add_location(span, file, 382, 4, 14770);
+    			add_location(span, file, 385, 4, 14823);
     			attr_dev(path1, "d", "M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0\n        113.536-3.536l11.095 11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z");
 
     			attr_dev(path1, "transform", path1_transform_value = /*open*/ ctx[1]
     			? "rotate(180, 15.3635, 15.3635)"
     			: "rotate(0)");
 
-    			add_location(path1, file, 396, 6, 15110);
+    			add_location(path1, file, 399, 6, 15163);
     			attr_dev(svg1, "xmlns", "http://www.w3.org/2000/svg");
     			attr_dev(svg1, "viewBox", "0 0 30.727 30.727");
     			attr_dev(svg1, "width", "0.88em");
     			attr_dev(svg1, "height", "0.88em");
-    			add_location(svg1, file, 390, 4, 14975);
+    			add_location(svg1, file, 393, 4, 15028);
     			attr_dev(button, "type", "button");
     			attr_dev(button, "role", "button");
     			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`);
@@ -5685,9 +5680,9 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(button, "data-toggle", "true");
     			attr_dev(button, "aria-expanded", /*open*/ ctx[1]);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 292, 2, 9153);
+    			add_location(button, file, 294, 2, 9178);
     			attr_dev(div, "class", "tz-container svelte-22kpky");
-    			add_location(div, file, 291, 0, 9124);
+    			add_location(div, file, 293, 0, 9149);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -5713,7 +5708,12 @@ var SvelteTimezonePicker = (function () {
     			current = true;
 
     			if (!mounted) {
-    				dispose = listen_dev(button, "click", /*toggleOpen*/ ctx[23], false, false, false);
+    				dispose = [
+    					listen_dev(window, "keyup", /*keyUp*/ ctx[19], false, false, false),
+    					listen_dev(button, "click", /*toggleOpen*/ ctx[23], false, false, false),
+    					listen_dev(button, "keyup", /*toggleOpen*/ ctx[23], false, false, false)
+    				];
+
     				mounted = true;
     			}
     		},
@@ -5800,7 +5800,7 @@ var SvelteTimezonePicker = (function () {
     			/*button_binding*/ ctx[25](null);
     			if (if_block2) if_block2.d();
     			mounted = false;
-    			dispose();
+    			run_all(dispose);
     		}
     	};
 
@@ -5829,14 +5829,6 @@ var SvelteTimezonePicker = (function () {
 
     	// We will always convert the datetime to UTC
     	let utcDatetime;
-
-    	// DOM nodes refs
-    	let toggleButtonRef;
-
-    	let searchInputRef;
-    	let clearButtonRef;
-    	let listBoxRef;
-    	let listBoxOptionRefs = zoneLabels.map(zone => ({ [zone]: null }));
 
     	// Emit the event back to the consumer
     	const handleTimezoneUpdate = (event, zoneId) => {
@@ -5867,7 +5859,7 @@ var SvelteTimezonePicker = (function () {
 
     	// We take the grouped timezones and flatten them so that they can be easily searched
     	// e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
-    	const ungroupedZones = Object.values(groupedZones).reduce((values, zone) => ({ ...values, ...zone }), {});
+    	const ungroupedZones = Object.values(timezones).reduce((values, zone) => ({ ...values, ...zone }), {});
 
     	// We take the ungroupedZones and create a list of just the user-visible lables
     	// e.g. {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } => ['London', 'Berlin']
@@ -5886,13 +5878,21 @@ var SvelteTimezonePicker = (function () {
     	// What is the currently selected zone in the dropdown?
     	let highlightedZone;
 
+    	// DOM nodes refs
+    	let toggleButtonRef;
+
+    	let searchInputRef;
+    	let clearButtonRef;
+    	let listBoxRef;
+    	let listBoxOptionRefs = zoneLabels.map(zone => ({ [zone]: null }));
+
     	// ***** Methods *****
     	// Given a Date and a timezone, give the correct Date and Time for that timezone
     	const getTimeForZone = (d, t) => utcToZonedTime(d, t);
 
     	// Figure out if a grouped zone has any currently visible zones
     	// We use this when the user searches in order to show/hide the group name in the list
-    	const groupHasVisibleChildren = (group, zones) => Object.keys(groupedZones[group]).some(zone => zones.includes(zone));
+    	const groupHasVisibleChildren = (group, zones) => Object.keys(timezones[group]).some(zone => zones.includes(zone));
 
     	// Scroll the list to a specific element in it if that element is not already visible on screen
     	const scrollList = zone => {
@@ -5921,14 +5921,14 @@ var SvelteTimezonePicker = (function () {
     		}
 
     		// We update the highlightedZone to be the one the user is currently on
-    		$$invalidate(11, highlightedZone = filteredZones[index]);
+    		$$invalidate(6, highlightedZone = filteredZones[index]);
 
     		// We make sure the highlightedZone is visible on screen, scrolling it into view if not
     		scrollList(highlightedZone);
     	};
 
     	// We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
-    	const handleKeydown = ev => {
+    	const keyUp = ev => {
     		// If the clearButton is focused, don't do anything else
     		if (document.activeElement === clearButtonRef) {
     			return;
@@ -5963,20 +5963,20 @@ var SvelteTimezonePicker = (function () {
     	// Reset the dropdown and all internal state to the initial values
     	const reset = () => {
     		$$invalidate(1, open = initialState.open);
-    		$$invalidate(10, userSearch = initialState.userSearch);
+    		$$invalidate(5, userSearch = initialState.userSearch);
     	};
 
     	// When the user presses the clear button when searching,
     	// we want to clear the text and refocus on the input
     	const clearSearch = () => {
-    		$$invalidate(10, userSearch = initialState.userSearch);
+    		$$invalidate(5, userSearch = initialState.userSearch);
 
     		// Refocus to the search input
     		searchInputRef.focus();
     	};
 
     	const setHighlightedZone = name => {
-    		$$invalidate(11, highlightedZone = name);
+    		$$invalidate(6, highlightedZone = name);
     	};
 
     	const toggleOpen = () => {
@@ -6075,26 +6075,26 @@ var SvelteTimezonePicker = (function () {
     	function button_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			toggleButtonRef = $$value;
-    			$$invalidate(4, toggleButtonRef);
+    			$$invalidate(7, toggleButtonRef);
     		});
     	}
 
     	function input_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			searchInputRef = $$value;
-    			$$invalidate(5, searchInputRef);
+    			$$invalidate(8, searchInputRef);
     		});
     	}
 
     	function input_input_handler() {
     		userSearch = this.value;
-    		$$invalidate(10, userSearch);
+    		$$invalidate(5, userSearch);
     	}
 
     	function button_binding_1($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			clearButtonRef = $$value;
-    			$$invalidate(6, clearButtonRef);
+    			$$invalidate(9, clearButtonRef);
     		});
     	}
 
@@ -6106,14 +6106,14 @@ var SvelteTimezonePicker = (function () {
 
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			listBoxOptionRefs[name] = $$value;
-    			$$invalidate(8, listBoxOptionRefs);
+    			$$invalidate(11, listBoxOptionRefs);
     		});
     	}
 
     	function ul_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			listBoxRef = $$value;
-    			$$invalidate(7, listBoxRef);
+    			$$invalidate(10, listBoxRef);
     		});
     	}
 
@@ -6134,7 +6134,7 @@ var SvelteTimezonePicker = (function () {
     		format: format$1,
     		isValid,
     		parseISO,
-    		groupedZones,
+    		groupedZones: timezones,
     		scrollIntoView,
     		uid,
     		getKeyByValue,
@@ -6146,11 +6146,6 @@ var SvelteTimezonePicker = (function () {
     		dispatch,
     		currentZone,
     		utcDatetime,
-    		toggleButtonRef,
-    		searchInputRef,
-    		clearButtonRef,
-    		listBoxRef,
-    		listBoxOptionRefs,
     		handleTimezoneUpdate,
     		initialState,
     		labelId,
@@ -6163,11 +6158,16 @@ var SvelteTimezonePicker = (function () {
     		filteredZones,
     		userSearch,
     		highlightedZone,
+    		toggleButtonRef,
+    		searchInputRef,
+    		clearButtonRef,
+    		listBoxRef,
+    		listBoxOptionRefs,
     		getTimeForZone,
     		groupHasVisibleChildren,
     		scrollList,
     		moveSelection,
-    		handleKeydown,
+    		keyUp,
     		reset,
     		clearSearch,
     		setHighlightedZone,
@@ -6182,14 +6182,14 @@ var SvelteTimezonePicker = (function () {
     		if ("open" in $$props) $$invalidate(1, open = $$props.open);
     		if ("currentZone" in $$props) $$invalidate(2, currentZone = $$props.currentZone);
     		if ("utcDatetime" in $$props) $$invalidate(3, utcDatetime = $$props.utcDatetime);
-    		if ("toggleButtonRef" in $$props) $$invalidate(4, toggleButtonRef = $$props.toggleButtonRef);
-    		if ("searchInputRef" in $$props) $$invalidate(5, searchInputRef = $$props.searchInputRef);
-    		if ("clearButtonRef" in $$props) $$invalidate(6, clearButtonRef = $$props.clearButtonRef);
-    		if ("listBoxRef" in $$props) $$invalidate(7, listBoxRef = $$props.listBoxRef);
-    		if ("listBoxOptionRefs" in $$props) $$invalidate(8, listBoxOptionRefs = $$props.listBoxOptionRefs);
-    		if ("filteredZones" in $$props) $$invalidate(9, filteredZones = $$props.filteredZones);
-    		if ("userSearch" in $$props) $$invalidate(10, userSearch = $$props.userSearch);
-    		if ("highlightedZone" in $$props) $$invalidate(11, highlightedZone = $$props.highlightedZone);
+    		if ("filteredZones" in $$props) $$invalidate(4, filteredZones = $$props.filteredZones);
+    		if ("userSearch" in $$props) $$invalidate(5, userSearch = $$props.userSearch);
+    		if ("highlightedZone" in $$props) $$invalidate(6, highlightedZone = $$props.highlightedZone);
+    		if ("toggleButtonRef" in $$props) $$invalidate(7, toggleButtonRef = $$props.toggleButtonRef);
+    		if ("searchInputRef" in $$props) $$invalidate(8, searchInputRef = $$props.searchInputRef);
+    		if ("clearButtonRef" in $$props) $$invalidate(9, clearButtonRef = $$props.clearButtonRef);
+    		if ("listBoxRef" in $$props) $$invalidate(10, listBoxRef = $$props.listBoxRef);
+    		if ("listBoxOptionRefs" in $$props) $$invalidate(11, listBoxOptionRefs = $$props.listBoxOptionRefs);
     		if ("animationFrameId" in $$props) animationFrameId = $$props.animationFrameId;
     	};
 
@@ -6198,10 +6198,10 @@ var SvelteTimezonePicker = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty[0] & /*userSearch*/ 1024) {
+    		if ($$self.$$.dirty[0] & /*userSearch*/ 32) {
     			// ***** Reactive *****
     			// As the user types, we filter the available zones to show only those that should be visible
-    			 $$invalidate(9, filteredZones = userSearch && userSearch.length > 1
+    			 $$invalidate(4, filteredZones = userSearch && userSearch.length > 0
     			? zoneLabels.filter(zoneLabel => zoneLabel.toLowerCase().includes(userSearch.toLowerCase()))
     			: zoneLabels.slice());
     		}
@@ -6212,14 +6212,14 @@ var SvelteTimezonePicker = (function () {
     		open,
     		currentZone,
     		utcDatetime,
+    		filteredZones,
+    		userSearch,
+    		highlightedZone,
     		toggleButtonRef,
     		searchInputRef,
     		clearButtonRef,
     		listBoxRef,
     		listBoxOptionRefs,
-    		filteredZones,
-    		userSearch,
-    		highlightedZone,
     		handleTimezoneUpdate,
     		labelId,
     		listBoxId,
@@ -6227,7 +6227,7 @@ var SvelteTimezonePicker = (function () {
     		ungroupedZones,
     		getTimeForZone,
     		groupHasVisibleChildren,
-    		handleKeydown,
+    		keyUp,
     		reset,
     		clearSearch,
     		setHighlightedZone,

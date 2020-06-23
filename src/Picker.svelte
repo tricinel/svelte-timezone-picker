@@ -38,13 +38,6 @@
   // We will always convert the datetime to UTC
   let utcDatetime;
 
-  // DOM nodes refs
-  let toggleButtonRef;
-  let searchInputRef;
-  let clearButtonRef;
-  let listBoxRef;
-  let listBoxOptionRefs = zoneLabels.map((zone) => ({ [zone]: null }));
-
   // Emit the event back to the consumer
   const handleTimezoneUpdate = (event, zoneId) => {
     currentZone = zoneId;
@@ -96,6 +89,13 @@
   // What is the currently selected zone in the dropdown?
   let highlightedZone;
 
+  // DOM nodes refs
+  let toggleButtonRef;
+  let searchInputRef;
+  let clearButtonRef;
+  let listBoxRef;
+  let listBoxOptionRefs = zoneLabels.map((zone) => ({ [zone]: null }));
+
   // ***** Methods *****
 
   // Given a Date and a timezone, give the correct Date and Time for that timezone
@@ -141,7 +141,7 @@
   };
 
   // We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
-  const handleKeydown = (ev) => {
+  const keyUp = (ev) => {
     // If the clearButton is focused, don't do anything else
     if (document.activeElement === clearButtonRef) {
       return;
@@ -198,7 +198,7 @@
 
   // As the user types, we filter the available zones to show only those that should be visible
   $: filteredZones =
-    userSearch && userSearch.length > 1
+    userSearch && userSearch.length > 0
       ? zoneLabels.filter((zoneLabel) =>
           zoneLabel.toLowerCase().includes(userSearch.toLowerCase())
         )
@@ -285,6 +285,8 @@
   });
 </script>
 
+<svelte:window on:keyup="{keyUp}" />
+
 {#if open}
   <div class="overlay" on:click="{reset}"></div>
 {/if}
@@ -299,6 +301,7 @@
     data-toggle="true"
     aria-expanded="{open}"
     on:click="{toggleOpen}"
+    on:keyup="{toggleOpen}"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -402,7 +405,7 @@
     </svg>
   </button>
   {#if open}
-    <div class="tz-dropdown" transition:slide on:keydown="{handleKeydown}">
+    <div class="tz-dropdown" transition:slide>
       <label id="{labelId}">
         Select a timezone from the list. Start typing to filter or use the arrow
         keys to navigate the list
@@ -420,7 +423,7 @@
           autocorrect="off"
           placeholder="Search..."
           bind:value="{userSearch}"
-          autofocus
+          autofocus="{open}"
         />
 
         {#if userSearch && userSearch.length > 0}
