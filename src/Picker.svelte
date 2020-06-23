@@ -423,7 +423,7 @@
           autocorrect="off"
           placeholder="Search..."
           bind:value="{userSearch}"
-          autofocus="{open}"
+          autofocus
         />
 
         {#if userSearch && userSearch.length > 0}
