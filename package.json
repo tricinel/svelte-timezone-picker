@@ -36,18 +36,27 @@
     "build": "npm-run-all --parallel build:**",
     "dev": "rollup -c ./rollup.config.development.js -w",
     "start": "sirv demo",
-    "lint": "eslint src/**/*.{svelte,js}"
+    "lint": "eslint src/**/*.{svelte,js}",
+    "test": "jest src",
+    "test:watch": "jest src --watch"
   },
   "devDependencies": {
+    "@babel/core": "^7.10.3",
+    "@babel/preset-env": "^7.10.3",
     "@rollup/plugin-commonjs": "^12.0.0",
-    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.0.0",
+    "@testing-library/jest-dom": "^5.10.1",
+    "@testing-library/svelte": "^3.0.0",
+    "@testing-library/user-event": "^12.0.7",
+    "babel-jest": "^26.0.1",
     "eslint": "^7.2.0",
     "eslint-config-frontwerk": "^1.0.2",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.21.1",
+    "eslint-plugin-jest": "^23.17.0",
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-svelte3": "^2.7.3",
+    "jest": "^26.0.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "prettier-plugin-svelte": "^1.1.0",
@@ -55,8 +64,9 @@
     "rollup-plugin-livereload": "^1.0.0",
     "rollup-plugin-svelte": "^5.0.3",
     "rollup-plugin-terser": "^5.1.2",
+    "sirv-cli": "^1.0.0",
     "svelte": "^3.0.0",
-    "sirv-cli": "^1.0.0"
+    "svelte-jester": "^1.0.6"
   },
   "dependencies": {
     "compute-scroll-into-view": "^1.0.14",

@@ -1,9 +1,10 @@
 module.exports = {
   env: {
-    browser: true
+    browser: true,
+    'jest/globals': true
   },
   extends: ['frontwerk', 'plugin:prettier/recommended'],
-  plugins: ['svelte3', 'prettier'],
+  plugins: ['jest', 'svelte3', 'prettier'],
   overrides: [
     {
       files: ['src/**/*.svelte'],
