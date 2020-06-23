@@ -1,0 +1,4 @@
+.npmignore
+__tests__/
+__mocks__/
+testUtils.js
