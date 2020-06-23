@@ -2,7 +2,6 @@ import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
-import json from '@rollup/plugin-json';
 import pkg from './package.json';
 
 const config = {
@@ -16,7 +15,6 @@ const config = {
       .replace(/-\w/g, (m) => m[1].toUpperCase())
   },
   plugins: [
-    json(),
     svelte({
       dev: false,
       customElement: true,

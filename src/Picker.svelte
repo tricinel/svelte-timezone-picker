@@ -8,7 +8,7 @@
   import { slide } from 'svelte/transition';
   import { utcToZonedTime, zonedTimeToUtc, format } from 'date-fns-tz';
   import { isValid, parseISO } from 'date-fns';
-  import groupedZones from './timezones.json';
+  import groupedZones from './timezones';
   import {
     scrollIntoView,
     uid,
