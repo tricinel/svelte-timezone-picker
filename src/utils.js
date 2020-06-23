@@ -30,14 +30,14 @@ const scrollIntoView = (node, rootNode) => {
 
   const actions = computeScrollIntoView(node, {
     boundary: rootNode,
-    block: 'nearest',
-    scrollMode: 'if-needed'
+    block: 'center',
+    inline: 'center',
+    scrollMode: 'always'
   });
 
   // eslint-disable-next-line no-shadow
-  actions.forEach(({ el, top, left }) => {
+  actions.forEach(({ el, top }) => {
     el.scrollTop = top; // eslint-disable-line no-param-reassign
-    el.scrollLeft = left; // eslint-disable-line no-param-reassign
   });
 };
 

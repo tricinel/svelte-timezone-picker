@@ -38,8 +38,12 @@
   // We will always convert the datetime to UTC
   let utcDatetime;
 
-  // We will get a ref to the toggleButton so that we can manage focus
+  // DOM nodes refs
   let toggleButtonRef;
+  let searchInputRef;
+  let clearButtonRef;
+  let listBoxRef;
+  let listBoxOptionRefs = zoneLabels.map((zone) => ({ [zone]: null }));
 
   // Emit the event back to the consumer
   const handleTimezoneUpdate = (event, zoneId) => {
@@ -104,11 +108,10 @@
 
   // Scroll the list to a specific element in it if that element is not already visible on screen
   const scrollList = (zone) => {
-    const listElement = document.getElementById(listBoxId);
-    const zoneElement = document.getElementById(`tz-${slugify(zone)}`);
-    if (listElement && zoneElement) {
-      zoneElement.querySelector('button').focus();
-      scrollIntoView(zoneElement, listElement);
+    const zoneElementRef = listBoxOptionRefs[zone];
+    if (listBoxRef && zoneElementRef) {
+      scrollIntoView(zoneElementRef, listBoxRef);
+      zoneElementRef.querySelector('button').focus();
     }
   };
 
@@ -131,7 +134,6 @@
       index = (zoneIndex + 1) % len;
     }
 
-    event.preventDefault();
     // We update the highlightedZone to be the one the user is currently on
     highlightedZone = filteredZones[index];
     // We make sure the highlightedZone is visible on screen, scrolling it into view if not
@@ -141,7 +143,7 @@
   // We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
   const handleKeydown = (ev) => {
     // If the clearButton is focused, don't do anything else
-    if (document.activeElement === document.getElementById(clearButtonId)) {
+    if (document.activeElement === clearButtonRef) {
       return;
     }
 
@@ -166,7 +168,7 @@
 
     // If the user start to type letters or numbers, we focus on the Search field
     if (keyCodes.Characters.includes(ev.keyCode)) {
-      document.getElementById(searchInputId).focus();
+      searchInputRef.focus();
     }
   };
 
@@ -181,7 +183,7 @@
   const clearSearch = () => {
     userSearch = initialState.userSearch;
     // Refocus to the search input
-    document.getElementById(searchInputId).focus();
+    searchInputRef.focus();
   };
 
   const setHighlightedZone = (name) => {
@@ -269,7 +271,7 @@
   afterUpdate(() => {
     // We need to wait for the DOM to be in sync with our open state
     // and then scroll the list,
-    // because only at this point do we have access to document.getElementById()
+    // because only at this point do we have access to the node refs
     if (open && highlightedZone) {
       scrollList(highlightedZone);
     }
@@ -409,6 +411,7 @@
         <!-- svelte-ignore a11y-autofocus -->
         <input
           id="{searchInputId}"
+          bind:this="{searchInputRef}"
           type="search"
           aria-autocomplete="list"
           aria-controls="{listBoxId}"
@@ -421,7 +424,11 @@
         />
 
         {#if userSearch && userSearch.length > 0}
-          <button title="Clear search text" on:click="{clearSearch}">
+          <button
+            bind:this="{clearButtonRef}"
+            title="Clear search text"
+            on:click="{clearSearch}"
+          >
             <svg width="0.88em" height="0.88em" viewBox="0 0 23 23">
               <path
                 fill="transparent"
@@ -447,6 +454,7 @@
         tabindex="-1"
         class="tz-groups"
         id="{listBoxId}"
+        bind:this="{listBoxRef}"
         aria-labelledby="{labelId}"
       >
         {#each Object.keys(groupedZones) as group}
@@ -462,6 +470,7 @@
                 {#if filteredZones.includes(name)}
                   <li
                     id="{`tz-${slugify(name)}`}"
+                    bind:this="{listBoxOptionRefs[name]}"
                     role="option"
                     aria-selected="{highlightedZone === name}"
                   >
