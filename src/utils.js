@@ -31,8 +31,7 @@ const scrollIntoView = (node, rootNode) => {
   const actions = computeScrollIntoView(node, {
     boundary: rootNode,
     block: 'center',
-    inline: 'center',
-    scrollMode: 'always'
+    scrollMode: 'if-needed'
   });
 
   // eslint-disable-next-line no-shadow

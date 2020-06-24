@@ -4908,8 +4908,7 @@ var SvelteTimezonePicker = (function () {
       const actions = computeScrollIntoView(node, {
         boundary: rootNode,
         block: 'center',
-        inline: 'center',
-        scrollMode: 'always'
+        scrollMode: 'if-needed'
       });
 
       // eslint-disable-next-line no-shadow
@@ -5084,6 +5083,7 @@ var SvelteTimezonePicker = (function () {
     	let t2;
     	let t3;
     	let ul;
+    	let ul_aria_activedescendant_value;
     	let div1_transition;
     	let current;
     	let mounted;
@@ -5133,7 +5133,10 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(ul, "tabindex", "-1");
     			attr_dev(ul, "class", "tz-groups svelte-22kpky");
     			attr_dev(ul, "id", /*listBoxId*/ ctx[14]);
+    			attr_dev(ul, "role", "listbox");
     			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[13]);
+    			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
+    			attr_dev(ul, "aria-expanded", /*open*/ ctx[1]);
     			add_location(ul, file, 455, 6, 16889);
     			attr_dev(div1, "class", "tz-dropdown svelte-22kpky");
     			add_location(div1, file, 407, 4, 15435);
@@ -5183,7 +5186,7 @@ var SvelteTimezonePicker = (function () {
     				if_block = null;
     			}
 
-    			if (dirty[0] & /*currentZone, highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 4659292) {
+    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 4659288) {
     				each_value = Object.keys(timezones);
     				validate_each_argument(each_value);
     				let i;
@@ -5205,6 +5208,14 @@ var SvelteTimezonePicker = (function () {
     				}
 
     				each_blocks.length = each_value.length;
+    			}
+
+    			if (!current || dirty[0] & /*currentZone*/ 4 && ul_aria_activedescendant_value !== (ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`)) {
+    				attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value);
+    			}
+
+    			if (!current || dirty[0] & /*open*/ 2) {
+    				attr_dev(ul, "aria-expanded", /*open*/ ctx[1]);
     			}
     		},
     		i: function intro(local) {
@@ -5312,42 +5323,99 @@ var SvelteTimezonePicker = (function () {
     	return block;
     }
 
-    // (465:12) {#if groupHasVisibleChildren(group, filteredZones)}
-    function create_if_block_2(ctx) {
+    // (467:10) {#if groupHasVisibleChildren(group, filteredZones)}
+    function create_if_block_1(ctx) {
+    	let li;
     	let p;
-    	let t_value = /*group*/ ctx[42] + "";
-    	let t;
+    	let t0_value = /*group*/ ctx[42] + "";
+    	let t0;
+    	let t1;
+    	let each_1_anchor;
+    	let each_value_1 = Object.keys(timezones[/*group*/ ctx[42]]);
+    	validate_each_argument(each_value_1);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value_1.length; i += 1) {
+    		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+    	}
 
     	const block = {
     		c: function create() {
+    			li = element("li");
     			p = element("p");
-    			t = text(t_value);
+    			t0 = text(t0_value);
+    			t1 = space();
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			each_1_anchor = empty();
     			attr_dev(p, "class", "svelte-22kpky");
-    			add_location(p, file, 465, 14, 17187);
+    			add_location(p, file, 468, 14, 17352);
+    			attr_dev(li, "role", "option");
+    			attr_dev(li, "aria-hidden", "true");
+    			attr_dev(li, "class", "svelte-22kpky");
+    			add_location(li, file, 467, 12, 17300);
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, p, anchor);
-    			append_dev(p, t);
+    			insert_dev(target, li, anchor);
+    			append_dev(li, p);
+    			append_dev(p, t0);
+    			insert_dev(target, t1, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(target, anchor);
+    			}
+
+    			insert_dev(target, each_1_anchor, anchor);
     		},
-    		p: noop,
+    		p: function update(ctx, dirty) {
+    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones*/ 4397144) {
+    				each_value_1 = Object.keys(timezones[/*group*/ ctx[42]]);
+    				validate_each_argument(each_value_1);
+    				let i;
+
+    				for (i = 0; i < each_value_1.length; i += 1) {
+    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block_1(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value_1.length;
+    			}
+    		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(p);
+    			if (detaching) detach_dev(li);
+    			if (detaching) detach_dev(t1);
+    			destroy_each(each_blocks, detaching);
+    			if (detaching) detach_dev(each_1_anchor);
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_2.name,
+    		id: create_if_block_1.name,
     		type: "if",
-    		source: "(465:12) {#if groupHasVisibleChildren(group, filteredZones)}",
+    		source: "(467:10) {#if groupHasVisibleChildren(group, filteredZones)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (473:16) {#if filteredZones.includes(name)}
-    function create_if_block_1(ctx) {
+    // (472:14) {#if filteredZones.includes(name)}
+    function create_if_block_2(ctx) {
     	let li;
     	let button;
     	let t0_value = /*name*/ ctx[45] + "";
@@ -5384,15 +5452,15 @@ var SvelteTimezonePicker = (function () {
     			span = element("span");
     			t2 = text(t2_value);
     			t3 = space();
-    			add_location(span, file, 485, 22, 18028);
+    			add_location(span, file, 484, 20, 18020);
     			attr_dev(button, "aria-label", button_aria_label_value = `Select ${/*name*/ ctx[45]}`);
     			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 479, 20, 17743);
-    			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[45])}`);
+    			add_location(button, file, 478, 18, 17747);
     			attr_dev(li, "role", "option");
+    			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[45])}`);
     			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[6] === /*name*/ ctx[45]);
     			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 473, 18, 17495);
+    			add_location(li, file, 472, 16, 17511);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5437,18 +5505,66 @@ var SvelteTimezonePicker = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_1.name,
+    		id: create_if_block_2.name,
     		type: "if",
-    		source: "(473:16) {#if filteredZones.includes(name)}",
+    		source: "(472:14) {#if filteredZones.includes(name)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (472:14) {#each Object.keys(groupedZones[group]) as name}
+    // (471:12) {#each Object.keys(groupedZones[group]) as name}
     function create_each_block_1(ctx) {
     	let show_if = /*filteredZones*/ ctx[4].includes(/*name*/ ctx[45]);
+    	let if_block_anchor;
+    	let if_block = show_if && create_if_block_2(ctx);
+
+    	const block = {
+    		c: function create() {
+    			if (if_block) if_block.c();
+    			if_block_anchor = empty();
+    		},
+    		m: function mount(target, anchor) {
+    			if (if_block) if_block.m(target, anchor);
+    			insert_dev(target, if_block_anchor, anchor);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty[0] & /*filteredZones*/ 16) show_if = /*filteredZones*/ ctx[4].includes(/*name*/ ctx[45]);
+
+    			if (show_if) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+    				} else {
+    					if_block = create_if_block_2(ctx);
+    					if_block.c();
+    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    				}
+    			} else if (if_block) {
+    				if_block.d(1);
+    				if_block = null;
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (if_block) if_block.d(detaching);
+    			if (detaching) detach_dev(if_block_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block_1.name,
+    		type: "each",
+    		source: "(471:12) {#each Object.keys(groupedZones[group]) as name}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (466:8) {#each Object.keys(groupedZones) as group}
+    function create_each_block(ctx) {
+    	let show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[4]);
     	let if_block_anchor;
     	let if_block = show_if && create_if_block_1(ctx);
 
@@ -5462,7 +5578,7 @@ var SvelteTimezonePicker = (function () {
     			insert_dev(target, if_block_anchor, anchor);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 16) show_if = /*filteredZones*/ ctx[4].includes(/*name*/ ctx[45]);
+    			if (dirty[0] & /*filteredZones*/ 16) show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[4]);
 
     			if (show_if) {
     				if (if_block) {
@@ -5485,119 +5601,9 @@ var SvelteTimezonePicker = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_each_block_1.name,
-    		type: "each",
-    		source: "(472:14) {#each Object.keys(groupedZones[group]) as name}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (463:8) {#each Object.keys(groupedZones) as group}
-    function create_each_block(ctx) {
-    	let li;
-    	let show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[4]);
-    	let t0;
-    	let ul;
-    	let ul_aria_activedescendant_value;
-    	let t1;
-    	let if_block = show_if && create_if_block_2(ctx);
-    	let each_value_1 = Object.keys(timezones[/*group*/ ctx[42]]);
-    	validate_each_argument(each_value_1);
-    	let each_blocks = [];
-
-    	for (let i = 0; i < each_value_1.length; i += 1) {
-    		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
-    	}
-
-    	const block = {
-    		c: function create() {
-    			li = element("li");
-    			if (if_block) if_block.c();
-    			t0 = space();
-    			ul = element("ul");
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].c();
-    			}
-
-    			t1 = space();
-    			attr_dev(ul, "role", "listbox");
-    			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
-    			attr_dev(ul, "class", "svelte-22kpky");
-    			add_location(ul, file, 467, 12, 17232);
-    			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 463, 10, 17104);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, li, anchor);
-    			if (if_block) if_block.m(li, null);
-    			append_dev(li, t0);
-    			append_dev(li, ul);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(ul, null);
-    			}
-
-    			append_dev(li, t1);
-    		},
-    		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 16) show_if = /*groupHasVisibleChildren*/ ctx[18](/*group*/ ctx[42], /*filteredZones*/ ctx[4]);
-
-    			if (show_if) {
-    				if (if_block) {
-    					if_block.p(ctx, dirty);
-    				} else {
-    					if_block = create_if_block_2(ctx);
-    					if_block.c();
-    					if_block.m(li, t0);
-    				}
-    			} else if (if_block) {
-    				if_block.d(1);
-    				if_block = null;
-    			}
-
-    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, handleTimezoneUpdate, setHighlightedZone, utcDatetime, getTimeForZone, ungroupedZones, filteredZones*/ 4397144) {
-    				each_value_1 = Object.keys(timezones[/*group*/ ctx[42]]);
-    				validate_each_argument(each_value_1);
-    				let i;
-
-    				for (i = 0; i < each_value_1.length; i += 1) {
-    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
-
-    					if (each_blocks[i]) {
-    						each_blocks[i].p(child_ctx, dirty);
-    					} else {
-    						each_blocks[i] = create_each_block_1(child_ctx);
-    						each_blocks[i].c();
-    						each_blocks[i].m(ul, null);
-    					}
-    				}
-
-    				for (; i < each_blocks.length; i += 1) {
-    					each_blocks[i].d(1);
-    				}
-
-    				each_blocks.length = each_value_1.length;
-    			}
-
-    			if (dirty[0] & /*currentZone*/ 4 && ul_aria_activedescendant_value !== (ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`)) {
-    				attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value);
-    			}
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(li);
-    			if (if_block) if_block.d();
-    			destroy_each(each_blocks, detaching);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(463:8) {#each Object.keys(groupedZones) as group}",
+    		source: "(466:8) {#each Object.keys(groupedZones) as group}",
     		ctx
     	});
 

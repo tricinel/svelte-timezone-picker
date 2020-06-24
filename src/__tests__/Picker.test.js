@@ -66,14 +66,15 @@ describe('The component renders with props', () => {
   });
 
   test('Shows the listbox by default when the open prop is true', () => {
-    const { getByLabelText, queryAllByRole } = render(Picker, {
+    const { getByLabelText, getByRole } = render(Picker, {
       ...props,
       open: true
     });
     const toggleButton = getByLabelText(/Change timezone/i);
+    const listBox = getByRole('listbox');
 
     expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
-    expect(queryAllByRole('listbox')).toHaveLength(3);
+    expect(listBox).toBeInTheDocument();
   });
 });
 
@@ -83,7 +84,7 @@ describe('The component handles user interactions', () => {
       queryByPlaceholderText,
       getByPlaceholderText,
       getByLabelText,
-      queryAllByRole,
+      getByRole,
       container
     } = render(Picker, props);
     const toggleButton = getByLabelText(/Change timezone/i);
@@ -97,8 +98,8 @@ describe('The component handles user interactions', () => {
 
     // After clicking the toggle button, the search field should be in the document
     expect(getByPlaceholderText(/search/i)).toBeInTheDocument();
-    // So should 3 listboxes
-    expect(queryAllByRole('listbox')).toHaveLength(3);
+    // So should the listbox
+    expect(getByRole('listbox')).toBeInTheDocument();
 
     // We can now hide it
     await fireEvent.click(toggleButton);
@@ -168,12 +169,10 @@ describe('The component handles user interactions', () => {
     });
     const input = getByPlaceholderText(/search/i);
 
-    // The user types "l" and we expect to filter the list to two options
-    await userEvent.type(input, 'li');
-    expect(getAllByRole('option')).toHaveLength(filterZones('li').length);
+    await userEvent.type(input, 'bo');
+    expect(getAllByRole('option')).toHaveLength(filterZones('bo').length);
 
-    // The user presses "backspace" and we expect to filter the list to four options
     await userEvent.type(input, '{backspace}');
-    expect(getAllByRole('option')).toHaveLength(filterZones('l').length);
+    expect(getAllByRole('option')).toHaveLength(filterZones('b').length);
   });
 });

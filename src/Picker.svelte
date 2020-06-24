@@ -457,41 +457,39 @@
         tabindex="-1"
         class="tz-groups"
         id="{listBoxId}"
+        role="listbox"
         bind:this="{listBoxRef}"
         aria-labelledby="{labelId}"
+        aria-activedescendant="{currentZone && `tz-${slugify(currentZone)}`}"
+        aria-expanded="{open}"
       >
         {#each Object.keys(groupedZones) as group}
-          <li>
-            {#if groupHasVisibleChildren(group, filteredZones)}
+          {#if groupHasVisibleChildren(group, filteredZones)}
+            <li role="option" aria-hidden="true">
               <p>{group}</p>
-            {/if}
-            <ul
-              role="listbox"
-              aria-activedescendant="{currentZone && `tz-${slugify(currentZone)}`}"
-            >
-              {#each Object.keys(groupedZones[group]) as name}
-                {#if filteredZones.includes(name)}
-                  <li
-                    id="{`tz-${slugify(name)}`}"
-                    bind:this="{listBoxOptionRefs[name]}"
-                    role="option"
-                    aria-selected="{highlightedZone === name}"
+            </li>
+            {#each Object.keys(groupedZones[group]) as name}
+              {#if filteredZones.includes(name)}
+                <li
+                  role="option"
+                  id="{`tz-${slugify(name)}`}"
+                  bind:this="{listBoxOptionRefs[name]}"
+                  aria-selected="{highlightedZone === name}"
+                >
+                  <button
+                    on:click="{(event) => handleTimezoneUpdate(event, name)}"
+                    on:mouseover="{() => setHighlightedZone(name)}"
+                    aria-label="{`Select ${name}`}"
                   >
-                    <button
-                      on:click="{(event) => handleTimezoneUpdate(event, name)}"
-                      on:mouseover="{() => setHighlightedZone(name)}"
-                      aria-label="{`Select ${name}`}"
-                    >
-                      {name}
-                      <span>
-                        {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), 'h:mm aaaa')}
-                      </span>
-                    </button>
-                  </li>
-                {/if}
-              {/each}
-            </ul>
-          </li>
+                    {name}
+                    <span>
+                      {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), 'h:mm aaaa')}
+                    </span>
+                  </button>
+                </li>
+              {/if}
+            {/each}
+          {/if}
         {/each}
       </ul>
     </div>
