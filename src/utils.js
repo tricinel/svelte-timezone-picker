@@ -11,6 +11,7 @@ while (IDX--) {
   HEX += IDX.toString(36);
 }
 
+// Get a unique ID
 const uid = (len) => {
   let str = '';
   let num = len || 11;
@@ -22,7 +23,7 @@ const uid = (len) => {
   return str;
 };
 
-// Use IntersectionObserver
+// Scroll an element into view if needed
 const scrollIntoView = (node, rootNode) => {
   if (node === null) {
     return;
@@ -40,9 +41,11 @@ const scrollIntoView = (node, rootNode) => {
   });
 };
 
+// Given a value, find its corresponding key in the object
 const getKeyByValue = (object, value) =>
   Object.keys(object).find((key) => object[key] === value);
 
+// Transform a string into a slug
 const slugify = (str) =>
   str
     .toString()
@@ -97,4 +100,24 @@ const keyCodes = {
   ]
 };
 
-export { scrollIntoView, uid, getKeyByValue, slugify, keyCodes };
+// We take the grouped timezones and flatten them so that they can be easily searched
+// e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
+const ungroupZones = (timezones) =>
+  Object.values(timezones).reduce(
+    (values, zone) => ({ ...values, ...zone }),
+    {}
+  );
+
+// Filter the list of zone labels to only those that match a search string
+const filterZones = (search, zones) =>
+  zones.filter((zone) => zone.toLowerCase().includes(search.toLowerCase()));
+
+export {
+  scrollIntoView,
+  uid,
+  getKeyByValue,
+  slugify,
+  keyCodes,
+  ungroupZones,
+  filterZones
+};

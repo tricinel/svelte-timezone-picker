@@ -14,7 +14,9 @@
     uid,
     getKeyByValue,
     slugify,
-    keyCodes
+    keyCodes,
+    ungroupZones,
+    filterZones
   } from './utils';
 
   // ***** Public API *****
@@ -65,12 +67,7 @@
   const clearButtonId = uid();
   const searchInputId = uid();
 
-  // We take the grouped timezones and flatten them so that they can be easily searched
-  // e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
-  const ungroupedZones = Object.values(groupedZones).reduce(
-    (values, zone) => ({ ...values, ...zone }),
-    {}
-  );
+  const ungroupedZones = ungroupZones(groupedZones);
 
   // We take the ungroupedZones and create a list of just the user-visible lables
   // e.g. {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } => ['London', 'Berlin']
@@ -199,9 +196,7 @@
   // As the user types, we filter the available zones to show only those that should be visible
   $: filteredZones =
     userSearch && userSearch.length > 0
-      ? zoneLabels.filter((zoneLabel) =>
-          zoneLabel.toLowerCase().includes(userSearch.toLowerCase())
-        )
+      ? filterZones(userSearch, zoneLabels)
       : zoneLabels.slice();
 
   // ***** Lifecycle methods *****

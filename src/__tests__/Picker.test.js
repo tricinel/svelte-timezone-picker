@@ -6,12 +6,13 @@ import {
   getZoneLabelAtIndex,
   getTestRegex,
   getTotalZones,
-  filterZones,
+  zoneLabels,
   keyArrowDown,
   keyArrowUp,
   keyEnter,
   keyEscape
 } from '../testUtils';
+import { filterZones } from '../utils';
 import Picker from '../Picker.svelte';
 
 jest.mock('../timezones');
@@ -170,9 +171,13 @@ describe('The component handles user interactions', () => {
     const input = getByPlaceholderText(/search/i);
 
     await userEvent.type(input, 'bo');
-    expect(getAllByRole('option')).toHaveLength(filterZones('bo').length);
+    expect(getAllByRole('option')).toHaveLength(
+      filterZones('bo', zoneLabels).length
+    );
 
     await userEvent.type(input, '{backspace}');
-    expect(getAllByRole('option')).toHaveLength(filterZones('b').length);
+    expect(getAllByRole('option')).toHaveLength(
+      filterZones('b', zoneLabels).length
+    );
   });
 });

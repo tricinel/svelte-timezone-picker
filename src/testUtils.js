@@ -1,22 +1,13 @@
 import timezones from './__mocks__/timezones';
+import { ungroupZones } from './utils';
 
-const ungroupedZones = Object.values(timezones).reduce(
-  (values, zone) => ({ ...values, ...zone }),
-  {}
-);
-
-const zoneLabels = Object.keys(ungroupedZones);
+const zoneLabels = Object.keys(ungroupZones(timezones));
 
 const getZoneLabelAtIndex = (index) => zoneLabels[index];
 
 const getTestRegex = (string) => new RegExp(string, 'i');
 
 const getTotalZones = () => zoneLabels.length;
-
-const filterZones = (search) =>
-  zoneLabels.filter((zoneLabel) =>
-    zoneLabel.toLowerCase().includes(search.toLowerCase())
-  );
 
 const keyArrowDown = {
   key: 'ArrowDown',
@@ -46,7 +37,7 @@ export {
   getZoneLabelAtIndex,
   getTestRegex,
   getTotalZones,
-  filterZones,
+  zoneLabels,
   keyArrowDown,
   keyArrowUp,
   keyEnter,
