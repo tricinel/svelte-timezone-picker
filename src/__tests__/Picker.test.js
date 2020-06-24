@@ -44,7 +44,7 @@ describe('The component renders with internal defaults', () => {
       datetime: '2016-06-19T08:30'
     });
 
-    expect(getByText('UTC Time')).toBeInTheDocument();
+    expect(getByText(/UTC Time/i)).toBeInTheDocument();
   });
 
   test('Sets the datetime to the current datetime when rendered without a datetime prop', () => {
@@ -52,7 +52,7 @@ describe('The component renders with internal defaults', () => {
       timezone: 'Europe/Berlin'
     });
 
-    expect(getByText('Central European Time')).toBeInTheDocument();
+    expect(getByText(/Central European Time/i)).toBeInTheDocument();
   });
 });
 
@@ -62,7 +62,7 @@ describe('The component renders with props', () => {
     const toggleButton = getByLabelText(/Change timezone/i);
 
     expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
-    expect(getByText('London')).toBeInTheDocument();
+    expect(getByText(/London/i)).toBeInTheDocument();
   });
 
   test('Shows the listbox by default when the open prop is true', () => {

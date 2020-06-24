@@ -5000,7 +5000,7 @@ var SvelteTimezonePicker = (function () {
     	const block = {
     		c: function create() {
     			div = element("div");
-    			attr_dev(div, "class", "overlay svelte-22kpky");
+    			attr_dev(div, "class", "overlay svelte-pzyy8z");
     			add_location(div, file, 290, 2, 9095);
     		},
     		m: function mount(target, anchor) {
@@ -5030,9 +5030,8 @@ var SvelteTimezonePicker = (function () {
     	return block;
     }
 
-    // (387:4) {#if utcDatetime}
+    // (388:6) {#if utcDatetime}
     function create_if_block_4(ctx) {
-    	let small;
     	let t0;
     	let t1_value = format$1(utcToZonedTime(/*utcDatetime*/ ctx[3], /*timezone*/ ctx[0]), "h:mm aaaa", { timeZone: /*timezone*/ ctx[0] }) + "";
     	let t1;
@@ -5040,24 +5039,22 @@ var SvelteTimezonePicker = (function () {
 
     	const block = {
     		c: function create() {
-    			small = element("small");
     			t0 = text("(");
     			t1 = text(t1_value);
     			t2 = text(")");
-    			attr_dev(small, "class", "svelte-22kpky");
-    			add_location(small, file, 387, 6, 14878);
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, small, anchor);
-    			append_dev(small, t0);
-    			append_dev(small, t1);
-    			append_dev(small, t2);
+    			insert_dev(target, t0, anchor);
+    			insert_dev(target, t1, anchor);
+    			insert_dev(target, t2, anchor);
     		},
     		p: function update(ctx, dirty) {
     			if (dirty[0] & /*utcDatetime, timezone*/ 9 && t1_value !== (t1_value = format$1(utcToZonedTime(/*utcDatetime*/ ctx[3], /*timezone*/ ctx[0]), "h:mm aaaa", { timeZone: /*timezone*/ ctx[0] }) + "")) set_data_dev(t1, t1_value);
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(small);
+    			if (detaching) detach_dev(t0);
+    			if (detaching) detach_dev(t1);
+    			if (detaching) detach_dev(t2);
     		}
     	};
 
@@ -5065,7 +5062,7 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block_4.name,
     		type: "if",
-    		source: "(387:4) {#if utcDatetime}",
+    		source: "(388:6) {#if utcDatetime}",
     		ctx
     	});
 
@@ -5115,8 +5112,8 @@ var SvelteTimezonePicker = (function () {
     			}
 
     			attr_dev(label, "id", /*labelId*/ ctx[13]);
-    			attr_dev(label, "class", "svelte-22kpky");
-    			add_location(label, file, 408, 6, 15484);
+    			attr_dev(label, "class", "svelte-pzyy8z");
+    			add_location(label, file, 408, 6, 15471);
     			attr_dev(input, "id", /*searchInputId*/ ctx[15]);
     			attr_dev(input, "type", "search");
     			attr_dev(input, "aria-autocomplete", "list");
@@ -5126,20 +5123,20 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(input, "autocorrect", "off");
     			attr_dev(input, "placeholder", "Search...");
     			input.autofocus = true;
-    			attr_dev(input, "class", "svelte-22kpky");
-    			add_location(input, file, 414, 8, 15723);
-    			attr_dev(div0, "class", "input-group svelte-22kpky");
-    			add_location(div0, file, 412, 6, 15643);
+    			attr_dev(input, "class", "svelte-pzyy8z");
+    			add_location(input, file, 414, 8, 15710);
+    			attr_dev(div0, "class", "input-group svelte-pzyy8z");
+    			add_location(div0, file, 412, 6, 15630);
     			attr_dev(ul, "tabindex", "-1");
-    			attr_dev(ul, "class", "tz-groups svelte-22kpky");
+    			attr_dev(ul, "class", "tz-groups svelte-pzyy8z");
     			attr_dev(ul, "id", /*listBoxId*/ ctx[14]);
     			attr_dev(ul, "role", "listbox");
     			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[13]);
     			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
     			attr_dev(ul, "aria-expanded", /*open*/ ctx[1]);
-    			add_location(ul, file, 455, 6, 16889);
-    			attr_dev(div1, "class", "tz-dropdown svelte-22kpky");
-    			add_location(div1, file, 407, 4, 15435);
+    			add_location(ul, file, 455, 6, 16876);
+    			attr_dev(div1, "class", "tz-dropdown svelte-pzyy8z");
+    			add_location(div1, file, 407, 4, 15422);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -5276,20 +5273,20 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(path0, "stroke", "hsl(0, 0%, 18%)");
     			attr_dev(path0, "strokelinecap", "round");
     			attr_dev(path0, "d", "M 3 16.5 L 17 2.5");
-    			add_location(path0, file, 435, 14, 16373);
+    			add_location(path0, file, 435, 14, 16360);
     			attr_dev(path1, "fill", "transparent");
     			attr_dev(path1, "strokewidth", "3");
     			attr_dev(path1, "stroke", "hsl(0, 0%, 18%)");
     			attr_dev(path1, "strokelinecap", "round");
     			attr_dev(path1, "d", "M 3 2.5 L 17 16.346");
-    			add_location(path1, file, 442, 14, 16600);
+    			add_location(path1, file, 442, 14, 16587);
     			attr_dev(svg, "width", "0.88em");
     			attr_dev(svg, "height", "0.88em");
     			attr_dev(svg, "viewBox", "0 0 23 23");
-    			add_location(svg, file, 434, 12, 16302);
+    			add_location(svg, file, 434, 12, 16289);
     			attr_dev(button, "title", "Clear search text");
-    			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 429, 10, 16154);
+    			attr_dev(button, "class", "svelte-pzyy8z");
+    			add_location(button, file, 429, 10, 16141);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -5351,12 +5348,12 @@ var SvelteTimezonePicker = (function () {
     			}
 
     			each_1_anchor = empty();
-    			attr_dev(p, "class", "svelte-22kpky");
-    			add_location(p, file, 468, 14, 17352);
+    			attr_dev(p, "class", "svelte-pzyy8z");
+    			add_location(p, file, 468, 14, 17339);
     			attr_dev(li, "role", "option");
     			attr_dev(li, "aria-hidden", "true");
-    			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 467, 12, 17300);
+    			attr_dev(li, "class", "svelte-pzyy8z");
+    			add_location(li, file, 467, 12, 17287);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5452,15 +5449,15 @@ var SvelteTimezonePicker = (function () {
     			span = element("span");
     			t2 = text(t2_value);
     			t3 = space();
-    			add_location(span, file, 484, 20, 18020);
+    			add_location(span, file, 484, 20, 18007);
     			attr_dev(button, "aria-label", button_aria_label_value = `Select ${/*name*/ ctx[45]}`);
-    			attr_dev(button, "class", "svelte-22kpky");
-    			add_location(button, file, 478, 18, 17747);
+    			attr_dev(button, "class", "svelte-pzyy8z");
+    			add_location(button, file, 478, 18, 17734);
     			attr_dev(li, "role", "option");
     			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[45])}`);
     			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[6] === /*name*/ ctx[45]);
-    			attr_dev(li, "class", "svelte-22kpky");
-    			add_location(li, file, 472, 16, 17511);
+    			attr_dev(li, "class", "svelte-pzyy8z");
+    			add_location(li, file, 472, 16, 17498);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -5658,7 +5655,7 @@ var SvelteTimezonePicker = (function () {
     			attr_dev(svg0, "width", "0.88em");
     			attr_dev(svg0, "height", "0.88em");
     			add_location(svg0, file, 305, 4, 9473);
-    			attr_dev(span, "class", "svelte-22kpky");
+    			attr_dev(span, "class", "svelte-pzyy8z");
     			add_location(span, file, 385, 4, 14823);
     			attr_dev(path1, "d", "M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0\n        113.536-3.536l11.095 11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z");
 
@@ -5666,21 +5663,21 @@ var SvelteTimezonePicker = (function () {
     			? "rotate(180, 15.3635, 15.3635)"
     			: "rotate(0)");
 
-    			add_location(path1, file, 399, 6, 15163);
+    			add_location(path1, file, 399, 6, 15150);
     			attr_dev(svg1, "xmlns", "http://www.w3.org/2000/svg");
     			attr_dev(svg1, "viewBox", "0 0 30.727 30.727");
     			attr_dev(svg1, "width", "0.88em");
     			attr_dev(svg1, "height", "0.88em");
-    			add_location(svg1, file, 393, 4, 15028);
+    			add_location(svg1, file, 393, 4, 15015);
     			attr_dev(button, "type", "button");
     			attr_dev(button, "role", "button");
     			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`);
     			attr_dev(button, "aria-haspopup", "listbox");
     			attr_dev(button, "data-toggle", "true");
     			attr_dev(button, "aria-expanded", /*open*/ ctx[1]);
-    			attr_dev(button, "class", "svelte-22kpky");
+    			attr_dev(button, "class", "svelte-pzyy8z");
     			add_location(button, file, 294, 2, 9178);
-    			attr_dev(div, "class", "tz-container svelte-22kpky");
+    			attr_dev(div, "class", "tz-container svelte-pzyy8z");
     			add_location(div, file, 293, 0, 9149);
     		},
     		l: function claim(nodes) {
@@ -5696,8 +5693,8 @@ var SvelteTimezonePicker = (function () {
     			append_dev(button, t1);
     			append_dev(button, span);
     			append_dev(span, t2);
-    			append_dev(button, t3);
-    			if (if_block1) if_block1.m(button, null);
+    			append_dev(span, t3);
+    			if (if_block1) if_block1.m(span, null);
     			append_dev(button, t4);
     			append_dev(button, svg1);
     			append_dev(svg1, path1);
@@ -5738,7 +5735,7 @@ var SvelteTimezonePicker = (function () {
     				} else {
     					if_block1 = create_if_block_4(ctx);
     					if_block1.c();
-    					if_block1.m(button, t4);
+    					if_block1.m(span, null);
     				}
     			} else if (if_block1) {
     				if_block1.d(1);

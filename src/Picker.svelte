@@ -383,14 +383,14 @@
       ></path>
     </svg>
 
-    <span>{currentZone}</span>
-    {#if utcDatetime}
-      <small>
+    <span>
+      {currentZone}
+      {#if utcDatetime}
         ({format(utcToZonedTime(utcDatetime, timezone), 'h:mm aaaa', {
           timeZone: timezone
         })})
-      </small>
-    {/if}
+      {/if}
+    </span>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 30.727 30.727"
@@ -461,7 +461,6 @@
         bind:this="{listBoxRef}"
         aria-labelledby="{labelId}"
         aria-activedescendant="{currentZone && `tz-${slugify(currentZone)}`}"
-        aria-expanded="{open}"
       >
         {#each Object.keys(groupedZones) as group}
           {#if groupHasVisibleChildren(group, filteredZones)}
@@ -525,18 +524,16 @@
   }
 
   button[data-toggle] > span {
+    color: var(--color-info-900, #076196);
     margin-left: 0.4em;
-  }
-
-  button[data-toggle] > span,
-  button[data-toggle] > small {
     margin-right: 0.4em;
+    text-decoration: underline;
   }
 
   .tz-dropdown {
-    background-color: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.2);
+    background-color: var(--color-white, #fff);
+    border: 1px solid var(--color-gray-100, rgba(0, 0, 0, 0.2));
+    box-shadow: 0 1px 6px 0 var(--color-gray-100, rgba(0, 0, 0, 0.2));
     border-radius: 4px;
     display: flex;
     flex-direction: column;
@@ -587,7 +584,7 @@
   ul li button:hover,
   ul li button:focus,
   li[aria-selected='true'] button {
-    background: var(--color-info, #076196);
+    background: var(--color-info-900, #076196);
     color: #fff;
   }
 
