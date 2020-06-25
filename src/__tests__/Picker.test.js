@@ -10,7 +10,8 @@ import {
   keyArrowDown,
   keyArrowUp,
   keyEnter,
-  keyEscape
+  keyEscape,
+  keyLetter
 } from '../testUtils';
 import { filterZones } from '../utils';
 import Picker from '../Picker.svelte';
@@ -54,6 +55,22 @@ describe('The component renders with internal defaults', () => {
     });
 
     expect(getByText(/Central European Time/i)).toBeInTheDocument();
+  });
+});
+
+describe('The component renders with accessibility defaults', () => {
+  test('The toggle button does not repond to unknown keys', async () => {
+    const { getByLabelText } = render(Picker, props);
+    const toggleButton = getByLabelText(/Change timezone/i);
+
+    toggleButton.focus();
+
+    // We start with the toggleButton collapsed
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+
+    // We fire some randome keydown event
+    await fireEvent.keyDown(document.activeElement || document.body, keyLetter);
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
   });
 });
 
@@ -108,15 +125,17 @@ describe('The component handles user interactions', () => {
 
     // And we can show toggle expansion again using Enter
     toggleButton.focus();
-    await fireEvent.keyUp(document.activeElement || document.body, keyEnter);
+    await fireEvent.keyDown(document.activeElement || document.body, keyEnter);
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
 
     // And hide it with Escape
-    await fireEvent.keyUp(document.activeElement || document.body, keyEscape);
+    await fireEvent.keyDown(document.activeElement || document.body, keyEscape);
     expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
 
     // And we can show toggle expansion again using Enter
     toggleButton.focus();
-    await fireEvent.keyUp(document.activeElement || document.body, keyEnter);
+    await fireEvent.keyDown(document.activeElement || document.body, keyEnter);
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
 
     // And hide it by clicking outside of the dropdown, anywhere on the overlay
     const overlay = container.querySelector('.overlay');
@@ -134,30 +153,36 @@ describe('The component handles user interactions', () => {
     const last = getZoneLabelAtIndex(getTotalZones() - 1);
 
     // The user pressed the down arrow key, so we move focus to the first option
-    await fireEvent.keyUp(
+    await fireEvent.keyDown(
       document.activeElement || document.body,
       keyArrowDown
     );
     expect(getByText(getTestRegex(first))).toHaveFocus();
 
     // The user pressed the down key, so we move focus to the second option
-    await fireEvent.keyUp(
+    await fireEvent.keyDown(
       document.activeElement || document.body,
       keyArrowDown
     );
     expect(getByText(getTestRegex(getZoneLabelAtIndex(1)))).toHaveFocus();
 
     // The user pressed the up key, so we move focus to the first option
-    await fireEvent.keyUp(document.activeElement || document.body, keyArrowUp);
+    await fireEvent.keyDown(
+      document.activeElement || document.body,
+      keyArrowUp
+    );
     expect(getByText(getTestRegex(first))).toHaveFocus();
 
     // The user pressed the up key, so we move focus to the last option because we are at the top of the list
-    await fireEvent.keyUp(document.activeElement || document.body, keyArrowUp);
+    await fireEvent.keyDown(
+      document.activeElement || document.body,
+      keyArrowUp
+    );
     expect(getByText(getTestRegex(last))).toHaveFocus();
 
     // The user pressed the Enter key, so we select the option currently focused
     // `last` after the above events
-    await fireEvent.keyUp(document.activeElement || document.body, keyEnter);
+    await fireEvent.keyDown(document.activeElement || document.body, keyEnter);
     expect(
       getByLabelText(`${last} is currently selected. Change timezone`)
     ).toBeInTheDocument();

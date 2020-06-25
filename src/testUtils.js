@@ -33,6 +33,12 @@ const keyEscape = {
   code: 'Escape'
 };
 
+const keyLetter = {
+  key: 'h',
+  keyCode: 72,
+  code: 'KeyH'
+};
+
 export {
   getZoneLabelAtIndex,
   getTestRegex,
@@ -41,5 +47,6 @@ export {
   keyArrowDown,
   keyArrowUp,
   keyEnter,
-  keyEscape
+  keyEscape,
+  keyLetter
 };

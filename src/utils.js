@@ -58,8 +58,10 @@ const slugify = (str) =>
 const keyCodes = {
   Enter: 13,
   Escape: 27,
+  Space: 32,
   ArrowDown: 40,
   ArrowUp: 38,
+  Backspace: 8,
   Characters: [
     48, // 0
     49, // 1

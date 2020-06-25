@@ -1,10 +1,5 @@
 <script>
-  import {
-    createEventDispatcher,
-    onMount,
-    onDestroy,
-    afterUpdate
-  } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
   import { utcToZonedTime, zonedTimeToUtc, format } from 'date-fns-tz';
   import { isValid, parseISO } from 'date-fns';
@@ -108,7 +103,7 @@
     const zoneElementRef = listBoxOptionRefs[zone];
     if (listBoxRef && zoneElementRef) {
       scrollIntoView(zoneElementRef, listBoxRef);
-      zoneElementRef.querySelector('button').focus();
+      zoneElementRef.focus({ preventScroll: true });
     }
   };
 
@@ -138,9 +133,10 @@
   };
 
   // We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
-  const keyUp = (ev) => {
+  const keyDown = (ev) => {
     // If the clearButton is focused, don't do anything else
-    if (document.activeElement === clearButtonRef) {
+    // We should only continue if the dropdown is open
+    if (document.activeElement === clearButtonRef || !open) {
       return;
     }
 
@@ -151,20 +147,23 @@
 
     // If the user presses the down arrow, start navigating the list
     if (ev.keyCode === keyCodes.ArrowDown) {
+      ev.preventDefault();
       moveSelection('down');
     }
     // If the user presses the up arrow, start navigating the list
     if (ev.keyCode === keyCodes.ArrowUp) {
+      ev.preventDefault();
       moveSelection('up');
     }
-
-    // If the user presses Enter, select the current item
+    // If the user presses Enter and the dropdown is open, select the current item
     if (ev.keyCode === keyCodes.Enter && highlightedZone) {
       handleTimezoneUpdate(ev, highlightedZone);
     }
-
     // If the user start to type letters or numbers, we focus on the Search field
-    if (keyCodes.Characters.includes(ev.keyCode)) {
+    if (
+      keyCodes.Characters.includes(ev.keyCode) ||
+      ev.keyCode === keyCodes.Backspace
+    ) {
       searchInputRef.focus();
     }
   };
@@ -187,8 +186,25 @@
     highlightedZone = name;
   };
 
-  const toggleOpen = () => {
-    open = !open;
+  const toggleOpen = (ev) => {
+    // If there is no keyCode, it's not a keyboard event
+    if (!ev.keyCode) {
+      open = !open;
+    } else {
+      // If it's a keyboard event, we should react only to certain keys
+      // Enter and Space should show it
+      if ([keyCodes.Enter, keyCodes.Space].includes(ev.keyCode)) {
+        open = !open;
+      }
+      // Escape should just hide the menu
+      if (ev.keyCode === keyCodes.Escape) {
+        open = false;
+      }
+      // ArrowDown should show it
+      if (ev.keyCode === keyCodes.ArrowDown) {
+        open = true;
+      }
+    }
   };
 
   // ***** Reactive *****
@@ -263,15 +279,6 @@
     }
   });
 
-  afterUpdate(() => {
-    // We need to wait for the DOM to be in sync with our open state
-    // and then scroll the list,
-    // because only at this point do we have access to the node refs
-    if (open && highlightedZone) {
-      scrollList(highlightedZone);
-    }
-  });
-
   onDestroy(() => {
     // Prevent memory leaks and clean up the requested anmation frame
     if (animationFrameId) {
@@ -279,8 +286,6 @@
     }
   });
 </script>
-
-<svelte:window on:keyup="{keyUp}" />
 
 {#if open}
   <div class="overlay" on:click="{reset}"></div>
@@ -290,13 +295,12 @@
   <button
     bind:this="{toggleButtonRef}"
     type="button"
-    role="button"
     aria-label="{`${currentZone} is currently selected. Change timezone`}"
     aria-haspopup="listbox"
     data-toggle="true"
     aria-expanded="{open}"
     on:click="{toggleOpen}"
-    on:keyup="{toggleOpen}"
+    on:keydown="{toggleOpen}"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -400,7 +404,7 @@
     </svg>
   </button>
   {#if open}
-    <div class="tz-dropdown" transition:slide>
+    <div class="tz-dropdown" transition:slide on:keydown="{keyDown}">
       <label id="{labelId}">
         Select a timezone from the list. Start typing to filter or use the arrow
         keys to navigate the list
@@ -466,20 +470,17 @@
               {#if filteredZones.includes(name)}
                 <li
                   role="option"
+                  tabindex="0"
                   id="{`tz-${slugify(name)}`}"
                   bind:this="{listBoxOptionRefs[name]}"
+                  aria-label="{`Select ${name}`}"
                   aria-selected="{highlightedZone === name}"
+                  on:mouseover="{() => setHighlightedZone(name)}"
                 >
-                  <button
-                    on:click="{(event) => handleTimezoneUpdate(event, name)}"
-                    on:mouseover="{() => setHighlightedZone(name)}"
-                    aria-label="{`Select ${name}`}"
-                  >
-                    {name}
-                    <span>
-                      {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), 'h:mm aaaa')}
-                    </span>
-                  </button>
+                  {name}
+                  <span>
+                    {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), 'h:mm aaaa')}
+                  </span>
                 </li>
               {/if}
             {/each}
@@ -532,6 +533,8 @@
     border-radius: 4px;
     display: flex;
     flex-direction: column;
+    min-width: 18em;
+    max-width: 100vw;
     position: absolute;
     z-index: 50;
   }
@@ -560,27 +563,27 @@
     font-size: 0.92rem;
     font-weight: 600;
     letter-spacing: 0.08em;
-    padding-left: 0.8em;
+    margin: 0;
+    padding: 0;
     text-transform: uppercase;
   }
 
-  ul li button {
+  ul li {
     background: transparent;
     border: 0;
     color: var(--color-gray-600, #757575);
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     padding: 0.8em 1.2em;
     text-align: left;
-    width: 100%;
   }
 
-  ul li button:hover,
-  ul li button:focus,
-  li[aria-selected='true'] button {
+  ul li[aria-selected]:hover,
+  ul li:focus,
+  li[aria-selected='true'] {
     background: var(--color-info-900, #076196);
     color: #fff;
+    cursor: pointer;
   }
 
   .input-group {
