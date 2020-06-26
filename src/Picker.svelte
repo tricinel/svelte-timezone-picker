@@ -11,7 +11,8 @@
     slugify,
     keyCodes,
     ungroupZones,
-    filterZones
+    filterZones,
+    pickZones
   } from './utils';
 
   // ***** Public API *****
@@ -23,6 +24,9 @@
 
   // Should the dropdown be open by default?
   export let open = false;
+
+  // We can allow the user to filter the timezones displayed to only a few
+  export let allowedTimezones = null;
 
   // ***** End Public API *****
 
@@ -62,7 +66,27 @@
   const clearButtonId = uid();
   const searchInputId = uid();
 
-  const ungroupedZones = ungroupZones(groupedZones);
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  let availableZones;
+
+  if (allowedTimezones) {
+    if (!Array.isArray(allowedTimezones)) {
+      console.error(
+        'You need to provide a list of timezones as an Array!',
+        `You provided ${allowedTimezones}.`
+      );
+      availableZones = groupedZones;
+    } else {
+      availableZones = pickZones(groupedZones, [
+        ...allowedTimezones,
+        userTimezone
+      ]);
+    }
+  } else {
+    availableZones = groupedZones;
+  }
+
+  const ungroupedZones = ungroupZones(availableZones);
 
   // We take the ungroupedZones and create a list of just the user-visible lables
   // e.g. {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } => ['London', 'Berlin']
@@ -223,7 +247,6 @@
   const UPDATE_INTERVAL = 1000 * 60; // 1 minute
 
   onMount(() => {
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone) {
       // The timezone must be a valid timezone, so we check it against our list of values in flat
       if (!Object.values(ungroupedZones).includes(timezone)) {

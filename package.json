@@ -37,8 +37,9 @@
     "dev": "rollup -c ./rollup.config.development.js -w",
     "start": "sirv demo",
     "lint": "eslint src/**/*.{svelte,js}",
-    "test": "jest src",
-    "test:watch": "jest src --watch"
+    "test": "jest src --silent",
+    "test:watch": "jest src --watch",
+    "test:ci": "jest src --silent -i"
   },
   "devDependencies": {
     "@babel/core": "^7.10.3",

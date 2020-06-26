@@ -102,6 +102,31 @@ const keyCodes = {
   ]
 };
 
+// Straight from ramda.js
+const pickBy = (testFn, obj) => {
+  const result = {};
+  for (const prop in obj) {
+    if (testFn(obj[prop], prop, obj)) {
+      result[prop] = obj[prop];
+    }
+  }
+  return result;
+};
+
+// We allow the consumer to only pick some timezones from the list to display
+const pickZones = (timezones, pick) => {
+  const unique = Array.from(new Set([...pick]));
+  const isInPicks = (val) => unique.includes(val);
+
+  return Object.keys(timezones).reduce((zones, zone) => {
+    const picked = pickBy(isInPicks, timezones[zone]);
+    return {
+      ...zones,
+      ...(Object.keys(picked).length > 0 && { [zone]: picked })
+    };
+  }, {});
+};
+
 // We take the grouped timezones and flatten them so that they can be easily searched
 // e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
 const ungroupZones = (timezones) =>
@@ -121,5 +146,6 @@ export {
   slugify,
   keyCodes,
   ungroupZones,
-  filterZones
+  filterZones,
+  pickZones
 };

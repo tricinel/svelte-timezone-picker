@@ -23,6 +23,36 @@ const props = {
   timezone: 'Europe/London'
 };
 
+describe(`The component doesn't crash when the user passed props are incorrect`, () => {
+  let errorSpy;
+  let warnSpy;
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(console, 'error');
+    warnSpy = jest.spyOn(console, 'warn');
+  });
+
+  afterEach(() => {
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
+
+  test('Wrong pick type - string', () => {
+    render(Picker, { ...props, allowedTimezones: 'a string' });
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('Wrong pick type - object', () => {
+    render(Picker, { ...props, allowedTimezones: {} });
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('Wrong pick type', () => {
+    render(Picker, { ...props, allowedTimezones: 'a string' });
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('The component renders with internal defaults', () => {
   let intlSpy;
 
