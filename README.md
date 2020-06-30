@@ -12,7 +12,9 @@ npm i --save svelte-timezone-picker
 
 ## Usage
 
-To use it, simply import it as a svelte component.
+### Svelte component
+
+To use it in your Svelte app, simply import it as a component.
 
 ```html
 <script>
@@ -23,6 +25,32 @@ To use it, simply import it as a svelte component.
 </script>
 
 <TimezonePicker {datetime} {timezone} />
+```
+
+### Web component
+
+To use it as a web component, add the `index.js` file to your page and use it as a regular HTML element.
+
+```html
+<!-- use the new timezone-picker element -->
+<timezone-picker
+  datetime="2020-06-10T19:30"
+  timezone="Europe/London"
+></timezone-picker>
+
+<!-- link it as module script -->
+<script type="module" src="/path/to/web/index.js"></script>
+
+<!-- listen for the update event on the picker -->
+<script>
+  window.addEventListener('load', () => {
+    const picker = document.querySelector('timezone-picker');
+    picker.$on('update', (event) => {
+      const { timezone, datetime, utcDatetime, zonedDatetime } = event.detail;
+      // do stuff with the data
+    });
+  });
+</script>
 ```
 
 ### Props
@@ -36,9 +64,24 @@ To use it, simply import it as a svelte component.
 
 ### Events
 
-| Name     | Description                                    | Return                                                                                    |
-| :------- | :--------------------------------------------- | :---------------------------------------------------------------------------------------- |
-| `update` | Dispatched every time you change the timezone. | An object with the timezone selected and the transformed datetime based on that timezone. |
+| Name     | Description                                    | Return                                                                                                                                              |
+| :------- | :--------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `update` | Dispatched every time you change the timezone. | An object with the selected timezone, the provided datetime value, the datetime in UTC format and the datetime converted for the selected timezone. |
+
+### Styling
+
+You can use CSS variables to style the DOM elements of timezone-picker.
+
+```css
+:root {
+  --color-white: #fff;
+  --color-info-900: #076196;
+  --color-gray-100: rgba(0, 0, 0, 0.2);
+  --color-gray-400: #acacac;
+  --color-gray-600: #757575;
+  --color-gray-900: #292929;
+}
+```
 
 Check out the [Demo](./demo).
 
