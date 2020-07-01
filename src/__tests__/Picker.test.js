@@ -17,11 +17,23 @@ import { filterZones } from '../utils';
 import Picker from '../Picker.svelte';
 
 jest.mock('../timezones');
+jest.mock('../utils');
 
 const props = {
   datetime: '2016-06-19T08:30',
   timezone: 'Europe/London'
 };
+
+let intlSpy;
+
+beforeEach(() => {
+  intlSpy = jest.spyOn(Intl, 'DateTimeFormat');
+});
+
+afterEach(() => {
+  intlSpy.mockRestore();
+  jest.clearAllTimers();
+});
 
 describe(`The component doesn't crash when the user passed props are incorrect`, () => {
   let errorSpy;
@@ -54,15 +66,20 @@ describe(`The component doesn't crash when the user passed props are incorrect`,
 });
 
 describe('The component renders with internal defaults', () => {
-  let intlSpy;
+  test('Basic snapshot with defaults', async () => {
+    intlSpy.mockReturnValueOnce({
+      resolvedOptions: () => ({
+        timeZone: 'UTC'
+      })
+    });
 
-  beforeEach(() => {
-    intlSpy = jest.spyOn(Intl, 'DateTimeFormat');
-  });
+    const { getByLabelText, container } = render(Picker, { props });
 
-  afterEach(() => {
-    intlSpy.mockRestore();
-    jest.clearAllTimers();
+    expect(container.firstChild).toMatchSnapshot();
+
+    const toggleButton = getByLabelText(/Change timezone/i);
+    await fireEvent.click(toggleButton);
+    expect(container.firstChild).toMatchSnapshot();
   });
 
   test(`Shows the browser's timezone selected when rendered without a timezone prop`, () => {
@@ -123,6 +140,23 @@ describe('The component renders with props', () => {
 
     expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
     expect(listBox).toBeInTheDocument();
+  });
+
+  test('Shows only the allowed timezones when allowedTimezones is used as a prop', () => {
+    intlSpy.mockReturnValueOnce({
+      resolvedOptions: () => ({
+        timeZone: 'UTC'
+      })
+    });
+
+    const allowedTimezones = ['Australia/Sydney', 'Australia/Melbourne'];
+    const { queryAllByRole } = render(Picker, {
+      ...props,
+      allowedTimezones,
+      open: true
+    });
+
+    expect(queryAllByRole('option')).toHaveLength(3);
   });
 });
 
@@ -219,7 +253,7 @@ describe('The component handles user interactions', () => {
   });
 
   test('The use can type to filter the options', async () => {
-    const { getAllByRole, getByPlaceholderText } = render(Picker, {
+    const { getByTitle, getAllByRole, getByPlaceholderText } = render(Picker, {
       ...props,
       open: true
     });
@@ -234,5 +268,48 @@ describe('The component handles user interactions', () => {
     expect(getAllByRole('option')).toHaveLength(
       filterZones('b', zoneLabels).length
     );
+
+    await fireEvent.click(getByTitle(/Clear search text/i));
+    expect(document.activeElement).toBe(input);
+    expect(input).toHaveValue('');
+  });
+});
+
+describe('Focus is correctly managed', () => {
+  test('Focus on the body element by default', async () => {
+    const { getByLabelText } = render(Picker, { props });
+    expect(document.activeElement.nodeName).toEqual('BODY');
+
+    const toggleButton = getByLabelText(/Change timezone/i);
+
+    toggleButton.focus();
+    expect(document.activeElement).toBe(toggleButton);
+  });
+
+  test('Move focus around depending on user interactions', async () => {
+    const { getByText, getByLabelText, getByPlaceholderText } = render(Picker, {
+      ...props,
+      open: true
+    });
+    const input = getByPlaceholderText(/search/i);
+    const toggleButton = getByLabelText(/Change timezone/i);
+
+    expect(document.activeElement).toBe(input);
+    await userEvent.type(input, 's');
+    expect(document.activeElement).toBe(input);
+
+    const first = getZoneLabelAtIndex(0);
+
+    // The user pressed the down arrow key, so we move focus to the first option
+    await fireEvent.keyDown(document.activeElement, keyArrowDown);
+    expect(document.activeElement).toBe(getByText(getTestRegex(first)));
+
+    await fireEvent.keyDown(document.activeElement, keyEnter);
+    expect(document.activeElement).toBe(toggleButton);
+
+    await fireEvent.keyDown(document.activeElement, keyEnter);
+    await fireEvent.keyDown(document.activeElement, keyArrowDown);
+    await fireEvent.keyDown(document.activeElement || document.body, keyEscape);
+    expect(document.activeElement).toBe(toggleButton);
   });
 });
