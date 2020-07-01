@@ -59,7 +59,7 @@ To use it as a web component, add the `index.js` file to your page and use it as
 | :----------------- | :------ | :-------: | :------------------------------------------------------------------------------- | :------------------------------------------------- |
 | `datetime`         | String  |           | The datetime value you are transforming. Must be a valid datetime.               | `new Date()`                                       |
 | `timezone`         | String  |           | The current timezone. Must be a valid timezone from IANA.                        | `Intl.DateTimeFormat().resolvedOptions().timeZone` |
-| `open`             | Boolean |           | Whether the dropdown should be automatically expanded or not.                    | `false`                                            |
+| `expanded`         | Boolean |           | Whether the dropdown should be automatically expanded or not.                    | `false`                                            |
 | `allowedTimezones` | Array   |           | Control which timezones display in the list. Must be a valid timezone from IANA. | `null`                                             |
 
 ### Events

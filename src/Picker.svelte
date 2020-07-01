@@ -22,8 +22,8 @@
   export let datetime = null;
   export let timezone = null;
 
-  // Should the dropdown be open by default?
-  export let open = false;
+  // Should the dropdown be expanded by default?
+  export let expanded = false;
 
   // We can allow the user to filter the timezones displayed to only a few
   export let allowedTimezones = null;
@@ -39,48 +39,39 @@
   // We will always convert the datetime to UTC
   let utcDatetime;
 
-  // Emit the event back to the consumer
-  const handleTimezoneUpdate = (event, zoneId) => {
-    currentZone = zoneId;
-    timezone = ungroupedZones[zoneId];
-    reset();
-    dispatch('update', {
-      timezone,
-      datetime,
-      utcDatetime,
-      zonedDatetime: utcToZonedTime(utcDatetime, timezone)
-    });
-    toggleButtonRef.focus();
-    event.preventDefault();
-  };
+  // We keep track of what the user is typing in the search box
+  let userSearch;
 
-  // We keep track of the initial state so we can reset to these values when needed
-  const initialState = {
-    open,
-    userSearch: null
-  };
+  // What is the currently selected zone in the dropdown?
+  let highlightedZone;
+
+  // DOM nodes refs
+  let toggleButtonRef;
+  let searchInputRef;
+  let clearButtonRef;
+  let listBoxRef;
+  let listBoxOptionRefs;
 
   // A few IDs that will we use for a11y
   const labelId = uid();
   const listBoxId = uid();
-  const clearButtonId = uid();
   const searchInputId = uid();
 
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // eslint-disable-line new-cap
   let availableZones;
 
   if (allowedTimezones) {
-    if (!Array.isArray(allowedTimezones)) {
+    if (Array.isArray(allowedTimezones)) {
+      availableZones = pickZones(groupedZones, [
+        ...allowedTimezones,
+        userTimezone
+      ]);
+    } else {
       console.error(
         'You need to provide a list of timezones as an Array!',
         `You provided ${allowedTimezones}.`
       );
       availableZones = groupedZones;
-    } else {
-      availableZones = pickZones(groupedZones, [
-        ...allowedTimezones,
-        userTimezone
-      ]);
     }
   } else {
     availableZones = groupedZones;
@@ -99,18 +90,34 @@
   // Zones will be filtered as the user types, so we keep track of them internally here
   let filteredZones = [];
 
-  // We keep track of what the user is typing in the search box
-  let userSearch;
+  listBoxOptionRefs = zoneLabels.map((zone) => ({ [zone]: null }));
 
-  // What is the currently selected zone in the dropdown?
-  let highlightedZone;
+  // We keep track of the initial state so we can reset to these values when needed
+  const initialState = {
+    expanded,
+    userSearch: null
+  };
 
-  // DOM nodes refs
-  let toggleButtonRef;
-  let searchInputRef;
-  let clearButtonRef;
-  let listBoxRef;
-  let listBoxOptionRefs = zoneLabels.map((zone) => ({ [zone]: null }));
+  // Reset the dropdown and all internal state to the initial values
+  const reset = () => {
+    expanded = initialState.expanded; // eslint-disable-line prefer-destructuring
+    userSearch = initialState.userSearch; // eslint-disable-line prefer-destructuring
+  };
+
+  // Emit the event back to the consumer
+  const handleTimezoneUpdate = (ev, zoneId) => {
+    currentZone = zoneId;
+    timezone = ungroupedZones[zoneId];
+    reset();
+    dispatch('update', {
+      timezone,
+      datetime,
+      utcDatetime,
+      zonedDatetime: utcToZonedTime(utcDatetime, timezone)
+    });
+    toggleButtonRef.focus();
+    ev.preventDefault();
+  };
 
   // ***** Methods *****
 
@@ -159,8 +166,8 @@
   // We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
   const keyDown = (ev) => {
     // If the clearButton is focused, don't do anything else
-    // We should only continue if the dropdown is open
-    if (document.activeElement === clearButtonRef || !open) {
+    // We should only continue if the dropdown is expanded
+    if (document.activeElement === clearButtonRef || !expanded) {
       return;
     }
 
@@ -179,7 +186,7 @@
       ev.preventDefault();
       moveSelection('up');
     }
-    // If the user presses Enter and the dropdown is open, select the current item
+    // If the user presses Enter and the dropdown is expanded, select the current item
     if (ev.keyCode === keyCodes.Enter && highlightedZone) {
       handleTimezoneUpdate(ev, highlightedZone);
     }
@@ -192,42 +199,36 @@
     }
   };
 
-  // Reset the dropdown and all internal state to the initial values
-  const reset = () => {
-    open = initialState.open;
-    userSearch = initialState.userSearch;
-  };
-
   // When the user presses the clear button when searching,
   // we want to clear the text and refocus on the input
   const clearSearch = () => {
-    userSearch = initialState.userSearch;
+    userSearch = initialState.userSearch; // eslint-disable-line prefer-destructuring
     // Refocus to the search input
     searchInputRef.focus();
   };
 
-  const setHighlightedZone = (name) => {
-    highlightedZone = name;
+  const setHighlightedZone = (zone) => {
+    highlightedZone = zone;
   };
 
-  const toggleOpen = (ev) => {
-    // If there is no keyCode, it's not a keyboard event
-    if (!ev.keyCode) {
-      open = !open;
-    } else {
+  const toggleExpanded = (ev) => {
+    if (ev.keyCode) {
       // If it's a keyboard event, we should react only to certain keys
       // Enter and Space should show it
       if ([keyCodes.Enter, keyCodes.Space].includes(ev.keyCode)) {
-        open = !open;
+        expanded = !expanded;
       }
       // Escape should just hide the menu
       if (ev.keyCode === keyCodes.Escape) {
-        open = false;
+        expanded = false;
       }
       // ArrowDown should show it
       if (ev.keyCode === keyCodes.ArrowDown) {
-        open = true;
+        expanded = true;
       }
+    } else {
+      // If there is no keyCode, it's not a keyboard event
+      expanded = !expanded;
     }
   };
 
@@ -310,7 +311,7 @@
   });
 </script>
 
-{#if open}
+{#if expanded}
   <div class="overlay" on:click="{reset}"></div>
 {/if}
 
@@ -321,9 +322,9 @@
     aria-label="{`${currentZone} is currently selected. Change timezone`}"
     aria-haspopup="listbox"
     data-toggle="true"
-    aria-expanded="{open}"
-    on:click="{toggleOpen}"
-    on:keydown="{toggleOpen}"
+    aria-expanded="{expanded}"
+    on:click="{toggleExpanded}"
+    on:keydown="{toggleExpanded}"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -422,11 +423,11 @@
       <path
         d="M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0
         113.536-3.536l11.095 11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z"
-        transform="{open ? 'rotate(180, 15.3635, 15.3635)' : 'rotate(0)'}"
+        transform="{expanded ? 'rotate(180, 15.3635, 15.3635)' : 'rotate(0)'}"
       ></path>
     </svg>
   </button>
-  {#if open}
+  {#if expanded}
     <div class="tz-dropdown" transition:slide on:keydown="{keyDown}">
       <label id="{labelId}">
         Select a timezone from the list. Start typing to filter or use the arrow
@@ -499,6 +500,7 @@
                   aria-label="{`Select ${name}`}"
                   aria-selected="{highlightedZone === name}"
                   on:mouseover="{() => setHighlightedZone(name)}"
+                  on:click="{(ev) => handleTimezoneUpdate(ev, name)}"
                 >
                   {name}
                   <span>

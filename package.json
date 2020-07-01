@@ -31,6 +31,7 @@
     "web"
   ],
   "scripts": {
+    "prebuild": "yarn lint",
     "build:web": "rollup -c ./rollup.config.web.js",
     "build:prod": "rollup -c ./rollup.config.js",
     "build": "npm-run-all --parallel build:**",

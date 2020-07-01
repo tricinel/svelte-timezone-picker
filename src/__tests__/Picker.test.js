@@ -130,10 +130,10 @@ describe('The component renders with props', () => {
     expect(getByText(/London/i)).toBeInTheDocument();
   });
 
-  test('Shows the listbox by default when the open prop is true', () => {
+  test('Shows the listbox by default when the expanded prop is true', () => {
     const { getByLabelText, getByRole } = render(Picker, {
       ...props,
-      open: true
+      expanded: true
     });
     const toggleButton = getByLabelText(/Change timezone/i);
     const listBox = getByRole('listbox');
@@ -153,7 +153,7 @@ describe('The component renders with props', () => {
     const { queryAllByRole } = render(Picker, {
       ...props,
       allowedTimezones,
-      open: true
+      expanded: true
     });
 
     expect(queryAllByRole('option')).toHaveLength(3);
@@ -210,7 +210,7 @@ describe('The component handles user interactions', () => {
   test('The user can navigate the options using the keyboard', async () => {
     const { getByText, getByLabelText } = render(Picker, {
       ...props,
-      open: true
+      expanded: true
     });
 
     const first = getZoneLabelAtIndex(0);
@@ -255,7 +255,7 @@ describe('The component handles user interactions', () => {
   test('The use can type to filter the options', async () => {
     const { getByTitle, getAllByRole, getByPlaceholderText } = render(Picker, {
       ...props,
-      open: true
+      expanded: true
     });
     const input = getByPlaceholderText(/search/i);
 
@@ -289,7 +289,7 @@ describe('Focus is correctly managed', () => {
   test('Move focus around depending on user interactions', async () => {
     const { getByText, getByLabelText, getByPlaceholderText } = render(Picker, {
       ...props,
-      open: true
+      expanded: true
     });
     const input = getByPlaceholderText(/search/i);
     const toggleButton = getByLabelText(/Change timezone/i);

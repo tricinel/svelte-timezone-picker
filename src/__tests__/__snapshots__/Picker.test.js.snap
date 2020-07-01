@@ -249,7 +249,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
     >
       <label
         class="svelte-1rfyif"
-        id="mock-test-id-12"
+        id="mock-test-id-9"
       >
         Select a timezone from the list. Start typing to filter or use the arrow
         keys to navigate the list
@@ -260,13 +260,13 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       >
         <input
           aria-autocomplete="list"
-          aria-controls="mock-test-id-13"
-          aria-labelledby="mock-test-id-12"
+          aria-controls="mock-test-id-10"
+          aria-labelledby="mock-test-id-9"
           autocomplete="off"
           autocorrect="off"
           autofocus=""
           class="svelte-1rfyif"
-          id="mock-test-id-15"
+          id="mock-test-id-11"
           placeholder="Search..."
           type="search"
         />
@@ -275,9 +275,9 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
        
       <ul
         aria-activedescendant="tz-london"
-        aria-labelledby="mock-test-id-12"
+        aria-labelledby="mock-test-id-9"
         class="tz-groups svelte-1rfyif"
-        id="mock-test-id-13"
+        id="mock-test-id-10"
         role="listbox"
         tabindex="-1"
       >
