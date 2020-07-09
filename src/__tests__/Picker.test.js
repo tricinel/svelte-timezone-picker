@@ -208,41 +208,53 @@ describe('The component handles user interactions', () => {
   });
 
   test('The user can navigate the options using the keyboard', async () => {
-    const { getByText, getByLabelText } = render(Picker, {
+    const { getByRole, getByText, getByLabelText } = render(Picker, {
       ...props,
+      timezone: 'Australia/Sydney',
       expanded: true
     });
 
-    const first = getZoneLabelAtIndex(0);
+    const firstOption = getByRole('option', { name: `Select Sydney` });
+    const secondOption = getByText(getTestRegex(getZoneLabelAtIndex(1)));
+    const thirdOption = getByText(getTestRegex(getZoneLabelAtIndex(2)));
     const last = getZoneLabelAtIndex(getTotalZones() - 1);
+    const lastOption = getByText(getTestRegex(last));
 
-    // The user pressed the down arrow key, so we move focus to the first option
+    expect(firstOption).toHaveFocus();
+
+    // The user pressed the down arrow key, so we move focus to the second option
+    // because the first one is preselected
     await fireEvent.keyDown(
       document.activeElement || document.body,
       keyArrowDown
     );
-    expect(getByText(getTestRegex(first))).toHaveFocus();
+    expect(secondOption).toHaveFocus();
 
-    // The user pressed the down key, so we move focus to the second option
+    // The user pressed the down key, so we move focus to the third option
     await fireEvent.keyDown(
       document.activeElement || document.body,
       keyArrowDown
     );
-    expect(getByText(getTestRegex(getZoneLabelAtIndex(1)))).toHaveFocus();
+    expect(thirdOption).toHaveFocus();
+
+    // The user pressed the up key, so we move focus to the second option
+    await fireEvent.keyDown(
+      document.activeElement || document.body,
+      keyArrowUp
+    );
+    expect(secondOption).toHaveFocus();
 
     // The user pressed the up key, so we move focus to the first option
     await fireEvent.keyDown(
       document.activeElement || document.body,
       keyArrowUp
     );
-    expect(getByText(getTestRegex(first))).toHaveFocus();
-
     // The user pressed the up key, so we move focus to the last option because we are at the top of the list
     await fireEvent.keyDown(
       document.activeElement || document.body,
       keyArrowUp
     );
-    expect(getByText(getTestRegex(last))).toHaveFocus();
+    expect(lastOption).toHaveFocus();
 
     // The user pressed the Enter key, so we select the option currently focused
     // `last` after the above events
@@ -286,30 +298,40 @@ describe('Focus is correctly managed', () => {
     expect(document.activeElement).toBe(toggleButton);
   });
 
-  test('Move focus around depending on user interactions', async () => {
-    const { getByText, getByLabelText, getByPlaceholderText } = render(Picker, {
+  test('Focus on the selected timezone if provided', () => {
+    const { getByRole } = render(Picker, {
       ...props,
+      timezone: 'Australia/Sydney',
+      expanded: true
+    });
+
+    expect(getByRole('option', { name: `Select Sydney` })).toHaveFocus();
+  });
+
+  test('Move focus around depending on user interactions', async () => {
+    const { getByRole, getByLabelText, getByPlaceholderText } = render(Picker, {
+      ...props,
+      timezone: 'Australia/Sydney',
       expanded: true
     });
     const input = getByPlaceholderText(/search/i);
     const toggleButton = getByLabelText(/Change timezone/i);
+    const initialOption = getByRole('option', { name: `Select Sydney` });
 
-    expect(document.activeElement).toBe(input);
+    expect(initialOption).toHaveFocus();
     await userEvent.type(input, 's');
-    expect(document.activeElement).toBe(input);
+    expect(input).toHaveFocus();
 
-    const first = getZoneLabelAtIndex(0);
-
-    // The user pressed the down arrow key, so we move focus to the first option
+    // The user pressed the down arrow key, so we move focus to the next option that contains 's'
     await fireEvent.keyDown(document.activeElement, keyArrowDown);
-    expect(document.activeElement).toBe(getByText(getTestRegex(first)));
+    expect(getByRole('option', { name: `Select Lisbon` })).toHaveFocus();
 
     await fireEvent.keyDown(document.activeElement, keyEnter);
-    expect(document.activeElement).toBe(toggleButton);
+    expect(toggleButton).toHaveFocus();
 
     await fireEvent.keyDown(document.activeElement, keyEnter);
     await fireEvent.keyDown(document.activeElement, keyArrowDown);
     await fireEvent.keyDown(document.activeElement || document.body, keyEscape);
-    expect(document.activeElement).toBe(toggleButton);
+    expect(toggleButton).toHaveFocus();
   });
 });

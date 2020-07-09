@@ -373,7 +373,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         
         <li
           aria-label="Select London"
-          aria-selected="false"
+          aria-selected="true"
           class="svelte-1rfyif"
           id="tz-london"
           role="option"
