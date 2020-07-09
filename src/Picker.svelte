@@ -232,6 +232,12 @@
     }
   };
 
+  const scrollToHighlighted = () => {
+    if (expanded && highlightedZone) {
+      scrollList(highlightedZone);
+    }
+  };
+
   // ***** Reactive *****
 
   // As the user types, we filter the available zones to show only those that should be visible
@@ -255,9 +261,8 @@
       timezone = userTimezone;
     }
 
-    // TODO: Make sure the timezone is selected and the list scrolled to it
-
     currentZone = getKeyByValue(ungroupedZones, timezone);
+    setHighlightedZone(currentZone);
 
     // Warn the user if the datetime is invalid
     if (datetime && !isValid(parseISO(datetime))) {
@@ -386,7 +391,7 @@
     </svg>
   </button>
   {#if expanded}
-    <div class="tz-dropdown" transition:slide on:keydown="{keyDown}">
+    <div class="tz-dropdown" transition:slide on:introend="{scrollToHighlighted}" on:keydown="{keyDown}">
       <label id="{labelId}">
         Select a timezone from the list. Start typing to filter or use the arrow
         keys to navigate the list
