@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { utcToZonedTime, zonedTimeToUtc, format } from 'date-fns-tz';
   import { isValid, parseISO } from 'date-fns';
@@ -241,12 +241,6 @@
       : zoneLabels.slice();
 
   // ***** Lifecycle methods *****
-
-  // Just in case we need to auto-update the date, we keep track of the animationFrameId
-  // so that we can clear it and prevent memory leaks
-  let animationFrameId;
-  const UPDATE_INTERVAL = 1000 * 60; // 1 minute
-
   onMount(() => {
     if (timezone) {
       // The timezone must be a valid timezone, so we check it against our list of values in flat
@@ -261,6 +255,8 @@
       timezone = userTimezone;
     }
 
+    // TODO: Make sure the timezone is selected and the list scrolled to it
+
     currentZone = getKeyByValue(ungroupedZones, timezone);
 
     // Warn the user if the datetime is invalid
@@ -271,42 +267,6 @@
     // If there is a valid datetime, update the utcDatetime
     if (datetime && isValid(parseISO(datetime))) {
       utcDatetime = zonedTimeToUtc(parseISO(datetime), timezone);
-    }
-
-    // If the user didn't pass a date, then we assume it's a picker,
-    // and we update the time for each timezone every minute
-    if (!datetime) {
-      let nextTimeToUpdate = Date.now();
-      let firstRun = true;
-
-      const updateCurrentDatetime = () => {
-        const now = Date.now();
-        let elapsedMs = 0;
-
-        // On the first run, we need to take into account
-        // the number of seconds that have already elapsed from the full minute
-        if (firstRun) {
-          elapsedMs = new Date().getMilliseconds();
-          firstRun = false;
-        }
-
-        if (nextTimeToUpdate <= now) {
-          datetime = new Date();
-          utcDatetime = zonedTimeToUtc(datetime, timezone);
-          // On subsequent runs, the elapsedMs will be always 0
-          nextTimeToUpdate = now + UPDATE_INTERVAL - elapsedMs;
-        }
-        animationFrameId = requestAnimationFrame(updateCurrentDatetime);
-      };
-
-      updateCurrentDatetime();
-    }
-  });
-
-  onDestroy(() => {
-    // Prevent memory leaks and clean up the requested anmation frame
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
     }
   });
 </script>
@@ -409,9 +369,7 @@
     <span>
       {currentZone}
       {#if utcDatetime}
-        ({format(utcToZonedTime(utcDatetime, timezone), 'h:mm aaaa', {
-          timeZone: timezone
-        })})
+        ({format(utcToZonedTime(utcDatetime, timezone), `'GMT' xxx`, { timeZone: timezone })})
       {/if}
     </span>
     <svg
@@ -504,7 +462,7 @@
                 >
                   {name}
                   <span>
-                    {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), 'h:mm aaaa')}
+                    {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), `'GMT' xxx`, { timeZone: ungroupedZones[name] })}
                   </span>
                 </li>
               {/if}

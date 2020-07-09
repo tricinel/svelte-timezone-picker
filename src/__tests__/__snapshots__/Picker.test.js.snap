@@ -100,7 +100,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         London
          
         (
-        8:30 a.m.
+        GMT +01:00
         )
       </span>
        
@@ -225,7 +225,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         London
          
         (
-        8:30 a.m.
+        GMT +01:00
         )
       </span>
        
@@ -304,7 +304,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           Sydney
            
           <span>
-            5:30 p.m.
+            GMT +10:00
           </span>
            
         </li>
@@ -320,7 +320,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           Melbourne
            
           <span>
-            5:30 p.m.
+            GMT +10:00
           </span>
            
         </li>
@@ -350,7 +350,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           Central European Time
            
           <span>
-            9:30 a.m.
+            GMT +02:00
           </span>
            
         </li>
@@ -366,7 +366,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           Dublin
            
           <span>
-            8:30 a.m.
+            GMT +01:00
           </span>
            
         </li>
@@ -382,7 +382,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           London
            
           <span>
-            8:30 a.m.
+            GMT +01:00
           </span>
            
         </li>
@@ -398,7 +398,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           Lisbon
            
           <span>
-            8:30 a.m.
+            GMT +01:00
           </span>
            
         </li>
@@ -428,7 +428,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
           UTC Time
            
           <span>
-            7:30 a.m.
+            GMT +00:00
           </span>
            
         </li>
