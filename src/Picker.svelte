@@ -104,17 +104,21 @@
     userSearch = initialState.userSearch; // eslint-disable-line prefer-destructuring
   };
 
-  // Emit the event back to the consumer
-  const handleTimezoneUpdate = (ev, zoneId) => {
-    currentZone = zoneId;
-    timezone = ungroupedZones[zoneId];
-    reset();
+  const dispatchUpdates = () => {
     dispatch('update', {
       timezone,
       datetime,
       utcDatetime,
       zonedDatetime: utcToZonedTime(utcDatetime, timezone)
     });
+  };
+
+  // Emit the event back to the consumer
+  const handleTimezoneUpdate = (ev, zoneId) => {
+    currentZone = zoneId;
+    timezone = ungroupedZones[zoneId];
+    dispatchUpdates();
+    reset();
     toggleButtonRef.focus();
     ev.preventDefault();
   };
@@ -246,33 +250,49 @@
       ? filterZones(userSearch, zoneLabels)
       : zoneLabels.slice();
 
-  // ***** Lifecycle methods *****
-  onMount(() => {
-    if (timezone) {
+  const setTimezone = (tz) => {
+    if (!tz) {
+      timezone = userTimezone;
+    }
+
+    if (tz && !Object.values(ungroupedZones).includes(tz)) {
       // The timezone must be a valid timezone, so we check it against our list of values in flat
-      if (!Object.values(ungroupedZones).includes(timezone)) {
-        console.warn(
-          `The timezone provided is not valid: ${timezone}!`,
-          `Valid zones are: ${validZones}`
-        );
-        timezone = userTimezone;
-      }
-    } else {
+      console.warn(
+        `The timezone provided is not valid: ${tz}!`,
+        `Valid zones are: ${validZones}`
+      );
       timezone = userTimezone;
     }
 
     currentZone = getKeyByValue(ungroupedZones, timezone);
     setHighlightedZone(currentZone);
+  };
 
+  const setDatetime = (dt, tz) => {
     // Warn the user if the datetime is invalid
-    if (datetime && !isValid(parseISO(datetime))) {
-      console.warn(`The datetime provided is not a valid date: ${datetime}`);
+    if (dt && !isValid(parseISO(dt))) {
+      console.warn(`The datetime provided is not a valid date: ${dt}`);
     }
 
     // If there is a valid datetime, update the utcDatetime
-    if (datetime && isValid(parseISO(datetime))) {
-      utcDatetime = zonedTimeToUtc(parseISO(datetime), timezone);
+    if (dt && isValid(parseISO(dt))) {
+      utcDatetime = zonedTimeToUtc(parseISO(dt), tz);
     }
+  };
+
+  // We want to properly handle any potential changes to the current timezone and datetime
+  // that might come in from the consumer of the component.
+  // This includes setting the proper timezone, datetime and dispatching the updated values
+  // back up to the consumer
+  $: setTimezone(timezone);
+  $: setDatetime(datetime, timezone);
+  $: utcDatetime && dispatchUpdates();
+
+  // ***** Lifecycle methods *****
+  onMount(() => {
+    setTimezone(timezone);
+    setDatetime(datetime, timezone);
+    scrollToHighlighted();
   });
 </script>
 
@@ -374,7 +394,7 @@
     <span>
       {currentZone}
       {#if utcDatetime}
-        ({format(utcToZonedTime(utcDatetime, timezone), `'GMT' xxx`, { timeZone: timezone })})
+        ({format(utcDatetime, `'GMT' xxx`, { timeZone: timezone })})
       {/if}
     </span>
     <svg
@@ -391,7 +411,12 @@
     </svg>
   </button>
   {#if expanded}
-    <div class="tz-dropdown" transition:slide on:introend="{scrollToHighlighted}" on:keydown="{keyDown}">
+    <div
+      class="tz-dropdown"
+      transition:slide
+      on:introend="{scrollToHighlighted}"
+      on:keydown="{keyDown}"
+    >
       <label id="{labelId}">
         Select a timezone from the list. Start typing to filter or use the arrow
         keys to navigate the list
@@ -467,7 +492,11 @@
                 >
                   {name}
                   <span>
-                    {utcDatetime && format(getTimeForZone(utcDatetime, ungroupedZones[name]), `'GMT' xxx`, { timeZone: ungroupedZones[name] })}
+                    {utcDatetime && format(
+                        getTimeForZone(utcDatetime, ungroupedZones[name]),
+                        `'GMT' xxx`,
+                        { timeZone: ungroupedZones[name] }
+                      )}
                   </span>
                 </li>
               {/if}

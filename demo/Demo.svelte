@@ -3,12 +3,23 @@
   import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
   import { format, parseISO } from 'date-fns';
 
-  let datetime = '2016-06-19T08:30';
+  let datetime = '2018-08-23T10:00';
+  let datetime1 = '2018-08-23T10:00';
   let timezone = 'Europe/London';
   // let datetime;
   // let timezone;
 
   let payload = {};
+
+  let datetime2 = '2016-06-19T08:30';
+
+  const switchDatetime = () => {
+    if (datetime === datetime1) {
+      datetime = datetime2;
+    } else {
+      datetime = datetime1;
+    }
+  };
 
   const update = (ev) => {
     payload.datetime = ev.detail.datetime;
@@ -21,7 +32,10 @@
 <div class="cols">
   <div class="col">
     <p>Somewhere in user land...</p>
-    <input type="datetime-local" value="{datetime}" />
+    <p>
+      <button on:click="{switchDatetime}">Simulate datetime change</button>
+    </p>
+    <input type="datetime-local" bind:value="{datetime}" />
     <Picker on:update="{update}" {datetime} {timezone} />
   </div>
   {#if Object.keys(payload).length}
