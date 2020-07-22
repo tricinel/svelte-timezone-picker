@@ -1,6 +1,14 @@
-# timezone-picker
+# Svelte Timezone Picker
+
+You need a timezone picker that will allow the user to pick a timezone from a list of timezones and provide you with the converted datetime for that timezone. You want it to be accessible and follow the ARIA design pattern for a [select](https://www.w3.org/TR/wai-aria-practices/examples/listbox/listbox-collapsible.html).
+
+This is a component that controls all user interactions and state for you. It follows best practices and accessibility guidelines.
+
+> The timezones are all valid [IANA time zones](https://www.iana.org/time-zones).
 
 ## Installation
+
+This module is distributed via npm which is bundled with node and should be installed as one of your project's dependencies:
 
 ```
 yarn add svelte-timezone-picker
@@ -9,6 +17,8 @@ yarn add svelte-timezone-picker
 ```
 npm i --save svelte-timezone-picker
 ```
+
+> If you are going to use the svelte component, make sure you have svelte installed as well.
 
 ## Usage
 
@@ -64,9 +74,9 @@ To use it as a web component, add the `index.js` file to your page and use it as
 
 ### Events
 
-| Name     | Description                                    | Return                                                                                                                                              |
-| :------- | :--------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `update` | Dispatched every time you change the timezone. | An object with the selected timezone, the provided datetime value, the datetime in UTC format and the datetime converted for the selected timezone. |
+| Name     | Description                                                             | Return                                                                                                                                              |
+| :------- | :---------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `update` | Dispatched every time you change the timezone or the provided datetime. | An object with the selected timezone, the provided datetime value, the datetime in UTC format and the datetime converted for the selected timezone. |
 
 ### Styling
 
@@ -83,7 +93,7 @@ You can use CSS variables to style the DOM elements of timezone-picker.
 }
 ```
 
-Check out the [Demo](./demo).
+Check out the [Demo](./demo) or play with this on [Codesandbox](https://codesandbox.io/s/svelte-timezone-picker-demo-4ix87).
 
 ## License
 
