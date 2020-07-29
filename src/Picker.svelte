@@ -1,5 +1,7 @@
 <script>
+  /* global __USE_CUSTOM_EVENT__ */
   import { createEventDispatcher, onMount } from 'svelte';
+  import { get_current_component } from 'svelte/internal'; // eslint-disable-line camelcase
   import { slide } from 'svelte/transition';
   import { utcToZonedTime, zonedTimeToUtc, format } from 'date-fns-tz';
   import { isValid, parseISO } from 'date-fns';
@@ -29,9 +31,6 @@
   export let allowedTimezones = null;
 
   // ***** End Public API *****
-
-  // We will use the dispatcher to send the update event
-  const dispatch = createEventDispatcher();
 
   // What is the current zone?
   let currentZone;
@@ -104,13 +103,35 @@
     userSearch = initialState.userSearch; // eslint-disable-line prefer-destructuring
   };
 
+  // We will use the dispatcher to send the update event
+  const dispatch = createEventDispatcher();
+  // Because CustomEvents don't bubble by default, custom components won't work
+  // We will need to do some tricks for this to work properly
+  // https://github.com/sveltejs/svelte/issues/3119
+  const component = get_current_component();
+
   const dispatchUpdates = () => {
-    dispatch('update', {
+    const eventName = 'update';
+    const eventData = {
       timezone,
       datetime,
       utcDatetime,
       zonedDatetime: utcToZonedTime(utcDatetime, timezone)
-    });
+    };
+
+    if (__USE_CUSTOM_EVENT__) {
+      const customEvent = new CustomEvent(eventName, {
+        detail: eventData,
+        bubbles: true,
+        cancelable: true,
+        composed: true
+      });
+      component.dispatchEvent && component.dispatchEvent(customEvent);
+    }
+
+    if (!__USE_CUSTOM_EVENT__) {
+      dispatch(eventName, eventData);
+    }
   };
 
   // Emit the event back to the consumer

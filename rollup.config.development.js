@@ -2,6 +2,7 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
+import replace from '@rollup/plugin-replace';
 
 import pkg from './package.json';
 
@@ -34,6 +35,9 @@ const config = {
       .replace(/-\w/g, (m) => m[1].toUpperCase())
   },
   plugins: [
+    replace({
+      __USE_CUSTOM_EVENT__: false
+    }),
     svelte({
       dev: true,
       css: (css) => css.write('demo/build/bundle.css')
