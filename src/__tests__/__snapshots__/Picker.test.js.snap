@@ -7,26 +7,31 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
     aria-expanded="false"
     aria-haspopup="listbox"
     aria-label="London is currently selected. Change timezone"
-    class="svelte-1olp7rc"
+    class="svelte-1mifefb"
     data-toggle="true"
     type="button"
   >
     <span
-      class="svelte-1olp7rc"
+      class="svelte-1mifefb"
     >
       London
-       GMT 
-      +00:00
+       
+      <small
+        class="svelte-1mifefb"
+      >
+        GMT 
+        +00:00
+      </small>
     </span>
      
     <svg
-      class="svelte-1olp7rc"
+      class="svelte-1mifefb"
       height="16"
       viewBox="0 0 16 16"
       width="10"
     >
       <polygon
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         points="8, 8, 16, 16, 0, 16"
         transform="rotate(180, 8, 8) translate(0 -4)"
         x="0"
@@ -42,33 +47,38 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
 exports[`The component renders with internal defaults Basic snapshot with defaults 2`] = `
 <div>
   <div
-    class="overlay svelte-1olp7rc"
+    class="overlay svelte-1mifefb"
   />
    
   <button
     aria-expanded="true"
     aria-haspopup="listbox"
     aria-label="London is currently selected. Change timezone"
-    class="svelte-1olp7rc"
+    class="svelte-1mifefb"
     data-toggle="true"
     type="button"
   >
     <span
-      class="svelte-1olp7rc"
+      class="svelte-1mifefb"
     >
       London
-       GMT 
-      +00:00
+       
+      <small
+        class="svelte-1mifefb"
+      >
+        GMT 
+        +00:00
+      </small>
     </span>
      
     <svg
-      class="svelte-1olp7rc"
+      class="svelte-1mifefb"
       height="16"
       viewBox="0 0 16 16"
       width="10"
     >
       <polygon
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         points="8, 8, 16, 16, 0, 16"
         transform="rotate(0) translate(0 -4)"
         x="0"
@@ -78,11 +88,11 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
   </button>
    
   <div
-    class="tz-dropdown svelte-1olp7rc"
+    class="tz-dropdown svelte-1mifefb"
     style="animation: __svelte_276924520_0 400ms linear 0ms 1 both;"
   >
     <span
-      class="sr-only svelte-1olp7rc"
+      class="sr-only svelte-1mifefb"
       id="mock-test-id-9"
     >
       Select a timezone from the list. Start typing to filter or use the arrow
@@ -90,7 +100,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
     </span>
      
     <div
-      class="input-group svelte-1olp7rc"
+      class="input-group svelte-1mifefb"
     >
       <input
         aria-autocomplete="list"
@@ -99,7 +109,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         autocomplete="off"
         autocorrect="off"
         autofocus=""
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="mock-test-id-11"
         placeholder="Search..."
         type="search"
@@ -110,18 +120,18 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
     <ul
       aria-activedescendant="tz-london"
       aria-labelledby="mock-test-id-9"
-      class="tz-groups svelte-1olp7rc"
+      class="tz-groups svelte-1mifefb"
       id="mock-test-id-10"
       role="listbox"
       tabindex="-1"
     >
       <li
         aria-hidden="true"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         role="option"
       >
         <p
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           Australia
         </p>
@@ -130,7 +140,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select Sydney"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-australiasydney"
         role="option"
         tabindex="0"
@@ -138,7 +148,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         Sydney
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +10:00
@@ -149,7 +159,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select Melbourne"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-australiamelbourne"
         role="option"
         tabindex="0"
@@ -157,7 +167,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         Melbourne
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +10:00
@@ -169,11 +179,11 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       
       <li
         aria-hidden="true"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         role="option"
       >
         <p
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           Europe
         </p>
@@ -182,7 +192,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select Berlin"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-europeberlin"
         role="option"
         tabindex="0"
@@ -190,7 +200,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         Berlin
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +01:00
@@ -201,7 +211,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select Dublin"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-europedublin"
         role="option"
         tabindex="0"
@@ -209,7 +219,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         Dublin
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +00:00
@@ -220,7 +230,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select London"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-europelondon"
         role="option"
         tabindex="0"
@@ -228,7 +238,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         London
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +00:00
@@ -239,7 +249,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select Lisbon"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-europelisbon"
         role="option"
         tabindex="0"
@@ -247,7 +257,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         Lisbon
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +00:00
@@ -259,11 +269,11 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       
       <li
         aria-hidden="true"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         role="option"
       >
         <p
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           Other
         </p>
@@ -272,7 +282,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
       <li
         aria-label="Select UTC"
         aria-selected="false"
-        class="svelte-1olp7rc"
+        class="svelte-1mifefb"
         id="tz-utc"
         role="option"
         tabindex="0"
@@ -280,7 +290,7 @@ exports[`The component renders with internal defaults Basic snapshot with defaul
         UTC
          
         <span
-          class="svelte-1olp7rc"
+          class="svelte-1mifefb"
         >
           GMT 
           +00:00
