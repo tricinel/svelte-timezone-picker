@@ -6,23 +6,20 @@ import {
   getZoneLabelAtIndex,
   getTestRegex,
   getTotalZones,
-  zoneLabels,
+  ungroupedZones,
   keyArrowDown,
   keyArrowUp,
   keyEnter,
   keyEscape,
   keyLetter
 } from '../testUtils';
-import { filterZones } from '../utils';
+import { filter } from '../utils';
 import Picker from '../Picker.svelte';
 
 jest.mock('../timezones');
 jest.mock('../utils');
 
-const props = {
-  datetime: '2016-06-19T08:30',
-  timezone: 'Europe/London'
-};
+const props = { timezone: 'Europe/London' };
 
 let intlSpy;
 
@@ -93,11 +90,9 @@ describe('The component renders with internal defaults', () => {
       })
     });
 
-    const { getByText } = render(Picker, {
-      datetime: '2016-06-19T08:30'
-    });
+    const { getByText } = render(Picker);
 
-    expect(getByText(/UTC Time/i)).toBeInTheDocument();
+    expect(getByText(/UTC/i)).toBeInTheDocument();
   });
 
   test('Sets the datetime to the current datetime when rendered without a datetime prop', () => {
@@ -105,7 +100,7 @@ describe('The component renders with internal defaults', () => {
       timezone: 'Europe/Berlin'
     });
 
-    expect(getByText(/Central European Time/i)).toBeInTheDocument();
+    expect(getByText(/Berlin/i)).toBeInTheDocument();
   });
 });
 
@@ -268,7 +263,7 @@ describe('The component handles user interactions', () => {
     ).toBeInTheDocument();
   });
 
-  test('The use can type to filter the options', async () => {
+  test('The user can type to filter the options', async () => {
     const { getByTitle, getAllByRole, getByPlaceholderText } = render(Picker, {
       ...props,
       expanded: true
@@ -277,12 +272,12 @@ describe('The component handles user interactions', () => {
 
     await userEvent.type(input, 'bo');
     expect(getAllByRole('option')).toHaveLength(
-      filterZones('bo', zoneLabels).length
+      filter('bo', ungroupedZones).length
     );
 
     await userEvent.type(input, '{backspace}');
     expect(getAllByRole('option')).toHaveLength(
-      filterZones('b', zoneLabels).length
+      filter('b', ungroupedZones).length
     );
 
     await fireEvent.click(getByTitle(/Clear search text/i));
@@ -320,7 +315,7 @@ describe('Focus is correctly managed', () => {
     });
     const input = getByPlaceholderText(/search/i);
     const toggleButton = getByLabelText(/Change timezone/i);
-    const initialOption = getByRole('option', { name: `Select Sydney` });
+    const initialOption = getByRole('option', { name: 'Select Sydney' });
 
     expect(initialOption).toHaveFocus();
     await userEvent.type(input, 's');
@@ -328,7 +323,7 @@ describe('Focus is correctly managed', () => {
 
     // The user pressed the down arrow key, so we move focus to the next option that contains 's'
     await fireEvent.keyDown(document.activeElement, keyArrowDown);
-    expect(getByRole('option', { name: `Select Lisbon` })).toHaveFocus();
+    expect(getByRole('option', { name: 'Select Lisbon' })).toHaveFocus();
 
     await fireEvent.keyDown(document.activeElement, keyEnter);
     expect(toggleButton).toHaveFocus();

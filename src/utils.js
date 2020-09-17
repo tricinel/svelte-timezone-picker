@@ -41,10 +41,6 @@ const scrollIntoView = (node, rootNode) => {
   });
 };
 
-// Given a value, find its corresponding key in the object
-const getKeyByValue = (object, value) =>
-  Object.keys(object).find((key) => object[key] === value);
-
 // Transform a string into a slug
 const slugify = (str) =>
   str
@@ -102,50 +98,33 @@ const keyCodes = {
   ]
 };
 
-// Straight from ramda.js
-const pickBy = (testFn, obj) => {
-  const result = {};
-  for (const prop in obj) {
-    if (testFn(obj[prop], prop, obj)) {
-      result[prop] = obj[prop];
-    }
-  }
-  return result;
-};
+const pick = (timezones, selection) => {
+  const unique = Array.from(new Set([...selection]));
 
-// We allow the consumer to only pick some timezones from the list to display
-const pickZones = (timezones, pick) => {
-  const unique = Array.from(new Set([...pick]));
-  const isInPicks = (val) => unique.includes(val);
-
-  return Object.keys(timezones).reduce((zones, zone) => {
-    const picked = pickBy(isInPicks, timezones[zone]);
+  return Object.keys(timezones).reduce((zones, zoneName) => {
+    const picked = unique.includes(zoneName) ? timezones[zoneName] : {};
     return {
       ...zones,
-      ...(Object.keys(picked).length > 0 && { [zone]: picked })
+      ...(Object.keys(picked).length > 0 && { [zoneName]: picked })
     };
   }, {});
 };
 
 // We take the grouped timezones and flatten them so that they can be easily searched
 // e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
-const ungroupZones = (timezones) =>
+const ungroup = (timezones) =>
   Object.values(timezones).reduce(
     (values, zone) => ({ ...values, ...zone }),
     {}
   );
 
 // Filter the list of zone labels to only those that match a search string
-const filterZones = (search, zones) =>
-  zones.filter((zone) => zone.toLowerCase().includes(search.toLowerCase()));
+const filter = (search, zoneGroups) =>
+  Object.entries(zoneGroups).reduce((zones, [zone, details]) => {
+    if (details[0].toLowerCase().includes(search.toLowerCase())) {
+      zones.push(zone);
+    }
+    return zones;
+  }, []);
 
-export {
-  scrollIntoView,
-  uid,
-  getKeyByValue,
-  slugify,
-  keyCodes,
-  ungroupZones,
-  filterZones,
-  pickZones
-};
+export { scrollIntoView, uid, slugify, keyCodes, ungroup, filter, pick };

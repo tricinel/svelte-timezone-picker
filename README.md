@@ -1,6 +1,6 @@
 # Svelte Timezone Picker
 
-You need a timezone picker that will allow the user to pick a timezone from a list of timezones and provide you with the converted datetime for that timezone. You want it to be accessible and follow the ARIA design pattern for a [select](https://www.w3.org/TR/wai-aria-practices/examples/listbox/listbox-collapsible.html).
+You need a timezone picker that will allow the user to pick a timezone from a list. You want it to be accessible and follow the ARIA design pattern for a [select](https://www.w3.org/TR/wai-aria-practices/examples/listbox/listbox-collapsible.html).
 
 This is a component that controls all user interactions and state for you. It follows best practices and accessibility guidelines.
 
@@ -30,11 +30,14 @@ To use it in your Svelte app, simply import it as a component.
 <script>
   import TimezonePicker from 'svelte-timezone-picker';
 
-  let datetime = '2020-06-10T19:30';
   let timezone = 'Europe/London';
+
+  function update(ev) {
+    console.log(ev.detail.timezone);
+  }
 </script>
 
-<TimezonePicker {datetime} {timezone} />
+<TimezonePicker {timezone} on:update="{update}" />
 ```
 
 ### Web component
@@ -43,10 +46,7 @@ To use it as a web component, add the `index.js` file to your page and use it as
 
 ```html
 <!-- use the new timezone-picker element -->
-<timezone-picker
-  datetime="2020-06-10T19:30"
-  timezone="Europe/London"
-></timezone-picker>
+<timezone-picker timezone="Europe/London"></timezone-picker>
 
 <!-- link it as module script -->
 <script type="module" src="/path/to/web/index.js"></script>
@@ -56,7 +56,7 @@ To use it as a web component, add the `index.js` file to your page and use it as
   window.addEventListener('load', () => {
     const picker = document.querySelector('timezone-picker');
     picker.$on('update', (event) => {
-      const { timezone, datetime, utcDatetime, zonedDatetime } = event.detail;
+      const { timezone } = event.detail;
       // do stuff with the data
     });
   });
@@ -67,16 +67,15 @@ To use it as a web component, add the `index.js` file to your page and use it as
 
 | Property           | Type    | Required? | Description                                                                      | Default                                            |
 | :----------------- | :------ | :-------: | :------------------------------------------------------------------------------- | :------------------------------------------------- |
-| `datetime`         | String  |           | The datetime value you are transforming. Must be a valid datetime.               | `new Date()`                                       |
 | `timezone`         | String  |           | The current timezone. Must be a valid timezone from IANA.                        | `Intl.DateTimeFormat().resolvedOptions().timeZone` |
 | `expanded`         | Boolean |           | Whether the dropdown should be automatically expanded or not.                    | `false`                                            |
 | `allowedTimezones` | Array   |           | Control which timezones display in the list. Must be a valid timezone from IANA. | `null`                                             |
 
 ### Events
 
-| Name     | Description                                                             | Return                                                                                                                                              |
-| :------- | :---------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `update` | Dispatched every time you change the timezone or the provided datetime. | An object with the selected timezone, the provided datetime value, the datetime in UTC format and the datetime converted for the selected timezone. |
+| Name     | Description                                    | Return                                |
+| :------- | :--------------------------------------------- | :------------------------------------ |
+| `update` | Dispatched every time you change the timezone. | An object with the selected timezone. |
 
 ### Styling
 

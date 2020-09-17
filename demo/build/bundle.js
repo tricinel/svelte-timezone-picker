@@ -25,6 +25,9 @@ var SvelteTimezonePicker = (function () {
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
     }
+    function is_empty(obj) {
+        return Object.keys(obj).length === 0;
+    }
 
     const is_client = typeof window !== 'undefined';
     let now = is_client
@@ -230,6 +233,7 @@ var SvelteTimezonePicker = (function () {
                 set_current_component(component);
                 update(component.$$);
             }
+            set_current_component(null);
             dirty_components.length = 0;
             while (binding_callbacks.length)
                 binding_callbacks.pop()();
@@ -486,14 +490,15 @@ var SvelteTimezonePicker = (function () {
             context: new Map(parent_component ? parent_component.$$.context : []),
             // everything else
             callbacks: blank_object(),
-            dirty
+            dirty,
+            skip_bound: false
         };
         let ready = false;
         $$.ctx = instance
             ? instance(component, prop_values, (i, ret, ...rest) => {
                 const value = rest.length ? rest[0] : ret;
                 if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
-                    if ($$.bound[i])
+                    if (!$$.skip_bound && $$.bound[i])
                         $$.bound[i](value);
                     if (ready)
                         make_dirty(component, i);
@@ -538,13 +543,17 @@ var SvelteTimezonePicker = (function () {
                     callbacks.splice(index, 1);
             };
         }
-        $set() {
-            // overridden by instance, if it has props
+        $set($$props) {
+            if (this.$$set && !is_empty($$props)) {
+                this.$$.skip_bound = true;
+                this.$$set($$props);
+                this.$$.skip_bound = false;
+            }
         }
     }
 
     function dispatch_dev(type, detail) {
-        document.dispatchEvent(custom_event(type, Object.assign({ version: '3.23.1' }, detail)));
+        document.dispatchEvent(custom_event(type, Object.assign({ version: '3.25.0' }, detail)));
     }
     function append_dev(target, node) {
         dispatch_dev("SvelteDOMInsert", { target, node });
@@ -580,7 +589,7 @@ var SvelteTimezonePicker = (function () {
     }
     function set_data_dev(text, data) {
         data = '' + data;
-        if (text.data === data)
+        if (text.wholeText === data)
             return;
         dispatch_dev("SvelteDOMSetData", { node: text, data });
         text.data = data;
@@ -647,6 +656,1951 @@ var SvelteTimezonePicker = (function () {
                 `border-top-width: ${t * border_top_width}px;` +
                 `border-bottom-width: ${t * border_bottom_width}px;`
         };
+    }
+
+    const timezones = {
+      Africa: {
+        'Africa/Abidjan': ['Abidjan', '+00:00', '+00:00'],
+        'Africa/Accra': ['Accra', '+00:00', '+00:00'],
+        'Africa/Addis_Ababa': ['Addis Ababa', '+03:00', '+03:00'],
+        'Africa/Algiers': ['Algiers', '+01:00', '+01:00'],
+        'Africa/Asmara': ['Asmara', '+03:00', '+03:00'],
+        'Africa/Asmera': ['Asmera', '+03:00', '+03:00'],
+        'Africa/Bamako': ['Bamako', '+00:00', '+00:00'],
+        'Africa/Bangui': ['Bangui', '+01:00', '+01:00'],
+        'Africa/Banjul': ['Banjul', '+00:00', '+00:00'],
+        'Africa/Bissau': ['Bissau', '+00:00', '+00:00'],
+        'Africa/Blantyre': ['Blantyre', '+02:00', '+02:00'],
+        'Africa/Brazzaville': ['Brazzaville', '+01:00', '+01:00'],
+        'Africa/Bujumbura': ['Bujumbura', '+02:00', '+02:00'],
+        'Africa/Cairo': ['Cairo', '+02:00', '+03:00'],
+        'Africa/Casablanca': ['Casablanca', '+00:00', '+01:00'],
+        'Africa/Ceuta': ['Ceuta', '+01:00', '+02:00'],
+        'Africa/Conakry': ['Conakry', '+00:00', '+00:00'],
+        'Africa/Dakar': ['Dakar', '+00:00', '+00:00'],
+        'Africa/Dar_es_Salaam': ['Dar es_Salaam', '+03:00', '+03:00'],
+        'Africa/Djibouti': ['Djibouti', '+03:00', '+03:00'],
+        'Africa/Douala': ['Douala', '+01:00', '+01:00'],
+        'Africa/El_Aaiun': ['El Aaiun', '+00:00', '+01:00'],
+        'Africa/Freetown': ['Freetown', '+00:00', '+00:00'],
+        'Africa/Gaborone': ['Gaborone', '+02:00', '+02:00'],
+        'Africa/Harare': ['Harare', '+02:00', '+02:00'],
+        'Africa/Johannesburg': ['Johannesburg', '+02:00', '+02:00'],
+        'Africa/Juba': ['Juba', '+03:00', '+03:00'],
+        'Africa/Kampala': ['Kampala', '+03:00', '+03:00'],
+        'Africa/Khartoum': ['Khartoum', '+03:00', '+03:00'],
+        'Africa/Kigali': ['Kigali', '+02:00', '+02:00'],
+        'Africa/Kinshasa': ['Kinshasa', '+01:00', '+01:00'],
+        'Africa/Lagos': ['Lagos', '+01:00', '+01:00'],
+        'Africa/Libreville': ['Libreville', '+01:00', '+01:00'],
+        'Africa/Lome': ['Lome', '+00:00', '+00:00'],
+        'Africa/Luanda': ['Luanda', '+01:00', '+01:00'],
+        'Africa/Lubumbashi': ['Lubumbashi', '+02:00', '+02:00'],
+        'Africa/Lusaka': ['Lusaka', '+02:00', '+02:00'],
+        'Africa/Malabo': ['Malabo', '+01:00', '+01:00'],
+        'Africa/Maputo': ['Maputo', '+02:00', '+02:00'],
+        'Africa/Maseru': ['Maseru', '+02:00', '+02:00'],
+        'Africa/Mbabane': ['Mbabane', '+02:00', '+02:00'],
+        'Africa/Mogadishu': ['Mogadishu', '+03:00', '+03:00'],
+        'Africa/Monrovia': ['Monrovia', '+00:00', '+00:00'],
+        'Africa/Nairobi': ['Nairobi', '+03:00', '+03:00'],
+        'Africa/Ndjamena': ['Ndjamena', '+01:00', '+01:00'],
+        'Africa/Niamey': ['Niamey', '+01:00', '+01:00'],
+        'Africa/Nouakchott': ['Nouakchott', '+00:00', '+00:00'],
+        'Africa/Ouagadougou': ['Ouagadougou', '+00:00', '+00:00'],
+        'Africa/Porto-Novo': ['Porto-Novo', '+01:00', '+01:00'],
+        'Africa/Sao_Tome': ['Sao Tome', '+00:00', '+00:00'],
+        'Africa/Timbuktu': ['Timbuktu', '+00:00', '+00:00'],
+        'Africa/Tripoli': ['Tripoli', '+01:00', '+02:00'],
+        'Africa/Tunis': ['Tunis', '+01:00', '+01:00'],
+        'Africa/Windhoek': ['Windhoek', '+01:00', '+02:00']
+      },
+      America: {
+        'America/Adak': ['Adak', '-10:00', '-09:00'],
+        'America/Anchorage': ['Anchorage', '-09:00', '-08:00'],
+        'America/Anguilla': ['Anguilla', '-04:00', '-04:00'],
+        'America/Antigua': ['Antigua', '-04:00', '-04:00'],
+        'America/Araguaina': ['Araguaina', '-03:00', '-03:00'],
+        'America/Argentina/Buenos_Aires': [
+          'Buenos Aires, Argentina',
+          '-03:00',
+          '-03:00'
+        ],
+        'America/Argentina/Catamarca': ['Catamarca, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/ComodRivadavia': [
+          'ComodRivadavia, Argentina',
+          '-03:00',
+          '-03:00'
+        ],
+        'America/Argentina/Cordoba': ['Cordoba, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/Jujuy': ['Jujuy, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/La_Rioja': ['La Rioja, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/Mendoza': ['Mendoza, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/Rio_Gallegos': [
+          'Rio Gallegos, Argentina',
+          '-03:00',
+          '-03:00'
+        ],
+        'America/Argentina/Salta': ['Salta, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/San_Juan': ['San Juan, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/San_Luis': ['San Luis, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/Tucuman': ['Tucuman, Argentina', '-03:00', '-03:00'],
+        'America/Argentina/Ushuaia': ['Ushuaia, Argentina', '-03:00', '-03:00'],
+        'America/Aruba': ['Aruba', '-04:00', '-04:00'],
+        'America/Asuncion': ['Asuncion', '-04:00', '-03:00'],
+        'America/Atikokan': ['Atikokan', '-05:00', '-05:00'],
+        'America/Atka': ['Atka', '-10:00', '-09:00'],
+        'America/Bahia': ['Bahia', '-03:00', '-02:00'],
+        'America/Bahia_Banderas': ['Bahia Banderas', '-06:00', '-05:00'],
+        'America/Barbados': ['Barbados', '-04:00', '-04:00'],
+        'America/Belem': ['Belem', '-03:00', '-03:00'],
+        'America/Belize': ['Belize', '-06:00', '-06:00'],
+        'America/Blanc-Sablon': ['Blanc-Sablon', '-04:00', '-04:00'],
+        'America/Boa_Vista': ['Boa Vista', '-04:00', '-04:00'],
+        'America/Bogota': ['Bogota', '-05:00', '-05:00'],
+        'America/Boise': ['Boise', '-07:00', '-06:00'],
+        'America/Buenos_Aires': ['Buenos Aires', '-03:00', '-03:00'],
+        'America/Cambridge_Bay': ['Cambridge Bay', '-07:00', '-06:00'],
+        'America/Campo_Grande': ['Campo Grande', '-04:00', '-03:00'],
+        'America/Cancun': ['Cancun', '-06:00', '-05:00'],
+        'America/Caracas': ['Caracas', '-04:30', '-04:30'],
+        'America/Catamarca': ['Catamarca', '-03:00', '-03:00'],
+        'America/Cayenne': ['Cayenne', '-03:00', '-03:00'],
+        'America/Cayman': ['Cayman', '-05:00', '-05:00'],
+        'America/Chicago': ['Chicago', '-06:00', '-05:00'],
+        'America/Chihuahua': ['Chihuahua', '-07:00', '-06:00'],
+        'America/Coral_Harbour': ['Coral Harbour', '-05:00', '-05:00'],
+        'America/Cordoba': ['Cordoba', '-03:00', '-03:00'],
+        'America/Costa_Rica': ['Costa Rica', '-06:00', '-06:00'],
+        'America/Creston': ['Creston', '-07:00', '-07:00'],
+        'America/Cuiaba': ['Cuiaba', '-04:00', '-03:00'],
+        'America/Curacao': ['Curacao', '-04:00', '-04:00'],
+        'America/Danmarkshavn': ['Danmarkshavn', '+00:00', '+00:00'],
+        'America/Dawson': ['Dawson', '-08:00', '-07:00'],
+        'America/Dawson_Creek': ['Dawson Creek', '-07:00', '-07:00'],
+        'America/Denver': ['Denver', '-07:00', '-06:00'],
+        'America/Detroit': ['Detroit', '-05:00', '-04:00'],
+        'America/Dominica': ['Dominica', '-04:00', '-04:00'],
+        'America/Edmonton': ['Edmonton', '-07:00', '-06:00'],
+        'America/Eirunepe': ['Eirunepe', '-05:00', '-05:00'],
+        'America/El_Salvador': ['El Salvador', '-06:00', '-06:00'],
+        'America/Ensenada': ['Ensenada', '-08:00', '-07:00'],
+        'America/Fort_Wayne': ['Fort Wayne', '-05:00', '-04:00'],
+        'America/Fortaleza': ['Fortaleza', '-03:00', '-03:00'],
+        'America/Glace_Bay': ['Glace Bay', '-04:00', '-03:00'],
+        'America/Godthab': ['Godthab', '-03:00', '-02:00'],
+        'America/Goose_Bay': ['Goose Bay', '-04:00', '-03:00'],
+        'America/Grand_Turk': ['Grand Turk', '-05:00', '-04:00'],
+        'America/Grenada': ['Grenada', '-04:00', '-04:00'],
+        'America/Guadeloupe': ['Guadeloupe', '-04:00', '-04:00'],
+        'America/Guatemala': ['Guatemala', '-06:00', '-06:00'],
+        'America/Guayaquil': ['Guayaquil', '-05:00', '-05:00'],
+        'America/Guyana': ['Guyana', '-04:00', '-04:00'],
+        'America/Halifax': ['Halifax', '-04:00', '-03:00'],
+        'America/Havana': ['Havana', '-05:00', '-04:00'],
+        'America/Hermosillo': ['Hermosillo', '-07:00', '-07:00'],
+        'America/Indiana/Indianapolis': [
+          'Indianapolis, Indiana',
+          '-05:00',
+          '-04:00'
+        ],
+        'America/Indiana/Knox': ['Knox, Indiana', '-06:00', '-05:00'],
+        'America/Indiana/Marengo': ['Marengo, Indiana', '-05:00', '-04:00'],
+        'America/Indiana/Petersburg': ['Petersburg, Indiana', '-05:00', '-04:00'],
+        'America/Indiana/Tell_City': ['Tell City, Indiana', '-06:00', '-05:00'],
+        'America/Indiana/Valparaiso': ['Valparaiso, Indiana', '-06:00', '-05:00'],
+        'America/Indiana/Vevay': ['Vevay, Indiana', '-05:00', '-04:00'],
+        'America/Indiana/Vincennes': ['Vincennes, Indiana', '-05:00', '-04:00'],
+        'America/Indiana/Winamac': ['Winamac, Indiana', '-05:00', '-04:00'],
+        'America/Indianapolis': ['Indianapolis', '-05:00', '-04:00'],
+        'America/Inuvik': ['Inuvik', '-07:00', '-06:00'],
+        'America/Iqaluit': ['Iqaluit', '-05:00', '-04:00'],
+        'America/Jamaica': ['Jamaica', '-05:00', '-05:00'],
+        'America/Jujuy': ['Jujuy', '-03:00', '-03:00'],
+        'America/Juneau': ['Juneau', '-09:00', '-08:00'],
+        'America/Kentucky/Louisville': ['Louisville, Kentucky', '-05:00', '-04:00'],
+        'America/Kentucky/Monticello': ['Monticello, Kentucky', '-05:00', '-04:00'],
+        'America/Knox_IN': ['Knox IN', '-06:00', '-05:00'],
+        'America/Kralendijk': ['Kralendijk', '-04:00', '-04:00'],
+        'America/La_Paz': ['La Paz', '-04:00', '-04:00'],
+        'America/Lima': ['Lima', '-05:00', '-05:00'],
+        'America/Los_Angeles': ['Los Angeles', '-08:00', '-07:00'],
+        'America/Louisville': ['Louisville', '-05:00', '-04:00'],
+        'America/Lower_Princes': ['Lower Princes', '-04:00', '-04:00'],
+        'America/Maceio': ['Maceio', '-03:00', '-03:00'],
+        'America/Managua': ['Managua', '-06:00', '-06:00'],
+        'America/Manaus': ['Manaus', '-04:00', '-04:00'],
+        'America/Marigot': ['Marigot', '-04:00', '-04:00'],
+        'America/Martinique': ['Martinique', '-04:00', '-04:00'],
+        'America/Matamoros': ['Matamoros', '-06:00', '-05:00'],
+        'America/Mazatlan': ['Mazatlan', '-07:00', '-06:00'],
+        'America/Mendoza': ['Mendoza', '-03:00', '-03:00'],
+        'America/Menominee': ['Menominee', '-06:00', '-05:00'],
+        'America/Merida': ['Merida', '-06:00', '-05:00'],
+        'America/Metlakatla': ['Metlakatla', '-08:00', '-08:00'],
+        'America/Mexico_City': ['Mexico City', '-06:00', '-05:00'],
+        'America/Miquelon': ['Miquelon', '-03:00', '-02:00'],
+        'America/Moncton': ['Moncton', '-04:00', '-03:00'],
+        'America/Monterrey': ['Monterrey', '-06:00', '-05:00'],
+        'America/Montevideo': ['Montevideo', '-03:00', '-02:00'],
+        'America/Montreal': ['Montreal', '-05:00', '-04:00'],
+        'America/Montserrat': ['Montserrat', '-04:00', '-04:00'],
+        'America/Nassau': ['Nassau', '-05:00', '-04:00'],
+        'America/New_York': ['New York', '-05:00', '-04:00'],
+        'America/Nipigon': ['Nipigon', '-05:00', '-04:00'],
+        'America/Nome': ['Nome', '-09:00', '-08:00'],
+        'America/Noronha': ['Noronha', '-02:00', '-02:00'],
+        'America/North_Dakota/Beulah': ['Beulah, North Dakota', '-06:00', '-05:00'],
+        'America/North_Dakota/Center': ['Center, North Dakota', '-06:00', '-05:00'],
+        'America/North_Dakota/New_Salem': [
+          'New Salem, North Dakota',
+          '-06:00',
+          '-05:00'
+        ],
+        'America/Ojinaga': ['Ojinaga', '-07:00', '-06:00'],
+        'America/Panama': ['Panama', '-05:00', '-05:00'],
+        'America/Pangnirtung': ['Pangnirtung', '-05:00', '-04:00'],
+        'America/Paramaribo': ['Paramaribo', '-03:00', '-03:00'],
+        'America/Phoenix': ['Phoenix', '-07:00', '-07:00'],
+        'America/Port-au-Prince': ['Port-au-Prince', '-05:00', '-04:00'],
+        'America/Port_of_Spain': ['Port of_Spain', '-04:00', '-04:00'],
+        'America/Porto_Acre': ['Porto Acre', '-05:00', '-05:00'],
+        'America/Porto_Velho': ['Porto Velho', '-04:00', '-04:00'],
+        'America/Puerto_Rico': ['Puerto Rico', '-04:00', '-04:00'],
+        'America/Rainy_River': ['Rainy River', '-06:00', '-05:00'],
+        'America/Rankin_Inlet': ['Rankin Inlet', '-06:00', '-05:00'],
+        'America/Recife': ['Recife', '-03:00', '-03:00'],
+        'America/Regina': ['Regina', '-06:00', '-06:00'],
+        'America/Resolute': ['Resolute', '-06:00', '-05:00'],
+        'America/Rio_Branco': ['Rio Branco', '-05:00', '-05:00'],
+        'America/Rosario': ['Rosario', '-03:00', '-03:00'],
+        'America/Santa_Isabel': ['Santa Isabel', '-08:00', '-07:00'],
+        'America/Santarem': ['Santarem', '-03:00', '-03:00'],
+        'America/Santiago': ['Santiago', '-04:00', '-03:00'],
+        'America/Santo_Domingo': ['Santo Domingo', '-04:00', '-04:00'],
+        'America/Sao_Paulo': ['Sao Paulo', '-03:00', '-02:00'],
+        'America/Scoresbysund': ['Scoresbysund', '-01:00', '+00:00'],
+        'America/Shiprock': ['Shiprock', '-07:00', '-06:00'],
+        'America/Sitka': ['Sitka', '-09:00', '-08:00'],
+        'America/St_Barthelemy': ['St Barthelemy', '-04:00', '-04:00'],
+        'America/St_Johns': ['St Johns', '-03:30', '-02:30'],
+        'America/St_Kitts': ['St Kitts', '-04:00', '-04:00'],
+        'America/St_Lucia': ['St Lucia', '-04:00', '-04:00'],
+        'America/St_Thomas': ['St Thomas', '-04:00', '-04:00'],
+        'America/St_Vincent': ['St Vincent', '-04:00', '-04:00'],
+        'America/Swift_Current': ['Swift Current', '-06:00', '-06:00'],
+        'America/Tegucigalpa': ['Tegucigalpa', '-06:00', '-06:00'],
+        'America/Thule': ['Thule', '-04:00', '-03:00'],
+        'America/Thunder_Bay': ['Thunder Bay', '-05:00', '-04:00'],
+        'America/Tijuana': ['Tijuana', '-08:00', '-07:00'],
+        'America/Toronto': ['Toronto', '-05:00', '-04:00'],
+        'America/Tortola': ['Tortola', '-04:00', '-04:00'],
+        'America/Vancouver': ['Vancouver', '-08:00', '-07:00'],
+        'America/Virgin': ['Virgin', '-04:00', '-04:00'],
+        'America/Whitehorse': ['Whitehorse', '-08:00', '-07:00'],
+        'America/Winnipeg': ['Winnipeg', '-06:00', '-05:00'],
+        'America/Yakutat': ['Yakutat', '-09:00', '-08:00'],
+        'America/Yellowknife': ['Yellowknife', '-07:00', '-06:00']
+      },
+      Antarctica: {
+        'Antarctica/Casey': ['Casey', '+11:00', '+08:00'],
+        'Antarctica/Davis': ['Davis', '+05:00', '+07:00'],
+        'Antarctica/DumontDUrville': ['DumontDUrville', '+10:00', '+10:00'],
+        'Antarctica/Macquarie': ['Macquarie', '+11:00', '+11:00'],
+        'Antarctica/Mawson': ['Mawson', '+05:00', '+05:00'],
+        'Antarctica/McMurdo': ['McMurdo', '+12:00', '+13:00'],
+        'Antarctica/Palmer': ['Palmer', '-04:00', '-03:00'],
+        'Antarctica/Rothera': ['Rothera', '-03:00', '-03:00'],
+        'Antarctica/South_Pole': ['South Pole', '+12:00', '+13:00'],
+        'Antarctica/Syowa': ['Syowa', '+03:00', '+03:00'],
+        'Antarctica/Troll': ['Troll', '+00:00', '+02:00'],
+        'Antarctica/Vostok': ['Vostok', '+06:00', '+06:00']
+      },
+      Arctic: { 'Arctic/Longyearbyen': ['Longyearbyen', '+01:00', '+02:00'] },
+      Asia: {
+        'Asia/Aden': ['Aden', '+03:00', '+03:00'],
+        'Asia/Almaty': ['Almaty', '+06:00', '+06:00'],
+        'Asia/Amman': ['Amman', '+02:00', '+03:00'],
+        'Asia/Anadyr': ['Anadyr', '+12:00', '+12:00'],
+        'Asia/Aqtau': ['Aqtau', '+05:00', '+05:00'],
+        'Asia/Aqtobe': ['Aqtobe', '+05:00', '+05:00'],
+        'Asia/Ashgabat': ['Ashgabat', '+05:00', '+05:00'],
+        'Asia/Ashkhabad': ['Ashkhabad', '+05:00', '+05:00'],
+        'Asia/Baghdad': ['Baghdad', '+03:00', '+03:00'],
+        'Asia/Bahrain': ['Bahrain', '+03:00', '+03:00'],
+        'Asia/Baku': ['Baku', '+04:00', '+05:00'],
+        'Asia/Bangkok': ['Bangkok', '+07:00', '+07:00'],
+        'Asia/Beirut': ['Beirut', '+02:00', '+03:00'],
+        'Asia/Bishkek': ['Bishkek', '+06:00', '+06:00'],
+        'Asia/Brunei': ['Brunei', '+08:00', '+08:00'],
+        'Asia/Calcutta': ['Calcutta', '+05:30', '+05:30'],
+        'Asia/Choibalsan': ['Choibalsan', '+08:00', '+08:00'],
+        'Asia/Chongqing': ['Chongqing', '+08:00', '+08:00'],
+        'Asia/Chungking': ['Chungking', '+08:00', '+08:00'],
+        'Asia/Colombo': ['Colombo', '+05:30', '+05:30'],
+        'Asia/Dacca': ['Dacca', '+06:00', '+06:00'],
+        'Asia/Damascus': ['Damascus', '+02:00', '+03:00'],
+        'Asia/Dhaka': ['Dhaka', '+06:00', '+06:00'],
+        'Asia/Dili': ['Dili', '+09:00', '+09:00'],
+        'Asia/Dubai': ['Dubai', '+04:00', '+04:00'],
+        'Asia/Dushanbe': ['Dushanbe', '+05:00', '+05:00'],
+        'Asia/Gaza': ['Gaza', '+02:00', '+03:00'],
+        'Asia/Harbin': ['Harbin', '+08:00', '+08:00'],
+        'Asia/Hebron': ['Hebron', '+02:00', '+03:00'],
+        'Asia/Ho_Chi_Minh': ['Ho Chi_Minh', '+07:00', '+07:00'],
+        'Asia/Hong_Kong': ['Hong Kong', '+08:00', '+08:00'],
+        'Asia/Hovd': ['Hovd', '+07:00', '+07:00'],
+        'Asia/Irkutsk': ['Irkutsk', '+08:00', '+08:00'],
+        'Asia/Istanbul': ['Istanbul', '+02:00', '+03:00'],
+        'Asia/Jakarta': ['Jakarta', '+07:00', '+07:00'],
+        'Asia/Jayapura': ['Jayapura', '+09:00', '+09:00'],
+        'Asia/Jerusalem': ['Jerusalem', '+02:00', '+03:00'],
+        'Asia/Kabul': ['Kabul', '+04:30', '+04:30'],
+        'Asia/Kamchatka': ['Kamchatka', '+12:00', '+12:00'],
+        'Asia/Karachi': ['Karachi', '+05:00', '+05:00'],
+        'Asia/Kashgar': ['Kashgar', '+08:00', '+08:00'],
+        'Asia/Kathmandu': ['Kathmandu', '+05:45', '+05:45'],
+        'Asia/Katmandu': ['Katmandu', '+05:45', '+05:45'],
+        'Asia/Khandyga': ['Khandyga', '+09:00', '+09:00'],
+        'Asia/Kolkata': ['Kolkata', '+05:30', '+05:30'],
+        'Asia/Krasnoyarsk': ['Krasnoyarsk', '+07:00', '+07:00'],
+        'Asia/Kuala_Lumpur': ['Kuala Lumpur', '+08:00', '+08:00'],
+        'Asia/Kuching': ['Kuching', '+08:00', '+08:00'],
+        'Asia/Kuwait': ['Kuwait', '+03:00', '+03:00'],
+        'Asia/Macao': ['Macao', '+08:00', '+08:00'],
+        'Asia/Macau': ['Macau', '+08:00', '+08:00'],
+        'Asia/Magadan': ['Magadan', '+10:00', '+10:00'],
+        'Asia/Makassar': ['Makassar', '+08:00', '+08:00'],
+        'Asia/Manila': ['Manila', '+08:00', '+08:00'],
+        'Asia/Muscat': ['Muscat', '+04:00', '+04:00'],
+        'Asia/Nicosia': ['Nicosia', '+02:00', '+03:00'],
+        'Asia/Novokuznetsk': ['Novokuznetsk', '+07:00', '+07:00'],
+        'Asia/Novosibirsk': ['Novosibirsk', '+06:00', '+06:00'],
+        'Asia/Omsk': ['Omsk', '+06:00', '+06:00'],
+        'Asia/Oral': ['Oral', '+05:00', '+05:00'],
+        'Asia/Phnom_Penh': ['Phnom Penh', '+07:00', '+07:00'],
+        'Asia/Pontianak': ['Pontianak', '+07:00', '+07:00'],
+        'Asia/Pyongyang': ['Pyongyang', '+09:00', '+09:00'],
+        'Asia/Qatar': ['Qatar', '+03:00', '+03:00'],
+        'Asia/Qyzylorda': ['Qyzylorda', '+06:00', '+06:00'],
+        'Asia/Rangoon': ['Rangoon', '+06:30', '+06:30'],
+        'Asia/Riyadh': ['Riyadh', '+03:00', '+03:00'],
+        'Asia/Saigon': ['Saigon', '+07:00', '+07:00'],
+        'Asia/Sakhalin': ['Sakhalin', '+11:00', '+11:00'],
+        'Asia/Samarkand': ['Samarkand', '+05:00', '+05:00'],
+        'Asia/Seoul': ['Seoul', '+09:00', '+09:00'],
+        'Asia/Shanghai': ['Shanghai', '+08:00', '+08:00'],
+        'Asia/Singapore': ['Singapore', '+08:00', '+08:00'],
+        'Asia/Taipei': ['Taipei', '+08:00', '+08:00'],
+        'Asia/Tashkent': ['Tashkent', '+05:00', '+05:00'],
+        'Asia/Tbilisi': ['Tbilisi', '+04:00', '+04:00'],
+        'Asia/Tehran': ['Tehran', '+03:30', '+04:30'],
+        'Asia/Tel_Aviv': ['Tel Aviv', '+02:00', '+03:00'],
+        'Asia/Thimbu': ['Thimbu', '+06:00', '+06:00'],
+        'Asia/Thimphu': ['Thimphu', '+06:00', '+06:00'],
+        'Asia/Tokyo': ['Tokyo', '+09:00', '+09:00'],
+        'Asia/Ujung_Pandang': ['Ujung Pandang', '+08:00', '+08:00'],
+        'Asia/Ulaanbaatar': ['Ulaanbaatar', '+08:00', '+08:00'],
+        'Asia/Ulan_Bator': ['Ulan Bator', '+08:00', '+08:00'],
+        'Asia/Urumqi': ['Urumqi', '+08:00', '+08:00'],
+        'Asia/Ust-Nera': ['Ust-Nera', '+10:00', '+10:00'],
+        'Asia/Vientiane': ['Vientiane', '+07:00', '+07:00'],
+        'Asia/Vladivostok': ['Vladivostok', '+10:00', '+10:00'],
+        'Asia/Yakutsk': ['Yakutsk', '+09:00', '+09:00'],
+        'Asia/Yekaterinburg': ['Yekaterinburg', '+05:00', '+05:00'],
+        'Asia/Yerevan': ['Yerevan', '+04:00', '+04:00']
+      },
+      Atlantic: {
+        'Atlantic/Azores': ['Azores', '-01:00', '+00:00'],
+        'Atlantic/Bermuda': ['Bermuda', '-04:00', '-03:00'],
+        'Atlantic/Canary': ['Canary', '+00:00', '+01:00'],
+        'Atlantic/Cape_Verde': ['Cape Verde', '-01:00', '-01:00'],
+        'Atlantic/Faeroe': ['Faeroe', '+00:00', '+01:00'],
+        'Atlantic/Faroe': ['Faroe', '+00:00', '+01:00'],
+        'Atlantic/Jan_Mayen': ['Jan Mayen', '+01:00', '+02:00'],
+        'Atlantic/Madeira': ['Madeira', '+00:00', '+01:00'],
+        'Atlantic/Reykjavik': ['Reykjavik', '+00:00', '+00:00'],
+        'Atlantic/South_Georgia': ['South Georgia', '-02:00', '-02:00'],
+        'Atlantic/St_Helena': ['St Helena', '+00:00', '+00:00'],
+        'Atlantic/Stanley': ['Stanley', '-03:00', '-03:00']
+      },
+      Australia: {
+        'Australia/ACT': ['ACT', '+10:00', '+11:00'],
+        'Australia/Adelaide': ['Adelaide', '+09:30', '+10:30'],
+        'Australia/Brisbane': ['Brisbane', '+10:00', '+10:00'],
+        'Australia/Broken_Hill': ['Broken Hill', '+09:30', '+10:30'],
+        'Australia/Canberra': ['Canberra', '+10:00', '+11:00'],
+        'Australia/Currie': ['Currie', '+10:00', '+11:00'],
+        'Australia/Darwin': ['Darwin', '+09:30', '+09:30'],
+        'Australia/Eucla': ['Eucla', '+08:45', '+08:45'],
+        'Australia/Hobart': ['Hobart', '+10:00', '+11:00'],
+        'Australia/LHI': ['LHI', '+10:30', '+11:00'],
+        'Australia/Lindeman': ['Lindeman', '+10:00', '+10:00'],
+        'Australia/Lord_Howe': ['Lord Howe', '+10:30', '+11:00'],
+        'Australia/Melbourne': ['Melbourne', '+10:00', '+11:00'],
+        'Australia/NSW': ['NSW', '+10:00', '+11:00'],
+        'Australia/North': ['North', '+09:30', '+09:30'],
+        'Australia/Perth': ['Perth', '+08:00', '+08:00'],
+        'Australia/Queensland': ['Queensland', '+10:00', '+10:00'],
+        'Australia/South': ['South', '+09:30', '+10:30'],
+        'Australia/Sydney': ['Sydney', '+10:00', '+11:00'],
+        'Australia/Tasmania': ['Tasmania', '+10:00', '+11:00'],
+        'Australia/Victoria': ['Victoria', '+10:00', '+11:00'],
+        'Australia/West': ['West', '+08:00', '+08:00'],
+        'Australia/Yancowinna': ['Yancowinna', '+09:30', '+10:30']
+      },
+      Brazil: {
+        'Brazil/Acre': ['Acre', '-05:00', '-05:00'],
+        'Brazil/DeNoronha': ['DeNoronha', '-02:00', '-02:00'],
+        'Brazil/East': ['East', '-03:00', '-02:00'],
+        'Brazil/West': ['West', '-04:00', '-04:00']
+      },
+      Canada: {
+        'Canada/Atlantic': ['Atlantic', '-04:00', '-03:00'],
+        'Canada/Central': ['Central', '-06:00', '-05:00'],
+        'Canada/East-Saskatchewan': ['East-Saskatchewan', '-06:00', '-06:00'],
+        'Canada/Eastern': ['Eastern', '-05:00', '-04:00'],
+        'Canada/Mountain': ['Mountain', '-07:00', '-06:00'],
+        'Canada/Newfoundland': ['Newfoundland', '-03:30', '-02:30'],
+        'Canada/Pacific': ['Pacific', '-08:00', '-07:00'],
+        'Canada/Saskatchewan': ['Saskatchewan', '-06:00', '-06:00'],
+        'Canada/Yukon': ['Yukon', '-08:00', '-07:00']
+      },
+      Chile: {
+        'Chile/Continental': ['Continental', '-04:00', '-03:00'],
+        'Chile/EasterIsland': ['EasterIsland', '-06:00', '-05:00']
+      },
+      Other: {
+        Cuba: ['Cuba', '-05:00', '-04:00'],
+        Egypt: ['Egypt', '+02:00', '+02:00'],
+        Eire: ['Eire', '+00:00', '+01:00'],
+        GB: ['GB', '+00:00', '+01:00'],
+        'GB-Eire': ['GB-Eire', '+00:00', '+01:00'],
+        GMT: ['GMT', '+00:00', '+00:00'],
+        'GMT+0': ['GMT+0', '+00:00', '+00:00'],
+        'GMT-0': ['GMT-0', '+00:00', '+00:00'],
+        GMT0: ['GMT0', '+00:00', '+00:00'],
+        Greenwich: ['Greenwich', '+00:00', '+00:00'],
+        Hongkong: ['Hongkong', '+08:00', '+08:00'],
+        Iceland: ['Iceland', '+00:00', '+00:00'],
+        Iran: ['Iran', '+03:30', '+04:30'],
+        Israel: ['Israel', '+02:00', '+03:00'],
+        Jamaica: ['Jamaica', '-05:00', '-05:00'],
+        Japan: ['Japan', '+09:00', '+09:00'],
+        Kwajalein: ['Kwajalein', '+12:00', '+12:00'],
+        Libya: ['Libya', '+02:00', '+01:00'],
+        NZ: ['NZ', '+12:00', '+13:00'],
+        'NZ-CHAT': ['NZ-CHAT', '+12:45', '+13:45'],
+        Navajo: ['Navajo', '-07:00', '-06:00'],
+        PRC: ['PRC', '+08:00', '+08:00'],
+        Poland: ['Poland', '+01:00', '+02:00'],
+        Portugal: ['Portugal', '+00:00', '+01:00'],
+        ROC: ['ROC', '+08:00', '+08:00'],
+        ROK: ['ROK', '+09:00', '+09:00'],
+        Singapore: ['Singapore', '+08:00', '+08:00'],
+        Turkey: ['Turkey', '+02:00', '+03:00'],
+        UCT: ['UCT', '+00:00', '+00:00'],
+        UTC: ['UTC', '+00:00', '+00:00'],
+        Universal: ['Universal', '+00:00', '+00:00'],
+        'W-SU': ['W-SU', '+03:00', '+03:00'],
+        Zulu: ['Zulu', '+00:00', '+00:00']
+      },
+      Etc: {
+        'Etc/GMT': ['GMT', '+00:00', '+00:00'],
+        'Etc/GMT+0': ['GMT+0', '+00:00', '+00:00'],
+        'Etc/UCT': ['UCT', '+00:00', '+00:00'],
+        'Etc/UTC': ['UTC', '+00:00', '+00:00'],
+        'Etc/Universal': ['Universal', '+00:00', '+00:00'],
+        'Etc/Zulu': ['Zulu', '+00:00', '+00:00']
+      },
+      Europe: {
+        'Europe/Amsterdam': ['Amsterdam', '+01:00', '+02:00'],
+        'Europe/Andorra': ['Andorra', '+01:00', '+02:00'],
+        'Europe/Athens': ['Athens', '+02:00', '+03:00'],
+        'Europe/Belfast': ['Belfast', '+00:00', '+01:00'],
+        'Europe/Belgrade': ['Belgrade', '+01:00', '+02:00'],
+        'Europe/Berlin': ['Berlin', '+01:00', '+02:00'],
+        'Europe/Bratislava': ['Bratislava', '+01:00', '+02:00'],
+        'Europe/Brussels': ['Brussels', '+01:00', '+02:00'],
+        'Europe/Bucharest': ['Bucharest', '+02:00', '+03:00'],
+        'Europe/Budapest': ['Budapest', '+01:00', '+02:00'],
+        'Europe/Busingen': ['Busingen', '+01:00', '+02:00'],
+        'Europe/Chisinau': ['Chisinau', '+02:00', '+03:00'],
+        'Europe/Copenhagen': ['Copenhagen', '+01:00', '+02:00'],
+        'Europe/Dublin': ['Dublin', '+00:00', '+01:00'],
+        'Europe/Gibraltar': ['Gibraltar', '+01:00', '+02:00'],
+        'Europe/Guernsey': ['Guernsey', '+00:00', '+01:00'],
+        'Europe/Helsinki': ['Helsinki', '+02:00', '+03:00'],
+        'Europe/Isle_of_Man': ['Isle of_Man', '+00:00', '+01:00'],
+        'Europe/Istanbul': ['Istanbul', '+02:00', '+03:00'],
+        'Europe/Jersey': ['Jersey', '+00:00', '+01:00'],
+        'Europe/Kaliningrad': ['Kaliningrad', '+02:00', '+02:00'],
+        'Europe/Kiev': ['Kiev', '+02:00', '+03:00'],
+        'Europe/Lisbon': ['Lisbon', '+00:00', '+01:00'],
+        'Europe/Ljubljana': ['Ljubljana', '+01:00', '+02:00'],
+        'Europe/London': ['London', '+00:00', '+01:00'],
+        'Europe/Luxembourg': ['Luxembourg', '+01:00', '+02:00'],
+        'Europe/Madrid': ['Madrid', '+01:00', '+02:00'],
+        'Europe/Malta': ['Malta', '+01:00', '+02:00'],
+        'Europe/Mariehamn': ['Mariehamn', '+02:00', '+03:00'],
+        'Europe/Minsk': ['Minsk', '+03:00', '+03:00'],
+        'Europe/Monaco': ['Monaco', '+01:00', '+02:00'],
+        'Europe/Moscow': ['Moscow', '+03:00', '+03:00'],
+        'Europe/Nicosia': ['Nicosia', '+02:00', '+03:00'],
+        'Europe/Oslo': ['Oslo', '+01:00', '+02:00'],
+        'Europe/Paris': ['Paris', '+01:00', '+02:00'],
+        'Europe/Podgorica': ['Podgorica', '+01:00', '+02:00'],
+        'Europe/Prague': ['Prague', '+01:00', '+02:00'],
+        'Europe/Riga': ['Riga', '+02:00', '+03:00'],
+        'Europe/Rome': ['Rome', '+01:00', '+02:00'],
+        'Europe/Samara': ['Samara', '+04:00', '+04:00'],
+        'Europe/San_Marino': ['San Marino', '+01:00', '+02:00'],
+        'Europe/Sarajevo': ['Sarajevo', '+01:00', '+02:00'],
+        'Europe/Simferopol': ['Simferopol', '+03:00', '+03:00'],
+        'Europe/Skopje': ['Skopje', '+01:00', '+02:00'],
+        'Europe/Sofia': ['Sofia', '+02:00', '+03:00'],
+        'Europe/Stockholm': ['Stockholm', '+01:00', '+02:00'],
+        'Europe/Tallinn': ['Tallinn', '+02:00', '+03:00'],
+        'Europe/Tirane': ['Tirane', '+01:00', '+02:00'],
+        'Europe/Tiraspol': ['Tiraspol', '+02:00', '+03:00'],
+        'Europe/Uzhgorod': ['Uzhgorod', '+02:00', '+03:00'],
+        'Europe/Vaduz': ['Vaduz', '+01:00', '+02:00'],
+        'Europe/Vatican': ['Vatican', '+01:00', '+02:00'],
+        'Europe/Vienna': ['Vienna', '+01:00', '+02:00'],
+        'Europe/Vilnius': ['Vilnius', '+02:00', '+03:00'],
+        'Europe/Volgograd': ['Volgograd', '+03:00', '+03:00'],
+        'Europe/Warsaw': ['Warsaw', '+01:00', '+02:00'],
+        'Europe/Zagreb': ['Zagreb', '+01:00', '+02:00'],
+        'Europe/Zaporozhye': ['Zaporozhye', '+02:00', '+03:00'],
+        'Europe/Zurich': ['Zurich', '+01:00', '+02:00']
+      },
+      Indian: {
+        'Indian/Antananarivo': ['Antananarivo', '+03:00', '+03:00'],
+        'Indian/Chagos': ['Chagos', '+06:00', '+06:00'],
+        'Indian/Christmas': ['Christmas', '+07:00', '+07:00'],
+        'Indian/Cocos': ['Cocos', '+06:30', '+06:30'],
+        'Indian/Comoro': ['Comoro', '+03:00', '+03:00'],
+        'Indian/Kerguelen': ['Kerguelen', '+05:00', '+05:00'],
+        'Indian/Mahe': ['Mahe', '+04:00', '+04:00'],
+        'Indian/Maldives': ['Maldives', '+05:00', '+05:00'],
+        'Indian/Mauritius': ['Mauritius', '+04:00', '+04:00'],
+        'Indian/Mayotte': ['Mayotte', '+03:00', '+03:00'],
+        'Indian/Reunion': ['Reunion', '+04:00', '+04:00']
+      },
+      Mexico: {
+        'Mexico/BajaNorte': ['BajaNorte', '-08:00', '-07:00'],
+        'Mexico/BajaSur': ['BajaSur', '-07:00', '-06:00'],
+        'Mexico/General': ['General', '-06:00', '-05:00']
+      },
+      Pacific: {
+        'Pacific/Apia': ['Apia', '+13:00', '+14:00'],
+        'Pacific/Auckland': ['Auckland', '+12:00', '+13:00'],
+        'Pacific/Chatham': ['Chatham', '+12:45', '+13:45'],
+        'Pacific/Chuuk': ['Chuuk', '+10:00', '+10:00'],
+        'Pacific/Easter': ['Easter', '-06:00', '-05:00'],
+        'Pacific/Efate': ['Efate', '+11:00', '+11:00'],
+        'Pacific/Enderbury': ['Enderbury', '+13:00', '+13:00'],
+        'Pacific/Fakaofo': ['Fakaofo', '+13:00', '+13:00'],
+        'Pacific/Fiji': ['Fiji', '+12:00', '+13:00'],
+        'Pacific/Funafuti': ['Funafuti', '+12:00', '+12:00'],
+        'Pacific/Galapagos': ['Galapagos', '-06:00', '-06:00'],
+        'Pacific/Gambier': ['Gambier', '-09:00', '-09:00'],
+        'Pacific/Guadalcanal': ['Guadalcanal', '+11:00', '+11:00'],
+        'Pacific/Guam': ['Guam', '+10:00', '+10:00'],
+        'Pacific/Honolulu': ['Honolulu', '-10:00', '-10:00'],
+        'Pacific/Johnston': ['Johnston', '-10:00', '-10:00'],
+        'Pacific/Kiritimati': ['Kiritimati', '+14:00', '+14:00'],
+        'Pacific/Kosrae': ['Kosrae', '+11:00', '+11:00'],
+        'Pacific/Kwajalein': ['Kwajalein', '+12:00', '+12:00'],
+        'Pacific/Majuro': ['Majuro', '+12:00', '+12:00'],
+        'Pacific/Marquesas': ['Marquesas', '-09:30', '-09:30'],
+        'Pacific/Midway': ['Midway', '-11:00', '-11:00'],
+        'Pacific/Nauru': ['Nauru', '+12:00', '+12:00'],
+        'Pacific/Niue': ['Niue', '-11:00', '-11:00'],
+        'Pacific/Norfolk': ['Norfolk', '+11:30', '+11:30'],
+        'Pacific/Noumea': ['Noumea', '+11:00', '+11:00'],
+        'Pacific/Pago_Pago': ['Pago Pago', '-11:00', '-11:00'],
+        'Pacific/Palau': ['Palau', '+09:00', '+09:00'],
+        'Pacific/Pitcairn': ['Pitcairn', '-08:00', '-08:00'],
+        'Pacific/Pohnpei': ['Pohnpei', '+11:00', '+11:00'],
+        'Pacific/Ponape': ['Ponape', '+11:00', '+11:00'],
+        'Pacific/Port_Moresby': ['Port Moresby', '+10:00', '+10:00'],
+        'Pacific/Rarotonga': ['Rarotonga', '-10:00', '-10:00'],
+        'Pacific/Saipan': ['Saipan', '+10:00', '+10:00'],
+        'Pacific/Samoa': ['Samoa', '-11:00', '-11:00'],
+        'Pacific/Tahiti': ['Tahiti', '-10:00', '-10:00'],
+        'Pacific/Tarawa': ['Tarawa', '+12:00', '+12:00'],
+        'Pacific/Tongatapu': ['Tongatapu', '+13:00', '+13:00'],
+        'Pacific/Truk': ['Truk', '+10:00', '+10:00'],
+        'Pacific/Wake': ['Wake', '+12:00', '+12:00'],
+        'Pacific/Wallis': ['Wallis', '+12:00', '+12:00'],
+        'Pacific/Yap': ['Yap', '+10:00', '+10:00']
+      },
+      US: {
+        'US/Alaska': ['Alaska', '-09:00', '-08:00'],
+        'US/Aleutian': ['Aleutian', '-10:00', '-09:00'],
+        'US/Arizona': ['Arizona', '-07:00', '-07:00'],
+        'US/Central': ['Central', '-06:00', '-05:00'],
+        'US/East-Indiana': ['East-Indiana', '-05:00', '-04:00'],
+        'US/Eastern': ['Eastern', '-05:00', '-04:00'],
+        'US/Hawaii': ['Hawaii', '-10:00', '-10:00'],
+        'US/Indiana-Starke': ['Indiana-Starke', '-06:00', '-05:00'],
+        'US/Michigan': ['Michigan', '-05:00', '-04:00'],
+        'US/Mountain': ['Mountain', '-07:00', '-06:00'],
+        'US/Pacific': ['Pacific', '-08:00', '-07:00'],
+        'US/Samoa': ['Samoa', '-11:00', '-11:00']
+      }
+    };
+
+    function t(t){return null!=t&&"object"==typeof t&&1===t.nodeType}function e(t,e){return (!e||"hidden"!==t)&&"visible"!==t&&"clip"!==t}function n(t,n){if(t.clientHeight<t.scrollHeight||t.clientWidth<t.scrollWidth){var r=getComputedStyle(t,null);return e(r.overflowY,n)||e(r.overflowX,n)||function(t){var e=function(t){if(!t.ownerDocument||!t.ownerDocument.defaultView)return null;try{return t.ownerDocument.defaultView.frameElement}catch(t){return null}}(t);return !!e&&(e.clientHeight<t.scrollHeight||e.clientWidth<t.scrollWidth)}(t)}return !1}function r(t,e,n,r,i,o,l,d){return o<t&&l>e||o>t&&l<e?0:o<=t&&d<=n||l>=e&&d>=n?o-t-r:l>e&&d<n||o<t&&d>n?l-e+i:0}function computeScrollIntoView(e,i){var o=window,l=i.scrollMode,d=i.block,u=i.inline,h=i.boundary,a=i.skipOverflowHiddenElements,c="function"==typeof h?h:function(t){return t!==h};if(!t(e))throw new TypeError("Invalid target");for(var f=document.scrollingElement||document.documentElement,s=[],p=e;t(p)&&c(p);){if((p=p.parentNode)===f){s.push(p);break}p===document.body&&n(p)&&!n(document.documentElement)||n(p,a)&&s.push(p);}for(var g=o.visualViewport?o.visualViewport.width:innerWidth,m=o.visualViewport?o.visualViewport.height:innerHeight,w=window.scrollX||pageXOffset,v=window.scrollY||pageYOffset,W=e.getBoundingClientRect(),b=W.height,H=W.width,y=W.top,M=W.right,E=W.bottom,V=W.left,x="start"===d||"nearest"===d?y:"end"===d?E:y+b/2,I="center"===u?V+H/2:"end"===u?M:V,C=[],T=0;T<s.length;T++){var k=s[T],B=k.getBoundingClientRect(),D=B.height,O=B.width,R=B.top,X=B.right,Y=B.bottom,L=B.left;if("if-needed"===l&&y>=0&&V>=0&&E<=m&&M<=g&&y>=R&&E<=Y&&V>=L&&M<=X)return C;var S=getComputedStyle(k),j=parseInt(S.borderLeftWidth,10),N=parseInt(S.borderTopWidth,10),q=parseInt(S.borderRightWidth,10),z=parseInt(S.borderBottomWidth,10),A=0,F=0,G="offsetWidth"in k?k.offsetWidth-k.clientWidth-j-q:0,J="offsetHeight"in k?k.offsetHeight-k.clientHeight-N-z:0;if(f===k)A="start"===d?x:"end"===d?x-m:"nearest"===d?r(v,v+m,m,N,z,v+x,v+x+b,b):x-m/2,F="start"===u?I:"center"===u?I-g/2:"end"===u?I-g:r(w,w+g,g,j,q,w+I,w+I+H,H),A=Math.max(0,A+v),F=Math.max(0,F+w);else {A="start"===d?x-R-N:"end"===d?x-Y+z+J:"nearest"===d?r(R,Y,D,N,z+J,x,x+b,b):x-(R+D/2)+J/2,F="start"===u?I-L-j:"center"===u?I-(L+O/2)+G/2:"end"===u?I-X+q+G:r(L,X,O,j,q+G,I,I+H,H);var K=k.scrollLeft,P=k.scrollTop;x+=P-(A=Math.max(0,Math.min(P+A,k.scrollHeight-D+J))),I+=K-(F=Math.max(0,Math.min(K+F,k.scrollWidth-O+G)));}C.push({el:k,top:A,left:F});}return C}
+
+    /* eslint no-bitwise: "off" */
+    /* eslint no-plusplus: "off" */
+
+    // https://github.com/lukeed/uid/blob/master/src/index.js
+    let IDX = 36;
+    let HEX = '';
+
+    while (IDX--) {
+      HEX += IDX.toString(36);
+    }
+
+    // Get a unique ID
+    const uid = (len) => {
+      let str = '';
+      let num = len || 11;
+
+      while (num--) {
+        str += HEX[(Math.random() * 36) | 0];
+      }
+
+      return str;
+    };
+
+    // Scroll an element into view if needed
+    const scrollIntoView = (node, rootNode) => {
+      if (node === null) {
+        return;
+      }
+
+      const actions = computeScrollIntoView(node, {
+        boundary: rootNode,
+        block: 'center',
+        scrollMode: 'if-needed'
+      });
+
+      // eslint-disable-next-line no-shadow
+      actions.forEach(({ el, top }) => {
+        el.scrollTop = top; // eslint-disable-line no-param-reassign
+      });
+    };
+
+    // Transform a string into a slug
+    const slugify = (str) =>
+      str
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove non-word [a-z0-9_], non-whitespace, non-hyphen characters
+        .replace(/[\s_-]+/g, '-') // Swap any length of whitespace, underscore, hyphen characters with a single -
+        .replace(/^-+|-+$/g, ''); // Remove leading, trailing -
+
+    const keyCodes = {
+      Enter: 13,
+      Escape: 27,
+      Space: 32,
+      ArrowDown: 40,
+      ArrowUp: 38,
+      Backspace: 8,
+      Characters: [
+        48, // 0
+        49, // 1
+        50, // 2
+        51, // 3
+        52, // 4
+        53, // 5
+        54, // 6
+        55, // 7
+        56, // 8
+        57, // 9
+        65, // A
+        66, // B
+        67, // C
+        68, // D
+        69, // E
+        70, // F
+        71, // G
+        72, // H
+        73, // I
+        74, // J
+        75, // K
+        76, // L
+        77, // M
+        78, // N
+        79, // O
+        80, // P
+        81, // Q
+        82, // R
+        83, // S
+        84, // T
+        85, // U
+        86, // V
+        87, // W
+        88, // X
+        89, // Y
+        90 // Z
+      ]
+    };
+
+    const pick = (timezones, selection) => {
+      const unique = Array.from(new Set([...selection]));
+
+      return Object.keys(timezones).reduce((zones, zoneName) => {
+        const picked = unique.includes(zoneName) ? timezones[zoneName] : {};
+        return {
+          ...zones,
+          ...(Object.keys(picked).length > 0 && { [zoneName]: picked })
+        };
+      }, {});
+    };
+
+    // We take the grouped timezones and flatten them so that they can be easily searched
+    // e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
+    const ungroup = (timezones) =>
+      Object.values(timezones).reduce(
+        (values, zone) => ({ ...values, ...zone }),
+        {}
+      );
+
+    // Filter the list of zone labels to only those that match a search string
+    const filter = (search, zoneGroups) =>
+      Object.entries(zoneGroups).reduce((zones, [zone, details]) => {
+        if (details[0].toLowerCase().includes(search.toLowerCase())) {
+          zones.push(zone);
+        }
+        return zones;
+      }, []);
+
+    /* src/Picker.svelte generated by Svelte v3.25.0 */
+
+    const { Object: Object_1, console: console_1 } = globals;
+
+    const file = "src/Picker.svelte";
+
+    function get_each_context_1(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[45] = list[i][0];
+    	child_ctx[46] = list[i][1];
+    	child_ctx[47] = list;
+    	child_ctx[48] = i;
+    	return child_ctx;
+    }
+
+    function get_each_context(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[42] = list[i];
+    	return child_ctx;
+    }
+
+    // (299:0) {#if expanded}
+    function create_if_block_4(ctx) {
+    	let div;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			attr_dev(div, "class", "overlay svelte-1mifefb");
+    			add_location(div, file, 299, 2, 9475);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+
+    			if (!mounted) {
+    				dispose = listen_dev(div, "click", /*reset*/ ctx[13], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_4.name,
+    		type: "if",
+    		source: "(299:0) {#if expanded}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (318:0) {#if expanded}
+    function create_if_block(ctx) {
+    	let div1;
+    	let span;
+    	let t0;
+    	let t1;
+    	let div0;
+    	let input;
+    	let t2;
+    	let t3;
+    	let ul;
+    	let ul_aria_activedescendant_value;
+    	let div1_transition;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	let if_block = /*userSearch*/ ctx[2] && /*userSearch*/ ctx[2].length > 0 && create_if_block_3(ctx);
+    	let each_value = Object.keys(timezones);
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    	}
+
+    	const block = {
+    		c: function create() {
+    			div1 = element("div");
+    			span = element("span");
+    			t0 = text("Select a timezone from the list. Start typing to filter or use the arrow\n      keys to navigate the list");
+    			t1 = space();
+    			div0 = element("div");
+    			input = element("input");
+    			t2 = space();
+    			if (if_block) if_block.c();
+    			t3 = space();
+    			ul = element("ul");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			attr_dev(span, "class", "sr-only svelte-1mifefb");
+    			attr_dev(span, "id", /*labelId*/ ctx[10]);
+    			add_location(span, file, 324, 4, 10212);
+    			attr_dev(input, "id", /*searchInputId*/ ctx[12]);
+    			attr_dev(input, "type", "search");
+    			attr_dev(input, "aria-autocomplete", "list");
+    			attr_dev(input, "aria-controls", /*listBoxId*/ ctx[11]);
+    			attr_dev(input, "aria-labelledby", /*labelId*/ ctx[10]);
+    			attr_dev(input, "autocomplete", "off");
+    			attr_dev(input, "autocorrect", "off");
+    			attr_dev(input, "placeholder", "Search...");
+    			input.autofocus = true;
+    			attr_dev(input, "class", "svelte-1mifefb");
+    			add_location(input, file, 330, 6, 10453);
+    			attr_dev(div0, "class", "input-group svelte-1mifefb");
+    			add_location(div0, file, 328, 4, 10377);
+    			attr_dev(ul, "tabindex", "-1");
+    			attr_dev(ul, "class", "tz-groups svelte-1mifefb");
+    			attr_dev(ul, "id", /*listBoxId*/ ctx[11]);
+    			attr_dev(ul, "role", "listbox");
+    			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[10]);
+    			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[1] && `tz-${slugify(/*currentZone*/ ctx[1][0])}`);
+    			add_location(ul, file, 355, 4, 11048);
+    			attr_dev(div1, "class", "tz-dropdown svelte-1mifefb");
+    			add_location(div1, file, 318, 2, 10087);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, span);
+    			append_dev(span, t0);
+    			append_dev(div1, t1);
+    			append_dev(div1, div0);
+    			append_dev(div0, input);
+    			/*input_binding*/ ctx[24](input);
+    			set_input_value(input, /*userSearch*/ ctx[2]);
+    			append_dev(div0, t2);
+    			if (if_block) if_block.m(div0, null);
+    			append_dev(div1, t3);
+    			append_dev(div1, ul);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(ul, null);
+    			}
+
+    			/*ul_binding*/ ctx[30](ul);
+    			current = true;
+    			input.focus();
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(input, "input", /*input_input_handler*/ ctx[25]),
+    					listen_dev(div1, "introend", /*scrollToHighlighted*/ ctx[20], false, false, false),
+    					listen_dev(div1, "keydown", /*keyDown*/ ctx[16], false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty[0] & /*userSearch*/ 4) {
+    				set_input_value(input, /*userSearch*/ ctx[2]);
+    			}
+
+    			if (/*userSearch*/ ctx[2] && /*userSearch*/ ctx[2].length > 0) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+    				} else {
+    					if_block = create_if_block_3(ctx);
+    					if_block.c();
+    					if_block.m(div0, null);
+    				}
+    			} else if (if_block) {
+    				if_block.d(1);
+    				if_block = null;
+    			}
+
+    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, setHighlightedZone, handleTimezoneUpdate, filteredZones, groupHasVisibleChildren*/ 312072) {
+    				each_value = Object.keys(timezones);
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(ul, null);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value.length;
+    			}
+
+    			if (!current || dirty[0] & /*currentZone*/ 2 && ul_aria_activedescendant_value !== (ul_aria_activedescendant_value = /*currentZone*/ ctx[1] && `tz-${slugify(/*currentZone*/ ctx[1][0])}`)) {
+    				attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value);
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+
+    			add_render_callback(() => {
+    				if (!div1_transition) div1_transition = create_bidirectional_transition(div1, slide, {}, true);
+    				div1_transition.run(1);
+    			});
+
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			if (!div1_transition) div1_transition = create_bidirectional_transition(div1, slide, {}, false);
+    			div1_transition.run(0);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div1);
+    			/*input_binding*/ ctx[24](null);
+    			if (if_block) if_block.d();
+    			destroy_each(each_blocks, detaching);
+    			/*ul_binding*/ ctx[30](null);
+    			if (detaching && div1_transition) div1_transition.end();
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(318:0) {#if expanded}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (345:6) {#if userSearch && userSearch.length > 0}
+    function create_if_block_3(ctx) {
+    	let button;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			button = element("button");
+    			button.textContent = "×";
+    			attr_dev(button, "title", "Clear search text");
+    			attr_dev(button, "class", "svelte-1mifefb");
+    			add_location(button, file, 345, 8, 10856);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, button, anchor);
+    			/*button_binding_1*/ ctx[26](button);
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*clearSearch*/ ctx[17], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(button);
+    			/*button_binding_1*/ ctx[26](null);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_3.name,
+    		type: "if",
+    		source: "(345:6) {#if userSearch && userSearch.length > 0}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (366:8) {#if groupHasVisibleChildren(group, filteredZones)}
+    function create_if_block_1(ctx) {
+    	let li;
+    	let p;
+    	let t0_value = /*group*/ ctx[42] + "";
+    	let t0;
+    	let t1;
+    	let each_1_anchor;
+    	let each_value_1 = Object.entries(timezones[/*group*/ ctx[42]]);
+    	validate_each_argument(each_value_1);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value_1.length; i += 1) {
+    		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+    	}
+
+    	const block = {
+    		c: function create() {
+    			li = element("li");
+    			p = element("p");
+    			t0 = text(t0_value);
+    			t1 = space();
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			each_1_anchor = empty();
+    			attr_dev(p, "class", "svelte-1mifefb");
+    			add_location(p, file, 367, 12, 11459);
+    			attr_dev(li, "role", "option");
+    			attr_dev(li, "aria-hidden", "true");
+    			attr_dev(li, "class", "svelte-1mifefb");
+    			add_location(li, file, 366, 10, 11409);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, li, anchor);
+    			append_dev(li, p);
+    			append_dev(p, t0);
+    			insert_dev(target, t1, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(target, anchor);
+    			}
+
+    			insert_dev(target, each_1_anchor, anchor);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, setHighlightedZone, handleTimezoneUpdate, filteredZones*/ 279304) {
+    				each_value_1 = Object.entries(timezones[/*group*/ ctx[42]]);
+    				validate_each_argument(each_value_1);
+    				let i;
+
+    				for (i = 0; i < each_value_1.length; i += 1) {
+    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block_1(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value_1.length;
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(li);
+    			if (detaching) detach_dev(t1);
+    			destroy_each(each_blocks, detaching);
+    			if (detaching) detach_dev(each_1_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1.name,
+    		type: "if",
+    		source: "(366:8) {#if groupHasVisibleChildren(group, filteredZones)}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (371:12) {#if filteredZones.includes(zoneLabel)}
+    function create_if_block_2(ctx) {
+    	let li;
+    	let t0_value = /*zoneDetails*/ ctx[46][0] + "";
+    	let t0;
+    	let t1;
+    	let span;
+    	let t2;
+    	let t3_value = /*zoneDetails*/ ctx[46][1] + "";
+    	let t3;
+    	let t4;
+    	let li_id_value;
+    	let li_aria_label_value;
+    	let li_aria_selected_value;
+    	let zoneLabel = /*zoneLabel*/ ctx[45];
+    	let mounted;
+    	let dispose;
+    	const assign_li = () => /*li_binding*/ ctx[27](li, zoneLabel);
+    	const unassign_li = () => /*li_binding*/ ctx[27](null, zoneLabel);
+
+    	function mouseover_handler(...args) {
+    		return /*mouseover_handler*/ ctx[28](/*zoneDetails*/ ctx[46], ...args);
+    	}
+
+    	function click_handler(...args) {
+    		return /*click_handler*/ ctx[29](/*zoneLabel*/ ctx[45], ...args);
+    	}
+
+    	const block = {
+    		c: function create() {
+    			li = element("li");
+    			t0 = text(t0_value);
+    			t1 = space();
+    			span = element("span");
+    			t2 = text("GMT ");
+    			t3 = text(t3_value);
+    			t4 = space();
+    			attr_dev(span, "class", "svelte-1mifefb");
+    			add_location(span, file, 381, 33, 12133);
+    			attr_dev(li, "role", "option");
+    			attr_dev(li, "tabindex", "0");
+    			attr_dev(li, "id", li_id_value = `tz-${slugify(/*zoneLabel*/ ctx[45])}`);
+    			attr_dev(li, "aria-label", li_aria_label_value = `Select ${/*zoneDetails*/ ctx[46][0]}`);
+    			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[3] === /*zoneDetails*/ ctx[46][0]);
+    			attr_dev(li, "class", "svelte-1mifefb");
+    			add_location(li, file, 371, 14, 11638);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, li, anchor);
+    			append_dev(li, t0);
+    			append_dev(li, t1);
+    			append_dev(li, span);
+    			append_dev(span, t2);
+    			append_dev(span, t3);
+    			append_dev(li, t4);
+    			assign_li();
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(li, "mouseover", mouseover_handler, false, false, false),
+    					listen_dev(li, "click", click_handler, false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(new_ctx, dirty) {
+    			ctx = new_ctx;
+
+    			if (dirty[0] & /*highlightedZone*/ 8 && li_aria_selected_value !== (li_aria_selected_value = /*highlightedZone*/ ctx[3] === /*zoneDetails*/ ctx[46][0])) {
+    				attr_dev(li, "aria-selected", li_aria_selected_value);
+    			}
+
+    			if (zoneLabel !== /*zoneLabel*/ ctx[45]) {
+    				unassign_li();
+    				zoneLabel = /*zoneLabel*/ ctx[45];
+    				assign_li();
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(li);
+    			unassign_li();
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_2.name,
+    		type: "if",
+    		source: "(371:12) {#if filteredZones.includes(zoneLabel)}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (370:10) {#each Object.entries(groupedZones[group]) as [zoneLabel, zoneDetails]}
+    function create_each_block_1(ctx) {
+    	let show_if = /*filteredZones*/ ctx[9].includes(/*zoneLabel*/ ctx[45]);
+    	let if_block_anchor;
+    	let if_block = show_if && create_if_block_2(ctx);
+
+    	const block = {
+    		c: function create() {
+    			if (if_block) if_block.c();
+    			if_block_anchor = empty();
+    		},
+    		m: function mount(target, anchor) {
+    			if (if_block) if_block.m(target, anchor);
+    			insert_dev(target, if_block_anchor, anchor);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty[0] & /*filteredZones*/ 512) show_if = /*filteredZones*/ ctx[9].includes(/*zoneLabel*/ ctx[45]);
+
+    			if (show_if) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+    				} else {
+    					if_block = create_if_block_2(ctx);
+    					if_block.c();
+    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    				}
+    			} else if (if_block) {
+    				if_block.d(1);
+    				if_block = null;
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (if_block) if_block.d(detaching);
+    			if (detaching) detach_dev(if_block_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block_1.name,
+    		type: "each",
+    		source: "(370:10) {#each Object.entries(groupedZones[group]) as [zoneLabel, zoneDetails]}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (365:6) {#each Object.keys(groupedZones) as group}
+    function create_each_block(ctx) {
+    	let show_if = /*groupHasVisibleChildren*/ ctx[15](/*group*/ ctx[42], /*filteredZones*/ ctx[9]);
+    	let if_block_anchor;
+    	let if_block = show_if && create_if_block_1(ctx);
+
+    	const block = {
+    		c: function create() {
+    			if (if_block) if_block.c();
+    			if_block_anchor = empty();
+    		},
+    		m: function mount(target, anchor) {
+    			if (if_block) if_block.m(target, anchor);
+    			insert_dev(target, if_block_anchor, anchor);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty[0] & /*filteredZones*/ 512) show_if = /*groupHasVisibleChildren*/ ctx[15](/*group*/ ctx[42], /*filteredZones*/ ctx[9]);
+
+    			if (show_if) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+    				} else {
+    					if_block = create_if_block_1(ctx);
+    					if_block.c();
+    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    				}
+    			} else if (if_block) {
+    				if_block.d(1);
+    				if_block = null;
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (if_block) if_block.d(detaching);
+    			if (detaching) detach_dev(if_block_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block.name,
+    		type: "each",
+    		source: "(365:6) {#each Object.keys(groupedZones) as group}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment(ctx) {
+    	let t0;
+    	let button;
+    	let span;
+    	let t1_value = /*currentZone*/ ctx[1][0] + "";
+    	let t1;
+    	let t2;
+    	let small;
+    	let t3;
+    	let t4_value = /*currentZone*/ ctx[1][1] + "";
+    	let t4;
+    	let t5;
+    	let svg;
+    	let polygon;
+    	let polygon_transform_value;
+    	let button_aria_label_value;
+    	let t6;
+    	let if_block1_anchor;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	let if_block0 = /*expanded*/ ctx[0] && create_if_block_4(ctx);
+    	let if_block1 = /*expanded*/ ctx[0] && create_if_block(ctx);
+
+    	const block = {
+    		c: function create() {
+    			if (if_block0) if_block0.c();
+    			t0 = space();
+    			button = element("button");
+    			span = element("span");
+    			t1 = text(t1_value);
+    			t2 = space();
+    			small = element("small");
+    			t3 = text("GMT ");
+    			t4 = text(t4_value);
+    			t5 = space();
+    			svg = svg_element("svg");
+    			polygon = svg_element("polygon");
+    			t6 = space();
+    			if (if_block1) if_block1.c();
+    			if_block1_anchor = empty();
+    			attr_dev(small, "class", "svelte-1mifefb");
+    			add_location(small, file, 312, 25, 9826);
+    			attr_dev(span, "class", "svelte-1mifefb");
+    			add_location(span, file, 312, 2, 9803);
+    			attr_dev(polygon, "x", "0");
+    			attr_dev(polygon, "y", "0");
+    			attr_dev(polygon, "points", "8, 8, 16, 16, 0, 16");
+    			attr_dev(polygon, "transform", polygon_transform_value = "" + ((/*expanded*/ ctx[0] ? "rotate(0)" : "rotate(180, 8, 8)") + " translate(0 -4)"));
+    			attr_dev(polygon, "class", "svelte-1mifefb");
+    			add_location(polygon, file, 314, 4, 9924);
+    			attr_dev(svg, "width", "10");
+    			attr_dev(svg, "height", "16");
+    			attr_dev(svg, "viewBox", "0 0 16 16");
+    			attr_dev(svg, "class", "svelte-1mifefb");
+    			add_location(svg, file, 313, 2, 9871);
+    			attr_dev(button, "type", "button");
+    			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[1][0]} is currently selected. Change timezone`);
+    			attr_dev(button, "aria-haspopup", "listbox");
+    			attr_dev(button, "data-toggle", "true");
+    			attr_dev(button, "aria-expanded", /*expanded*/ ctx[0]);
+    			attr_dev(button, "class", "svelte-1mifefb");
+    			add_location(button, file, 302, 0, 9529);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			if (if_block0) if_block0.m(target, anchor);
+    			insert_dev(target, t0, anchor);
+    			insert_dev(target, button, anchor);
+    			append_dev(button, span);
+    			append_dev(span, t1);
+    			append_dev(span, t2);
+    			append_dev(span, small);
+    			append_dev(small, t3);
+    			append_dev(small, t4);
+    			append_dev(button, t5);
+    			append_dev(button, svg);
+    			append_dev(svg, polygon);
+    			/*button_binding*/ ctx[23](button);
+    			insert_dev(target, t6, anchor);
+    			if (if_block1) if_block1.m(target, anchor);
+    			insert_dev(target, if_block1_anchor, anchor);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(button, "click", /*toggleExpanded*/ ctx[19], false, false, false),
+    					listen_dev(button, "keydown", /*toggleExpanded*/ ctx[19], false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (/*expanded*/ ctx[0]) {
+    				if (if_block0) {
+    					if_block0.p(ctx, dirty);
+    				} else {
+    					if_block0 = create_if_block_4(ctx);
+    					if_block0.c();
+    					if_block0.m(t0.parentNode, t0);
+    				}
+    			} else if (if_block0) {
+    				if_block0.d(1);
+    				if_block0 = null;
+    			}
+
+    			if ((!current || dirty[0] & /*currentZone*/ 2) && t1_value !== (t1_value = /*currentZone*/ ctx[1][0] + "")) set_data_dev(t1, t1_value);
+    			if ((!current || dirty[0] & /*currentZone*/ 2) && t4_value !== (t4_value = /*currentZone*/ ctx[1][1] + "")) set_data_dev(t4, t4_value);
+
+    			if (!current || dirty[0] & /*expanded*/ 1 && polygon_transform_value !== (polygon_transform_value = "" + ((/*expanded*/ ctx[0] ? "rotate(0)" : "rotate(180, 8, 8)") + " translate(0 -4)"))) {
+    				attr_dev(polygon, "transform", polygon_transform_value);
+    			}
+
+    			if (!current || dirty[0] & /*currentZone*/ 2 && button_aria_label_value !== (button_aria_label_value = `${/*currentZone*/ ctx[1][0]} is currently selected. Change timezone`)) {
+    				attr_dev(button, "aria-label", button_aria_label_value);
+    			}
+
+    			if (!current || dirty[0] & /*expanded*/ 1) {
+    				attr_dev(button, "aria-expanded", /*expanded*/ ctx[0]);
+    			}
+
+    			if (/*expanded*/ ctx[0]) {
+    				if (if_block1) {
+    					if_block1.p(ctx, dirty);
+
+    					if (dirty[0] & /*expanded*/ 1) {
+    						transition_in(if_block1, 1);
+    					}
+    				} else {
+    					if_block1 = create_if_block(ctx);
+    					if_block1.c();
+    					transition_in(if_block1, 1);
+    					if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
+    				}
+    			} else if (if_block1) {
+    				group_outros();
+
+    				transition_out(if_block1, 1, 1, () => {
+    					if_block1 = null;
+    				});
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block1);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block1);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (if_block0) if_block0.d(detaching);
+    			if (detaching) detach_dev(t0);
+    			if (detaching) detach_dev(button);
+    			/*button_binding*/ ctx[23](null);
+    			if (detaching) detach_dev(t6);
+    			if (if_block1) if_block1.d(detaching);
+    			if (detaching) detach_dev(if_block1_anchor);
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Picker", slots, []);
+    	let { timezone = null } = $$props;
+    	let { expanded = false } = $$props;
+    	let { allowedTimezones = null } = $$props;
+
+    	// ***** End Public API *****
+    	// What is the current zone?
+    	// Array ['Abidjan', '+00:00', '+00:00']
+    	// The first value is the display name for the zone, the second is the standard offset, the third the daylight saving time offset
+    	let currentZone;
+
+    	// We keep track of what the user is typing in the search box
+    	// String
+    	let userSearch;
+
+    	// What is the currently selected zone in the dropdown?
+    	// String 'Africa/Abidjan'
+    	let highlightedZone;
+
+    	// DOM nodes refs
+    	let toggleButtonRef;
+
+    	let searchInputRef;
+    	let clearButtonRef;
+    	let listBoxRef;
+    	let listBoxOptionRefs;
+
+    	// A few IDs that will we use for a11y
+    	const labelId = uid();
+
+    	const listBoxId = uid();
+    	const searchInputId = uid();
+
+    	// We ungroup the zones
+    	// e.g. { Africa: {'Africa/Abidjan': ['Abidjan', '+00:00', '+00:00']} }
+    	// => {'Africa/Abidjan': ['Abidjan', '+00:00', '+00:00']}
+    	const ungroupedZones = ungroup(timezones);
+
+    	const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // eslint-disable-line new-cap
+
+    	// We will only display the timezones the user passed in
+    	// and default to all the zones if that's empty or the wrong format
+    	let availableZones = ungroupedZones;
+
+    	if (allowedTimezones) {
+    		if (Array.isArray(allowedTimezones)) {
+    			availableZones = pick(ungroupedZones, [...allowedTimezones, userTimezone]);
+    		} else {
+    			console.error("You need to provide a list of timezones as an Array!", `You provided ${allowedTimezones}.`);
+    		}
+    	}
+
+    	// We also want a list of all the valid zones
+    	// e.g. {'Africa/Abidjan': ['Abidjan', '+00:00', '+00:00'], 'Africa/Accra': ['Accra', '+00:00', '+00:00']}
+    	// => ['Africa/Abidjan', 'Africa/Accra']
+    	const validZones = Object.keys(availableZones);
+
+    	// Zones will be filtered as the user types, so we keep track of them internally here
+    	let filteredZones = [];
+
+    	// We take the ungroupedZones and create a list of just the user-visible labels
+    	// and add them to the refs
+    	// e.g. {'Africa/Abidjan': ['Abidjan', '+00:00', '+00:00'], 'Africa/Accra': ['Accra', '+00:00', '+00:00']}
+    	// => ['Abidjan', 'Accra']
+    	listBoxOptionRefs = Object.values(availableZones).map(([zone]) => ({ [zone]: null }));
+
+    	// We keep track of the initial state so we can reset to these values when needed
+    	const initialState = { expanded, userSearch: null };
+
+    	// Reset the dropdown and all internal state to the initial values
+    	const reset = () => {
+    		$$invalidate(0, expanded = initialState.expanded); // eslint-disable-line prefer-destructuring
+    		$$invalidate(2, userSearch = initialState.userSearch); // eslint-disable-line prefer-destructuring
+    	};
+
+    	// We will use the dispatcher to send the update event
+    	const dispatch = createEventDispatcher();
+
+    	// Because CustomEvents don't bubble by default, custom components won't work
+    	// We will need to do some tricks for this to work properly
+    	// https://github.com/sveltejs/svelte/issues/3119
+    	const component = get_current_component();
+
+    	const dispatchUpdates = () => {
+    		const eventName = "update";
+    		const eventData = { timezone };
+
+    		{
+    			dispatch(eventName, eventData);
+    		}
+    	};
+
+    	// Emit the event back to the consumer
+    	const handleTimezoneUpdate = (ev, zoneId) => {
+    		$$invalidate(1, currentZone = ungroupedZones[zoneId]);
+    		$$invalidate(21, timezone = zoneId);
+    		dispatchUpdates();
+    		reset();
+    		toggleButtonRef.focus();
+    		ev.preventDefault();
+    	};
+
+    	// ***** Methods *****
+    	// Figure out if a grouped zone has any currently visible zones
+    	// We use this when the user searches in order to show/hide the group name in the list
+    	const groupHasVisibleChildren = (group, zones) => Object.keys(timezones[group]).some(zone => zones.includes(zone));
+
+    	// Scroll the list to a specific element in it if that element is not already visible on screen
+    	const scrollList = zone => {
+    		const zoneElementRef = listBoxOptionRefs[zone];
+
+    		if (listBoxRef && zoneElementRef) {
+    			scrollIntoView(zoneElementRef, listBoxRef);
+    			zoneElementRef.focus({ preventScroll: true });
+    		}
+    	};
+
+    	// Every time the user uses their keyboard to move up or down in the list,
+    	// we need to figure out if their at the end/start of the list and scroll the correct elements
+    	// into view
+    	const moveSelection = direction => {
+    		const len = filteredZones.length;
+    		const zoneIndex = filteredZones.findIndex(zone => zone === highlightedZone);
+    		let index;
+
+    		if (direction === "up") {
+    			index = (zoneIndex - 1 + len) % len;
+    		}
+
+    		if (direction === "down") {
+    			index = (zoneIndex + 1) % len;
+    		}
+
+    		// We update the highlightedZone to be the one the user is currently on
+    		$$invalidate(3, highlightedZone = filteredZones[index]);
+
+    		// We make sure the highlightedZone is visible on screen, scrolling it into view if not
+    		scrollList(highlightedZone);
+    	};
+
+    	// We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
+    	const keyDown = ev => {
+    		// If the clearButton is focused, don't do anything else
+    		// We should only continue if the dropdown is expanded
+    		if (document.activeElement === clearButtonRef || !expanded) {
+    			return;
+    		}
+
+    		// If the user presses Escape, we dismiss the drodpown
+    		if (ev.keyCode === keyCodes.Escape) {
+    			reset();
+    		}
+
+    		// If the user presses the down arrow, start navigating the list
+    		if (ev.keyCode === keyCodes.ArrowDown) {
+    			ev.preventDefault();
+    			moveSelection("down");
+    		}
+
+    		// If the user presses the up arrow, start navigating the list
+    		if (ev.keyCode === keyCodes.ArrowUp) {
+    			ev.preventDefault();
+    			moveSelection("up");
+    		}
+
+    		// If the user presses Enter and the dropdown is expanded, select the current item
+    		if (ev.keyCode === keyCodes.Enter && highlightedZone) {
+    			handleTimezoneUpdate(ev, highlightedZone);
+    		}
+
+    		// If the user start to type letters or numbers, we focus on the Search field
+    		if (keyCodes.Characters.includes(ev.keyCode) || ev.keyCode === keyCodes.Backspace) {
+    			searchInputRef.focus();
+    		}
+    	};
+
+    	// When the user presses the clear button when searching,
+    	// we want to clear the text and refocus on the input
+    	const clearSearch = () => {
+    		$$invalidate(2, userSearch = initialState.userSearch); // eslint-disable-line prefer-destructuring
+
+    		// Refocus to the search input
+    		searchInputRef.focus();
+    	};
+
+    	const setHighlightedZone = zone => {
+    		$$invalidate(3, highlightedZone = zone);
+    	};
+
+    	const toggleExpanded = ev => {
+    		if (ev.keyCode) {
+    			// If it's a keyboard event, we should react only to certain keys
+    			// Enter and Space should show it
+    			if ([keyCodes.Enter, keyCodes.Space].includes(ev.keyCode)) {
+    				$$invalidate(0, expanded = !expanded);
+    			}
+
+    			// Escape should just hide the menu
+    			if (ev.keyCode === keyCodes.Escape) {
+    				$$invalidate(0, expanded = false);
+    			}
+
+    			// ArrowDown should show it
+    			if (ev.keyCode === keyCodes.ArrowDown) {
+    				$$invalidate(0, expanded = true);
+    			}
+    		} else {
+    			// If there is no keyCode, it's not a keyboard event
+    			$$invalidate(0, expanded = !expanded);
+    		}
+    	};
+
+    	const scrollToHighlighted = () => {
+    		if (expanded && highlightedZone) {
+    			scrollList(highlightedZone);
+    		}
+    	};
+
+    	const setTimezone = tz => {
+    		if (!tz) {
+    			$$invalidate(21, timezone = userTimezone);
+    		}
+
+    		if (tz && !validZones.includes(tz)) {
+    			// The timezone must be a valid timezone, so we check it against our list of values in flat
+    			console.warn(`The timezone provided is not valid: ${tz}!`, `Valid zones are: ${validZones}`);
+
+    			$$invalidate(21, timezone = userTimezone);
+    		}
+
+    		$$invalidate(1, currentZone = ungroupedZones[timezone]);
+    		setHighlightedZone(timezone);
+    	};
+
+    	// ***** Lifecycle methods *****
+    	onMount(() => {
+    		setTimezone(timezone);
+    		scrollToHighlighted();
+    	});
+
+    	const writable_props = ["timezone", "expanded", "allowedTimezones"];
+
+    	Object_1.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Picker> was created with unknown prop '${key}'`);
+    	});
+
+    	function button_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			toggleButtonRef = $$value;
+    			$$invalidate(4, toggleButtonRef);
+    		});
+    	}
+
+    	function input_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			searchInputRef = $$value;
+    			$$invalidate(5, searchInputRef);
+    		});
+    	}
+
+    	function input_input_handler() {
+    		userSearch = this.value;
+    		$$invalidate(2, userSearch);
+    	}
+
+    	function button_binding_1($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			clearButtonRef = $$value;
+    			$$invalidate(6, clearButtonRef);
+    		});
+    	}
+
+    	function li_binding($$value, zoneLabel) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			listBoxOptionRefs[zoneLabel] = $$value;
+    			$$invalidate(8, listBoxOptionRefs);
+    		});
+    	}
+
+    	const mouseover_handler = zoneDetails => setHighlightedZone(zoneDetails[0]);
+    	const click_handler = (zoneLabel, ev) => handleTimezoneUpdate(ev, zoneLabel);
+
+    	function ul_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			listBoxRef = $$value;
+    			$$invalidate(7, listBoxRef);
+    		});
+    	}
+
+    	$$self.$$set = $$props => {
+    		if ("timezone" in $$props) $$invalidate(21, timezone = $$props.timezone);
+    		if ("expanded" in $$props) $$invalidate(0, expanded = $$props.expanded);
+    		if ("allowedTimezones" in $$props) $$invalidate(22, allowedTimezones = $$props.allowedTimezones);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		createEventDispatcher,
+    		onMount,
+    		get_current_component,
+    		slide,
+    		groupedZones: timezones,
+    		scrollIntoView,
+    		uid,
+    		slugify,
+    		keyCodes,
+    		ungroup,
+    		filter,
+    		pick,
+    		timezone,
+    		expanded,
+    		allowedTimezones,
+    		currentZone,
+    		userSearch,
+    		highlightedZone,
+    		toggleButtonRef,
+    		searchInputRef,
+    		clearButtonRef,
+    		listBoxRef,
+    		listBoxOptionRefs,
+    		labelId,
+    		listBoxId,
+    		searchInputId,
+    		ungroupedZones,
+    		userTimezone,
+    		availableZones,
+    		validZones,
+    		filteredZones,
+    		initialState,
+    		reset,
+    		dispatch,
+    		component,
+    		dispatchUpdates,
+    		handleTimezoneUpdate,
+    		groupHasVisibleChildren,
+    		scrollList,
+    		moveSelection,
+    		keyDown,
+    		clearSearch,
+    		setHighlightedZone,
+    		toggleExpanded,
+    		scrollToHighlighted,
+    		setTimezone
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("timezone" in $$props) $$invalidate(21, timezone = $$props.timezone);
+    		if ("expanded" in $$props) $$invalidate(0, expanded = $$props.expanded);
+    		if ("allowedTimezones" in $$props) $$invalidate(22, allowedTimezones = $$props.allowedTimezones);
+    		if ("currentZone" in $$props) $$invalidate(1, currentZone = $$props.currentZone);
+    		if ("userSearch" in $$props) $$invalidate(2, userSearch = $$props.userSearch);
+    		if ("highlightedZone" in $$props) $$invalidate(3, highlightedZone = $$props.highlightedZone);
+    		if ("toggleButtonRef" in $$props) $$invalidate(4, toggleButtonRef = $$props.toggleButtonRef);
+    		if ("searchInputRef" in $$props) $$invalidate(5, searchInputRef = $$props.searchInputRef);
+    		if ("clearButtonRef" in $$props) $$invalidate(6, clearButtonRef = $$props.clearButtonRef);
+    		if ("listBoxRef" in $$props) $$invalidate(7, listBoxRef = $$props.listBoxRef);
+    		if ("listBoxOptionRefs" in $$props) $$invalidate(8, listBoxOptionRefs = $$props.listBoxOptionRefs);
+    		if ("availableZones" in $$props) $$invalidate(31, availableZones = $$props.availableZones);
+    		if ("filteredZones" in $$props) $$invalidate(9, filteredZones = $$props.filteredZones);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty[0] & /*userSearch*/ 4 | $$self.$$.dirty[1] & /*availableZones*/ 1) {
+    			// ***** Reactive *****
+    			// As the user types, we filter the available zones to show only those that should be visible
+    			 $$invalidate(9, filteredZones = userSearch && userSearch.length > 0
+    			? filter(userSearch, availableZones)
+    			: validZones.slice());
+    		}
+
+    		if ($$self.$$.dirty[0] & /*timezone*/ 2097152) {
+    			// We want to properly handle any potential changes to the current timezone
+    			// that might come in from the consumer of the component.
+    			// This includes setting the proper timezone and dispatching the updated values
+    			// back up to the consumer
+    			 setTimezone(timezone);
+    		}
+    	};
+
+    	return [
+    		expanded,
+    		currentZone,
+    		userSearch,
+    		highlightedZone,
+    		toggleButtonRef,
+    		searchInputRef,
+    		clearButtonRef,
+    		listBoxRef,
+    		listBoxOptionRefs,
+    		filteredZones,
+    		labelId,
+    		listBoxId,
+    		searchInputId,
+    		reset,
+    		handleTimezoneUpdate,
+    		groupHasVisibleChildren,
+    		keyDown,
+    		clearSearch,
+    		setHighlightedZone,
+    		toggleExpanded,
+    		scrollToHighlighted,
+    		timezone,
+    		allowedTimezones,
+    		button_binding,
+    		input_binding,
+    		input_input_handler,
+    		button_binding_1,
+    		li_binding,
+    		mouseover_handler,
+    		click_handler,
+    		ul_binding
+    	];
+    }
+
+    class Picker extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+
+    		init(
+    			this,
+    			options,
+    			instance,
+    			create_fragment,
+    			safe_not_equal,
+    			{
+    				timezone: 21,
+    				expanded: 0,
+    				allowedTimezones: 22
+    			},
+    			[-1, -1]
+    		);
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Picker",
+    			options,
+    			id: create_fragment.name
+    		});
+    	}
+
+    	get timezone() {
+    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set timezone(value) {
+    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get expanded() {
+    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set expanded(value) {
+    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get allowedTimezones() {
+    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set allowedTimezones(value) {
+    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     function requiredArgs(required, args) {
@@ -3021,41 +4975,6 @@ var SvelteTimezonePicker = (function () {
     }
 
     /**
-     * Returns the formatted time zone name of the provided `timeZone` or the current
-     * system time zone if omitted, accounting for DST according to the UTC value of
-     * the date.
-     */
-    function tzIntlTimeZoneName(length, date, options) {
-      var dtf = getDTF(length, options.timeZone, options.locale);
-      return dtf.formatToParts ? partsTimeZone(dtf, date) : hackyTimeZone(dtf, date)
-    }
-
-    function partsTimeZone(dtf, date) {
-      var formatted = dtf.formatToParts(date);
-      return formatted[formatted.length - 1].value
-    }
-
-    function hackyTimeZone(dtf, date) {
-      var formatted = dtf.format(date).replace(/\u200E/g, '');
-      var tzNameMatch = / [\w-+ ]+$/.exec(formatted);
-      return tzNameMatch ? tzNameMatch[0].substr(1) : ''
-    }
-
-    // If a locale has been provided `en-US` is used as a fallback in case it is an
-    // invalid locale, otherwise the locale is left undefined to use the system locale.
-    function getDTF(length, timeZone, locale) {
-      if (locale && !locale.code) {
-        throw new Error(
-          "date-fns-tz error: Please set a language code on the locale object imported from date-fns, e.g. `locale.code = 'en-US'`"
-        )
-      }
-      return new Intl.DateTimeFormat(locale ? [locale.code, 'en-US'] : undefined, {
-        timeZone: timeZone,
-        timeZoneName: length
-      })
-    }
-
-    /**
      * Returns the [year, month, day, hour, minute, seconds] tokens of the provided
      * `date` as it will be rendered in the `timeZone`.
      */
@@ -3220,149 +5139,8 @@ var SvelteTimezonePicker = (function () {
       return true
     }
 
-    var MILLISECONDS_IN_MINUTE$2 = 60 * 1000;
-
-    var formatters$2 = {
-      // Timezone (ISO-8601. If offset is 0, output is always `'Z'`)
-      X: function(date, token, localize, options) {
-        var originalDate = options._originalDate || date;
-        var timezoneOffset = options.timeZone
-          ? tzParseTimezone(options.timeZone, originalDate) / MILLISECONDS_IN_MINUTE$2
-          : originalDate.getTimezoneOffset();
-
-        if (timezoneOffset === 0) {
-          return 'Z'
-        }
-
-        switch (token) {
-          // Hours and optional minutes
-          case 'X':
-            return formatTimezoneWithOptionalMinutes$1(timezoneOffset)
-
-          // Hours, minutes and optional seconds without `:` delimeter
-          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
-          // so this token always has the same output as `XX`
-          case 'XXXX':
-          case 'XX': // Hours and minutes without `:` delimeter
-            return formatTimezone$1(timezoneOffset)
-
-          // Hours, minutes and optional seconds with `:` delimeter
-          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
-          // so this token always has the same output as `XXX`
-          case 'XXXXX':
-          case 'XXX': // Hours and minutes with `:` delimeter
-          default:
-            return formatTimezone$1(timezoneOffset, ':')
-        }
-      },
-
-      // Timezone (ISO-8601. If offset is 0, output is `'+00:00'` or equivalent)
-      x: function(date, token, localize, options) {
-        var originalDate = options._originalDate || date;
-        var timezoneOffset = options.timeZone
-          ? tzParseTimezone(options.timeZone, originalDate) / MILLISECONDS_IN_MINUTE$2
-          : originalDate.getTimezoneOffset();
-
-        switch (token) {
-          // Hours and optional minutes
-          case 'x':
-            return formatTimezoneWithOptionalMinutes$1(timezoneOffset)
-
-          // Hours, minutes and optional seconds without `:` delimeter
-          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
-          // so this token always has the same output as `xx`
-          case 'xxxx':
-          case 'xx': // Hours and minutes without `:` delimeter
-            return formatTimezone$1(timezoneOffset)
-
-          // Hours, minutes and optional seconds with `:` delimeter
-          // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
-          // so this token always has the same output as `xxx`
-          case 'xxxxx':
-          case 'xxx': // Hours and minutes with `:` delimeter
-          default:
-            return formatTimezone$1(timezoneOffset, ':')
-        }
-      },
-
-      // Timezone (GMT)
-      O: function(date, token, localize, options) {
-        var originalDate = options._originalDate || date;
-        var timezoneOffset = options.timeZone
-          ? tzParseTimezone(options.timeZone, originalDate) / MILLISECONDS_IN_MINUTE$2
-          : originalDate.getTimezoneOffset();
-
-        switch (token) {
-          // Short
-          case 'O':
-          case 'OO':
-          case 'OOO':
-            return 'GMT' + formatTimezoneShort$1(timezoneOffset, ':')
-          // Long
-          case 'OOOO':
-          default:
-            return 'GMT' + formatTimezone$1(timezoneOffset, ':')
-        }
-      },
-
-      // Timezone (specific non-location)
-      z: function(date, token, localize, options) {
-        var originalDate = options._originalDate || date;
-
-        switch (token) {
-          // Short
-          case 'z':
-          case 'zz':
-          case 'zzz':
-            return tzIntlTimeZoneName('short', originalDate, options)
-          // Long
-          case 'zzzz':
-          default:
-            return tzIntlTimeZoneName('long', originalDate, options)
-        }
-      }
-    };
-
-    function addLeadingZeros$1(number, targetLength) {
-      var sign = number < 0 ? '-' : '';
-      var output = Math.abs(number).toString();
-      while (output.length < targetLength) {
-        output = '0' + output;
-      }
-      return sign + output
-    }
-
-    function formatTimezone$1(offset, dirtyDelimeter) {
-      var delimeter = dirtyDelimeter || '';
-      var sign = offset > 0 ? '-' : '+';
-      var absOffset = Math.abs(offset);
-      var hours = addLeadingZeros$1(Math.floor(absOffset / 60), 2);
-      var minutes = addLeadingZeros$1(absOffset % 60, 2);
-      return sign + hours + delimeter + minutes
-    }
-
-    function formatTimezoneWithOptionalMinutes$1(offset, dirtyDelimeter) {
-      if (offset % 60 === 0) {
-        var sign = offset > 0 ? '-' : '+';
-        return sign + addLeadingZeros$1(Math.abs(offset) / 60, 2)
-      }
-      return formatTimezone$1(offset, dirtyDelimeter)
-    }
-
-    function formatTimezoneShort$1(offset, dirtyDelimeter) {
-      var sign = offset > 0 ? '-' : '+';
-      var absOffset = Math.abs(offset);
-      var hours = Math.floor(absOffset / 60);
-      var minutes = absOffset % 60;
-      if (minutes === 0) {
-        return sign + String(hours)
-      }
-      var delimeter = dirtyDelimeter || '';
-      return sign + String(hours) + delimeter + addLeadingZeros$1(minutes, 2)
-    }
-
     var MILLISECONDS_IN_HOUR$1 = 3600000;
-    var MILLISECONDS_IN_MINUTE$3 = 60000;
+    var MILLISECONDS_IN_MINUTE$2 = 60000;
     var DEFAULT_ADDITIONAL_DIGITS = 2;
 
     var patterns$1 = {
@@ -3715,7 +5493,7 @@ var SvelteTimezonePicker = (function () {
         }
 
         return (
-          (hours % 24) * MILLISECONDS_IN_HOUR$1 + minutes * MILLISECONDS_IN_MINUTE$3
+          (hours % 24) * MILLISECONDS_IN_HOUR$1 + minutes * MILLISECONDS_IN_MINUTE$2
         )
       }
 
@@ -3732,7 +5510,7 @@ var SvelteTimezonePicker = (function () {
 
         return (
           (hours % 24) * MILLISECONDS_IN_HOUR$1 +
-          minutes * MILLISECONDS_IN_MINUTE$3 +
+          minutes * MILLISECONDS_IN_MINUTE$2 +
           seconds * 1000
         )
       }
@@ -3825,338 +5603,6 @@ var SvelteTimezonePicker = (function () {
       }
 
       return true
-    }
-
-    var tzFormattingTokensRegExp = /([xXOz]+)|''|'(''|[^'])+('|$)/g;
-
-    /**
-     * @name format
-     * @category Common Helpers
-     * @summary Format the date.
-     *
-     * @description
-     * Return the formatted date string in the given format. The result may vary by locale.
-     *
-     * > ⚠️ Please note that the `format` tokens differ from Moment.js and other libraries.
-     * > See: https://git.io/fxCyr
-     *
-     * The characters wrapped between two single quotes characters (') are escaped.
-     * Two single quotes in a row, whether inside or outside a quoted sequence, represent a 'real' single quote.
-     * (see the last example)
-     *
-     * Format of the string is based on Unicode Technical Standard #35:
-     * https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-     * with a few additions (see note 7 below the table).
-     *
-     * Accepted patterns:
-     * | Unit                            | Pattern | Result examples                   | Notes |
-     * |---------------------------------|---------|-----------------------------------|-------|
-     * | Era                             | G..GGG  | AD, BC                            |       |
-     * |                                 | GGGG    | Anno Domini, Before Christ        | 2     |
-     * |                                 | GGGGG   | A, B                              |       |
-     * | Calendar year                   | y       | 44, 1, 1900, 2017                 | 5     |
-     * |                                 | yo      | 44th, 1st, 0th, 17th              | 5,7   |
-     * |                                 | yy      | 44, 01, 00, 17                    | 5     |
-     * |                                 | yyy     | 044, 001, 1900, 2017              | 5     |
-     * |                                 | yyyy    | 0044, 0001, 1900, 2017            | 5     |
-     * |                                 | yyyyy   | ...                               | 3,5   |
-     * | Local week-numbering year       | Y       | 44, 1, 1900, 2017                 | 5     |
-     * |                                 | Yo      | 44th, 1st, 1900th, 2017th         | 5,7   |
-     * |                                 | YY      | 44, 01, 00, 17                    | 5,8   |
-     * |                                 | YYY     | 044, 001, 1900, 2017              | 5     |
-     * |                                 | YYYY    | 0044, 0001, 1900, 2017            | 5,8   |
-     * |                                 | YYYYY   | ...                               | 3,5   |
-     * | ISO week-numbering year         | R       | -43, 0, 1, 1900, 2017             | 5,7   |
-     * |                                 | RR      | -43, 00, 01, 1900, 2017           | 5,7   |
-     * |                                 | RRR     | -043, 000, 001, 1900, 2017        | 5,7   |
-     * |                                 | RRRR    | -0043, 0000, 0001, 1900, 2017     | 5,7   |
-     * |                                 | RRRRR   | ...                               | 3,5,7 |
-     * | Extended year                   | u       | -43, 0, 1, 1900, 2017             | 5     |
-     * |                                 | uu      | -43, 01, 1900, 2017               | 5     |
-     * |                                 | uuu     | -043, 001, 1900, 2017             | 5     |
-     * |                                 | uuuu    | -0043, 0001, 1900, 2017           | 5     |
-     * |                                 | uuuuu   | ...                               | 3,5   |
-     * | Quarter (formatting)            | Q       | 1, 2, 3, 4                        |       |
-     * |                                 | Qo      | 1st, 2nd, 3rd, 4th                | 7     |
-     * |                                 | QQ      | 01, 02, 03, 04                    |       |
-     * |                                 | QQQ     | Q1, Q2, Q3, Q4                    |       |
-     * |                                 | QQQQ    | 1st quarter, 2nd quarter, ...     | 2     |
-     * |                                 | QQQQQ   | 1, 2, 3, 4                        | 4     |
-     * | Quarter (stand-alone)           | q       | 1, 2, 3, 4                        |       |
-     * |                                 | qo      | 1st, 2nd, 3rd, 4th                | 7     |
-     * |                                 | qq      | 01, 02, 03, 04                    |       |
-     * |                                 | qqq     | Q1, Q2, Q3, Q4                    |       |
-     * |                                 | qqqq    | 1st quarter, 2nd quarter, ...     | 2     |
-     * |                                 | qqqqq   | 1, 2, 3, 4                        | 4     |
-     * | Month (formatting)              | M       | 1, 2, ..., 12                     |       |
-     * |                                 | Mo      | 1st, 2nd, ..., 12th               | 7     |
-     * |                                 | MM      | 01, 02, ..., 12                   |       |
-     * |                                 | MMM     | Jan, Feb, ..., Dec                |       |
-     * |                                 | MMMM    | January, February, ..., December  | 2     |
-     * |                                 | MMMMM   | J, F, ..., D                      |       |
-     * | Month (stand-alone)             | L       | 1, 2, ..., 12                     |       |
-     * |                                 | Lo      | 1st, 2nd, ..., 12th               | 7     |
-     * |                                 | LL      | 01, 02, ..., 12                   |       |
-     * |                                 | LLL     | Jan, Feb, ..., Dec                |       |
-     * |                                 | LLLL    | January, February, ..., December  | 2     |
-     * |                                 | LLLLL   | J, F, ..., D                      |       |
-     * | Local week of year              | w       | 1, 2, ..., 53                     |       |
-     * |                                 | wo      | 1st, 2nd, ..., 53th               | 7     |
-     * |                                 | ww      | 01, 02, ..., 53                   |       |
-     * | ISO week of year                | I       | 1, 2, ..., 53                     | 7     |
-     * |                                 | Io      | 1st, 2nd, ..., 53th               | 7     |
-     * |                                 | II      | 01, 02, ..., 53                   | 7     |
-     * | Day of month                    | d       | 1, 2, ..., 31                     |       |
-     * |                                 | do      | 1st, 2nd, ..., 31st               | 7     |
-     * |                                 | dd      | 01, 02, ..., 31                   |       |
-     * | Day of year                     | D       | 1, 2, ..., 365, 366               | 8     |
-     * |                                 | Do      | 1st, 2nd, ..., 365th, 366th       | 7     |
-     * |                                 | DD      | 01, 02, ..., 365, 366             | 8     |
-     * |                                 | DDD     | 001, 002, ..., 365, 366           |       |
-     * |                                 | DDDD    | ...                               | 3     |
-     * | Day of week (formatting)        | E..EEE  | Mon, Tue, Wed, ..., Su            |       |
-     * |                                 | EEEE    | Monday, Tuesday, ..., Sunday      | 2     |
-     * |                                 | EEEEE   | M, T, W, T, F, S, S               |       |
-     * |                                 | EEEEEE  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
-     * | ISO day of week (formatting)    | i       | 1, 2, 3, ..., 7                   | 7     |
-     * |                                 | io      | 1st, 2nd, ..., 7th                | 7     |
-     * |                                 | ii      | 01, 02, ..., 07                   | 7     |
-     * |                                 | iii     | Mon, Tue, Wed, ..., Su            | 7     |
-     * |                                 | iiii    | Monday, Tuesday, ..., Sunday      | 2,7   |
-     * |                                 | iiiii   | M, T, W, T, F, S, S               | 7     |
-     * |                                 | iiiiii  | Mo, Tu, We, Th, Fr, Su, Sa        | 7     |
-     * | Local day of week (formatting)  | e       | 2, 3, 4, ..., 1                   |       |
-     * |                                 | eo      | 2nd, 3rd, ..., 1st                | 7     |
-     * |                                 | ee      | 02, 03, ..., 01                   |       |
-     * |                                 | eee     | Mon, Tue, Wed, ..., Su            |       |
-     * |                                 | eeee    | Monday, Tuesday, ..., Sunday      | 2     |
-     * |                                 | eeeee   | M, T, W, T, F, S, S               |       |
-     * |                                 | eeeeee  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
-     * | Local day of week (stand-alone) | c       | 2, 3, 4, ..., 1                   |       |
-     * |                                 | co      | 2nd, 3rd, ..., 1st                | 7     |
-     * |                                 | cc      | 02, 03, ..., 01                   |       |
-     * |                                 | ccc     | Mon, Tue, Wed, ..., Su            |       |
-     * |                                 | cccc    | Monday, Tuesday, ..., Sunday      | 2     |
-     * |                                 | ccccc   | M, T, W, T, F, S, S               |       |
-     * |                                 | cccccc  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
-     * | AM, PM                          | a..aaa  | AM, PM                            |       |
-     * |                                 | aaaa    | a.m., p.m.                        | 2     |
-     * |                                 | aaaaa   | a, p                              |       |
-     * | AM, PM, noon, midnight          | b..bbb  | AM, PM, noon, midnight            |       |
-     * |                                 | bbbb    | a.m., p.m., noon, midnight        | 2     |
-     * |                                 | bbbbb   | a, p, n, mi                       |       |
-     * | Flexible day period             | B..BBB  | at night, in the morning, ...     |       |
-     * |                                 | BBBB    | at night, in the morning, ...     | 2     |
-     * |                                 | BBBBB   | at night, in the morning, ...     |       |
-     * | Hour [1-12]                     | h       | 1, 2, ..., 11, 12                 |       |
-     * |                                 | ho      | 1st, 2nd, ..., 11th, 12th         | 7     |
-     * |                                 | hh      | 01, 02, ..., 11, 12               |       |
-     * | Hour [0-23]                     | H       | 0, 1, 2, ..., 23                  |       |
-     * |                                 | Ho      | 0th, 1st, 2nd, ..., 23rd          | 7     |
-     * |                                 | HH      | 00, 01, 02, ..., 23               |       |
-     * | Hour [0-11]                     | K       | 1, 2, ..., 11, 0                  |       |
-     * |                                 | Ko      | 1st, 2nd, ..., 11th, 0th          | 7     |
-     * |                                 | KK      | 1, 2, ..., 11, 0                  |       |
-     * | Hour [1-24]                     | k       | 24, 1, 2, ..., 23                 |       |
-     * |                                 | ko      | 24th, 1st, 2nd, ..., 23rd         | 7     |
-     * |                                 | kk      | 24, 01, 02, ..., 23               |       |
-     * | Minute                          | m       | 0, 1, ..., 59                     |       |
-     * |                                 | mo      | 0th, 1st, ..., 59th               | 7     |
-     * |                                 | mm      | 00, 01, ..., 59                   |       |
-     * | Second                          | s       | 0, 1, ..., 59                     |       |
-     * |                                 | so      | 0th, 1st, ..., 59th               | 7     |
-     * |                                 | ss      | 00, 01, ..., 59                   |       |
-     * | Fraction of second              | S       | 0, 1, ..., 9                      |       |
-     * |                                 | SS      | 00, 01, ..., 99                   |       |
-     * |                                 | SSS     | 000, 0001, ..., 999               |       |
-     * |                                 | SSSS    | ...                               | 3     |
-     * | Timezone (ISO-8601 w/ Z)        | X       | -08, +0530, Z                     |       |
-     * |                                 | XX      | -0800, +0530, Z                   |       |
-     * |                                 | XXX     | -08:00, +05:30, Z                 |       |
-     * |                                 | XXXX    | -0800, +0530, Z, +123456          | 2     |
-     * |                                 | XXXXX   | -08:00, +05:30, Z, +12:34:56      |       |
-     * | Timezone (ISO-8601 w/o Z)       | x       | -08, +0530, +00                   |       |
-     * |                                 | xx      | -0800, +0530, +0000               |       |
-     * |                                 | xxx     | -08:00, +05:30, +00:00            | 2     |
-     * |                                 | xxxx    | -0800, +0530, +0000, +123456      |       |
-     * |                                 | xxxxx   | -08:00, +05:30, +00:00, +12:34:56 |       |
-     * | Timezone (GMT)                  | O...OOO | GMT-8, GMT+5:30, GMT+0            |       |
-     * |                                 | OOOO    | GMT-08:00, GMT+05:30, GMT+00:00   | 2     |
-     * | Timezone (specific non-locat.)  | z...zzz | PDT, EST, CEST                    | 6     |
-     * |                                 | zzzz    | Pacific Daylight Time             | 2,6   |
-     * | Seconds timestamp               | t       | 512969520                         | 7     |
-     * |                                 | tt      | ...                               | 3,7   |
-     * | Milliseconds timestamp          | T       | 512969520900                      | 7     |
-     * |                                 | TT      | ...                               | 3,7   |
-     * | Long localized date             | P       | 05/29/1453                        | 7     |
-     * |                                 | PP      | May 29, 1453                      | 7     |
-     * |                                 | PPP     | May 29th, 1453                    | 7     |
-     * |                                 | PPPP    | Sunday, May 29th, 1453            | 2,7   |
-     * | Long localized time             | p       | 12:00 AM                          | 7     |
-     * |                                 | pp      | 12:00:00 AM                       | 7     |
-     * |                                 | ppp     | 12:00:00 AM GMT+2                 | 7     |
-     * |                                 | pppp    | 12:00:00 AM GMT+02:00             | 2,7   |
-     * | Combination of date and time    | Pp      | 05/29/1453, 12:00 AM              | 7     |
-     * |                                 | PPpp    | May 29, 1453, 12:00:00 AM         | 7     |
-     * |                                 | PPPppp  | May 29th, 1453 at ...             | 7     |
-     * |                                 | PPPPpppp| Sunday, May 29th, 1453 at ...     | 2,7   |
-     * Notes:
-     * 1. "Formatting" units (e.g. formatting quarter) in the default en-US locale
-     *    are the same as "stand-alone" units, but are different in some languages.
-     *    "Formatting" units are declined according to the rules of the language
-     *    in the context of a date. "Stand-alone" units are always nominative singular:
-     *
-     *    `format(new Date(2017, 10, 6), 'do LLLL', {locale: cs}) //=> '6. listopad'`
-     *
-     *    `format(new Date(2017, 10, 6), 'do MMMM', {locale: cs}) //=> '6. listopadu'`
-     *
-     * 2. Any sequence of the identical letters is a pattern, unless it is escaped by
-     *    the single quote characters (see below).
-     *    If the sequence is longer than listed in table (e.g. `EEEEEEEEEEE`)
-     *    the output will be the same as default pattern for this unit, usually
-     *    the longest one (in case of ISO weekdays, `EEEE`). Default patterns for units
-     *    are marked with "2" in the last column of the table.
-     *
-     *    `format(new Date(2017, 10, 6), 'MMM') //=> 'Nov'`
-     *
-     *    `format(new Date(2017, 10, 6), 'MMMM') //=> 'November'`
-     *
-     *    `format(new Date(2017, 10, 6), 'MMMMM') //=> 'N'`
-     *
-     *    `format(new Date(2017, 10, 6), 'MMMMMM') //=> 'November'`
-     *
-     *    `format(new Date(2017, 10, 6), 'MMMMMMM') //=> 'November'`
-     *
-     * 3. Some patterns could be unlimited length (such as `yyyyyyyy`).
-     *    The output will be padded with zeros to match the length of the pattern.
-     *
-     *    `format(new Date(2017, 10, 6), 'yyyyyyyy') //=> '00002017'`
-     *
-     * 4. `QQQQQ` and `qqqqq` could be not strictly numerical in some locales.
-     *    These tokens represent the shortest form of the quarter.
-     *
-     * 5. The main difference between `y` and `u` patterns are B.C. years:
-     *
-     *    | Year | `y` | `u` |
-     *    |------|-----|-----|
-     *    | AC 1 |   1 |   1 |
-     *    | BC 1 |   1 |   0 |
-     *    | BC 2 |   2 |  -1 |
-     *
-     *    Also `yy` always returns the last two digits of a year,
-     *    while `uu` pads single digit years to 2 characters and returns other years unchanged:
-     *
-     *    | Year | `yy` | `uu` |
-     *    |------|------|------|
-     *    | 1    |   01 |   01 |
-     *    | 14   |   14 |   14 |
-     *    | 376  |   76 |  376 |
-     *    | 1453 |   53 | 1453 |
-     *
-     *    The same difference is true for local and ISO week-numbering years (`Y` and `R`),
-     *    except local week-numbering years are dependent on `options.weekStartsOn`
-     *    and `options.firstWeekContainsDate` (compare [getISOWeekYear]{@link https://date-fns.org/docs/getISOWeekYear}
-     *    and [getWeekYear]{@link https://date-fns.org/docs/getWeekYear}).
-     *
-     * 6. Specific non-location timezones are created using the Intl browser API. The output is determined by the
-     *    preferred standard of the current locale (en-US by default) which may not always give the expected result.
-     *    For this reason it is recommended to supply a `locale` in the format options when formatting a time zone name.
-     *
-     * 7. These patterns are not in the Unicode Technical Standard #35:
-     *    - `i`: ISO day of week
-     *    - `I`: ISO week of year
-     *    - `R`: ISO week-numbering year
-     *    - `t`: seconds timestamp
-     *    - `T`: milliseconds timestamp
-     *    - `o`: ordinal number modifier
-     *    - `P`: long localized date
-     *    - `p`: long localized time
-     *
-     * 8. These tokens are often confused with others. See: https://git.io/fxCyr
-     *
-     *
-     * ### v2.0.0 breaking changes:
-     *
-     * - [Changes that are common for the whole
-     *   library](https://github.com/date-fns/date-fns/blob/master/docs/upgradeGuide.md#Common-Changes).
-     *
-     * - The second argument is now required for the sake of explicitness.
-     *
-     *   ```javascript
-     *   // Before v2.0.0
-     *   format(new Date(2016, 0, 1))
-     *
-     *   // v2.0.0 onward
-     *   format(new Date(2016, 0, 1), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
-     *   ```
-     *
-     * - New format string API for `format` function
-     *   which is based on [Unicode Technical Standard
-     *   #35](https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table). See [this
-     *   post](https://blog.date-fns.org/post/unicode-tokens-in-date-fns-v2-sreatyki91jg) for more details.
-     *
-     * - Characters are now escaped using single quote symbols (`'`) instead of square brackets.
-     *
-     * @param {Date|String|Number} date - the original date
-     * @param {String} format - the string of tokens
-     * @param {OptionsWithTZ} [options] - the object with options. See [Options]{@link https://date-fns.org/docs/Options}
-     * @param {0|1|2} [options.additionalDigits=2] - passed to `toDate`. See [toDate]{@link
-     *   https://date-fns.org/docs/toDate}
-     * @param {0|1|2|3|4|5|6} [options.weekStartsOn=0] - the index of the first day of the week (0 - Sunday)
-     * @param {Number} [options.firstWeekContainsDate=1] - the day of January, which is
-     * @param {Locale} [options.locale=defaultLocale] - the locale object. See
-     *   [Locale]{@link https://date-fns.org/docs/Locale}
-     * @param {Boolean} [options.awareOfUnicodeTokens=false] - if true, allows usage of Unicode tokens causes confusion:
-     *   - Some of the day of year tokens (`D`, `DD`) that are confused with the day of month tokens (`d`, `dd`).
-     *   - Some of the local week-numbering year tokens (`YY`, `YYYY`) that are confused with the calendar year tokens
-     *   (`yy`, `yyyy`). See: https://git.io/fxCyr
-     * @param {String} [options.timeZone=''] - used to specify the IANA time zone offset of a date String.
-     * @returns {String} the formatted date string
-     * @throws {TypeError} 2 arguments required
-     * @throws {RangeError} `options.additionalDigits` must be 0, 1 or 2
-     * @throws {RangeError} `options.locale` must contain `localize` property
-     * @throws {RangeError} `options.locale` must contain `formatLong` property
-     * @throws {RangeError} `options.weekStartsOn` must be between 0 and 6
-     * @throws {RangeError} `options.firstWeekContainsDate` must be between 1 and 7
-     * @throws {RangeError} `options.awareOfUnicodeTokens` must be set to `true` to use `XX` token; see:
-     *   https://git.io/fxCyr
-     *
-     * @example
-     * // Represent 11 February 2014 in middle-endian format:
-     * var result = format(new Date(2014, 1, 11), 'MM/dd/yyyy')
-     * //=> '02/11/2014'
-     *
-     * @example
-     * // Represent 2 July 2014 in Esperanto:
-     * import { eoLocale } from 'date-fns/esm/locale/eo'
-     * var result = format(new Date(2014, 6, 2), "do 'de' MMMM yyyy", {
-     *   locale: eoLocale
-     * })
-     * //=> '2-a de julio 2014'
-     *
-     * @example
-     * // Escape string by single quote characters:
-     * var result = format(new Date(2014, 6, 2, 15), "h 'o''clock'")
-     * //=> "3 o'clock"
-     */
-    function format$1(dirtyDate, dirtyFormatStr, dirtyOptions) {
-      var formatStr = String(dirtyFormatStr);
-      var options = dirtyOptions || {};
-
-      var matches = formatStr.match(tzFormattingTokensRegExp);
-      if (matches) {
-        var date = toDate$1(dirtyDate, options);
-        formatStr = matches.reduce(function(result, token) {
-          return token[0] === "'"
-            ? result
-            : result.replace(
-                token,
-                "'" + formatters$2[token[0]](date, token, null, options) + "'"
-              )
-        }, formatStr);
-      }
-
-      return format(dirtyDate, formatStr, options)
     }
 
     /**
@@ -4258,7 +5704,7 @@ var SvelteTimezonePicker = (function () {
     }
 
     var MILLISECONDS_IN_HOUR$2 = 3600000;
-    var MILLISECONDS_IN_MINUTE$4 = 60000;
+    var MILLISECONDS_IN_MINUTE$3 = 60000;
     var DEFAULT_ADDITIONAL_DIGITS$1 = 2;
     var patterns$2 = {
       dateTimeDelimiter: /[T ]/,
@@ -4478,7 +5924,7 @@ var SvelteTimezonePicker = (function () {
         return NaN;
       }
 
-      return hours * MILLISECONDS_IN_HOUR$2 + minutes * MILLISECONDS_IN_MINUTE$4 + seconds * 1000;
+      return hours * MILLISECONDS_IN_HOUR$2 + minutes * MILLISECONDS_IN_MINUTE$3 + seconds * 1000;
     }
 
     function parseTimeUnit(value) {
@@ -4497,7 +5943,7 @@ var SvelteTimezonePicker = (function () {
         return NaN;
       }
 
-      return sign * (hours * MILLISECONDS_IN_HOUR$2 + minutes * MILLISECONDS_IN_MINUTE$4);
+      return sign * (hours * MILLISECONDS_IN_HOUR$2 + minutes * MILLISECONDS_IN_MINUTE$3);
     }
 
     function dayOfISOWeekYear$1(isoWeekYear, week, day) {
@@ -4541,2254 +5987,80 @@ var SvelteTimezonePicker = (function () {
       return minutes >= 0 && minutes <= 59;
     }
 
-    const timezones = {
-      Australia: {
-        Perth: 'Australia/Perth',
-        Eucla: 'Australia/Eucla',
-        Darwin: 'Australia/Darwin',
-        Brisbane: 'Australia/Brisbane',
-        Lindeman: 'Australia/Lindeman',
-        Adelaide: 'Australia/Adelaide',
-        'Broken Hill': 'Australia/Broken_Hill',
-        Sydney: 'Australia/Sydney',
-        Hobart: 'Australia/Hobart',
-        Melbourne: 'Australia/Melbourne',
-        'Lord Howe': 'Australia/Lord_Howe'
-      },
-      Asia: {
-        'Jordan Time': 'Asia/Amman',
-        'East Africa Time': 'Asia/Baghdad',
-        'Dubai Time': 'Asia/Dubai',
-        Amman: 'Asia/Amman',
-        Beirut: 'Asia/Beirut',
-        Damascus: 'Asia/Damascus',
-        Gaza: 'Asia/Gaza',
-        Nicosia: 'Asia/Nicosia',
-        Famagusta: 'Asia/Famagusta',
-        Jerusalem: 'Asia/Jerusalem',
-        Aden: 'Asia/Aden',
-        Baghdad: 'Asia/Baghdad',
-        Bahrain: 'Asia/Bahrain',
-        Kuwait: 'Asia/Kuwait',
-        Qatar: 'Asia/Qatar',
-        Riyadh: 'Asia/Riyadh',
-        Tehran: 'Asia/Tehran',
-        Yerevan: 'Asia/Yerevan',
-        Baku: 'Asia/Baku',
-        Tbilisi: 'Asia/Tbilisi',
-        Dubai: 'Asia/Dubai',
-        Muscat: 'Asia/Muscat',
-        Kabul: 'Asia/Kabul',
-        Karachi: 'Asia/Karachi',
-        Dushanbe: 'Asia/Dushanbe',
-        Ashgabat: 'Asia/Ashgabat',
-        Samarkand: 'Asia/Samarkand',
-        Tashkent: 'Asia/Tashkent',
-        Qyzylorda: 'Asia/Qyzylorda',
-        Aqtau: 'Asia/Aqtau',
-        Aqtobe: 'Asia/Aqtobe',
-        Atyrau: 'Asia/Atyrau',
-        Oral: 'Asia/Oral',
-        Yekaterinburg: 'Asia/Yekaterinburg',
-        Colombo: 'Asia/Colombo',
-        Kolkata: 'Asia/Kolkata',
-        Kathmandu: 'Asia/Kathmandu',
-        Dhaka: 'Asia/Dhaka',
-        Thimphu: 'Asia/Thimphu',
-        Almaty: 'Asia/Almaty',
-        Qostanay: 'Asia/Qostanay',
-        Urumqi: 'Asia/Urumqi',
-        Bishkek: 'Asia/Bishkek',
-        Omsk: 'Asia/Omsk',
-        Yangon: 'Asia/Yangon',
-        Hovd: 'Asia/Hovd',
-        Bangkok: 'Asia/Bangkok',
-        'Ho Chi Minh': 'Asia/Ho_Chi_Minh',
-        'Phnom Penh': 'Asia/Phnom_Penh',
-        Vientiane: 'Asia/Vientiane',
-        Novosibirsk: 'Asia/Novosibirsk',
-        Barnaul: 'Asia/Barnaul',
-        Krasnoyarsk: 'Asia/Krasnoyarsk',
-        Novokuznetsk: 'Asia/Novokuznetsk',
-        Tomsk: 'Asia/Tomsk',
-        Jakarta: 'Asia/Jakarta',
-        Brunei: 'Asia/Brunei',
-        Makassar: 'Asia/Makassar',
-        Macau: 'Asia/Macau',
-        Shanghai: 'Asia/Shanghai',
-        'Hong Kong': 'Asia/Hong_Kong',
-        Irkutsk: 'Asia/Irkutsk',
-        'Kuala Lumpur': 'Asia/Kuala_Lumpur',
-        Kuching: 'Asia/Kuching',
-        Manila: 'Asia/Manila',
-        Singapore: 'Asia/Singapore',
-        Taipei: 'Asia/Taipei',
-        Ulaanbaatar: 'Asia/Ulaanbaatar',
-        Choibalsan: 'Asia/Choibalsan',
-        Dili: 'Asia/Dili',
-        Jayapura: 'Asia/Jayapura',
-        Tokyo: 'Asia/Tokyo',
-        Pyongyang: 'Asia/Pyongyang',
-        Seoul: 'Asia/Seoul',
-        Chita: 'Asia/Chita',
-        Khandyga: 'Asia/Khandyga',
-        Yakutsk: 'Asia/Yakutsk',
-        Vladivostok: 'Asia/Vladivostok',
-        Nera: 'Asia/Ust-Nera',
-        Magadan: 'Asia/Magadan',
-        Sakhalin: 'Asia/Sakhalin',
-        Srednekolymsk: 'Asia/Srednekolymsk',
-        Anadyr: 'Asia/Anadyr',
-        Kamchatka: 'Asia/Kamchatka'
-      },
-      Europe: {
-        'Central European Time': 'Europe/Berlin',
-        'Eastern European Time': 'Europe/Helsinki',
-        Dublin: 'Europe/Dublin',
-        Guernsey: 'Europe/Guernsey',
-        'Isle of Man': 'Europe/Isle_of_Man',
-        Jersey: 'Europe/Jersey',
-        London: 'Europe/London',
-        Lisbon: 'Europe/Lisbon',
-        Amsterdam: 'Europe/Amsterdam',
-        Andorra: 'Europe/Andorra',
-        Belgrade: 'Europe/Belgrade',
-        Berlin: 'Europe/Berlin',
-        Busingen: 'Europe/Busingen',
-        Bratislava: 'Europe/Bratislava',
-        Brussels: 'Europe/Brussels',
-        Budapest: 'Europe/Budapest',
-        Copenhagen: 'Europe/Copenhagen',
-        Gibraltar: 'Europe/Gibraltar',
-        Ljubljana: 'Europe/Ljubljana',
-        Luxembourg: 'Europe/Luxembourg',
-        Madrid: 'Europe/Madrid',
-        Malta: 'Europe/Malta',
-        Monaco: 'Europe/Monaco',
-        Oslo: 'Europe/Oslo',
-        Paris: 'Europe/Paris',
-        Podgorica: 'Europe/Podgorica',
-        Prague: 'Europe/Prague',
-        Rome: 'Europe/Rome',
-        'San Marino': 'Europe/San_Marino',
-        Sarajevo: 'Europe/Sarajevo',
-        Skopje: 'Europe/Skopje',
-        Stockholm: 'Europe/Stockholm',
-        Tirane: 'Europe/Tirane',
-        Vaduz: 'Europe/Vaduz',
-        Vatican: 'Europe/Vatican',
-        Vienna: 'Europe/Vienna',
-        Warsaw: 'Europe/Warsaw',
-        Zagreb: 'Europe/Zagreb',
-        Zurich: 'Europe/Zurich',
-        Athens: 'Europe/Athens',
-        Bucharest: 'Europe/Bucharest',
-        Chisinau: 'Europe/Chisinau',
-        Helsinki: 'Europe/Helsinki',
-        Kaliningrad: 'Europe/Kaliningrad',
-        Kiev: 'Europe/Kiev',
-        Uzhgorod: 'Europe/Uzhgorod',
-        Mariehamn: 'Europe/Mariehamn',
-        Riga: 'Europe/Riga',
-        Sofia: 'Europe/Sofia',
-        Tallinn: 'Europe/Tallinn',
-        Vilnius: 'Europe/Vilnius',
-        Istanbul: 'Europe/Istanbul',
-        Minsk: 'Europe/Minsk',
-        'Moscow Time': 'Europe/Moscow',
-        Samara: 'Europe/Samara',
-        Volgograd: 'Europe/Volgograd'
-      },
-      Atlantic: {
-        'Atlantic Time': 'America/Goose_Bay',
-        'Atlantic Standard Time': 'America/Santo_Domingo',
-        Stanley: 'Atlantic/Stanley',
-        'South Georgia': 'Atlantic/South_Georgia',
-        Azores: 'Atlantic/Azores',
-        'Cape Verde': 'Atlantic/Cape_Verde',
-        Reykjavik: 'Atlantic/Reykjavik',
-        'St Helena': 'Atlantic/St_Helena',
-        Canary: 'Atlantic/Canary',
-        Faroe: 'Atlantic/Faroe',
-        Madeira: 'Atlantic/Madeira'
-      },
-      Antarctica: {
-        Troll: 'Antarctica/Troll',
-        Syowa: 'Antarctica/Syowa',
-        Mawson: 'Antarctica/Mawson',
-        Vostok: 'Antarctica/Vostok',
-        Davis: 'Antarctica/Davis',
-        Casey: 'Antarctica/Casey',
-        Macquarie: 'Antarctica/Macquarie',
-        DumontDUrville: 'Antarctica/DumontDUrville'
-      },
-      Arctic: {
-        Longyearbyen: 'Arctic/Longyearbyen',
-        Danmarkshavn: 'America/Danmarkshavn',
-        Scoresbysund: 'America/Scoresbysund'
-      },
-      Pacific: {
-        Niue: 'Pacific/Niue',
-        Midway: 'Pacific/Midway',
-        'Pago Pago': 'Pacific/Pago_Pago',
-        Rarotonga: 'Pacific/Rarotonga',
-        Honolulu: 'Pacific/Honolulu',
-        Tahiti: 'Pacific/Tahiti',
-        Marquesas: 'Pacific/Marquesas',
-        Gambier: 'Pacific/Gambier',
-        Pitcairn: 'Pacific/Pitcairn',
-        Galapagos: 'Pacific/Galapagos',
-        Easter: 'Pacific/Easter',
-        Palau: 'Pacific/Palau',
-        Guam: 'Pacific/Guam',
-        Saipan: 'Pacific/Saipan',
-        Chuuk: 'Pacific/Chuuk',
-        'Port Moresby': 'Pacific/Port_Moresby',
-        Bougainville: 'Pacific/Bougainville',
-        'Kosrae, Pohnpei': 'Pacific/Kosrae',
-        Noumea: 'Pacific/Noumea',
-        Guadalcanal: 'Pacific/Guadalcanal',
-        Efate: 'Pacific/Efate',
-        Tarawa: 'Pacific/Tarawa',
-        'Majuro, Kwajalein': 'Pacific/Kwajalein',
-        Nauru: 'Pacific/Nauru',
-        Norfolk: 'Pacific/Norfolk',
-        Funafuti: 'Pacific/Funafuti',
-        Wake: 'Pacific/Wake',
-        Wallis: 'Pacific/Wallis',
-        Fiji: 'Pacific/Fiji',
-        Auckland: 'Pacific/Auckland',
-        Enderbury: 'Pacific/Enderbury',
-        Fakaofo: 'Pacific/Fakaofo',
-        Tongatapu: 'Pacific/Tongatapu',
-        Chatham: 'Pacific/Chatham',
-        Apia: 'Pacific/Apia',
-        Kiritimati: 'Pacific/Kiritimati'
-      },
-      'US/Canada': {
-        'Pacific Time': 'America/Los_Angeles',
-        'Mountain Time': 'America/Denver',
-        'Central Time': 'America/Chicago',
-        'Eastern Time': 'America/New_York',
-        'Alaska Time': 'America/Anchorage',
-        'Arizona Time': 'America/Phoenix',
-        'Newfoundland Time': 'America/St_Johns',
-        'Hawaii Time': 'Pacific/Honolulu',
-        Adak: 'America/Adak',
-        Anchorage: 'America/Anchorage',
-        Juneau: 'America/Juneau',
-        Metlakatla: 'America/Metlakatla',
-        Nome: 'America/Nome',
-        Sitka: 'America/Sitka',
-        Yakutat: 'America/Yakutat',
-        'Los Angeles': 'America/Los_Angeles',
-        Vancouver: 'America/Vancouver',
-        Whitehorse: 'America/Whitehorse',
-        Dawson: 'America/Dawson',
-        Creston: 'America/Creston',
-        'Dawson Creek': 'America/Dawson_Creek',
-        'Fort Nelson': 'America/Fort_Nelson',
-        Denver: 'America/Denver',
-        Boise: 'America/Boise',
-        Edmonton: 'America/Edmonton',
-        'Cambridge Bay': 'America/Cambridge_Bay',
-        Yellowknife: 'America/Yellowknife',
-        Phoenix: 'America/Phoenix',
-        Chicago: 'America/Chicago',
-        'Knox, Indiana': 'America/Indiana/Knox',
-        'Tell City, Indiana': 'America/Indiana/Tell_City',
-        'Beulah, North Dakota': 'America/North_Dakota/Beulah',
-        'Center, North Dakota': 'America/North_Dakota/Center',
-        'New Salem, North Dakota': 'America/North_Dakota/New_Salem',
-        Menominee: 'America/Menominee',
-        Regina: 'America/Regina',
-        Winnipeg: 'America/Winnipeg',
-        'Rainy River': 'America/Rainy_River',
-        'Rankin Inlet': 'America/Rankin_Inlet',
-        Resolute: 'America/Resolute',
-        Atikokan: 'America/Atikokan',
-        'New York': 'America/New_York',
-        'Indianapolis, Indiana': 'America/Indiana/Indianapolis',
-        'Marengo, Indiana': 'America/Indiana/Marengo',
-        'Petersburg, Indiana': 'America/Indiana/Petersburg',
-        'Vevay, Indiana': 'America/Indiana/Vevay',
-        'Vincennes, Indiana': 'America/Indiana/Vincennes',
-        'Winamac, Indiana': 'America/Indiana/Winamac',
-        'Louisville, Kentucky': 'America/Kentucky/Louisville',
-        'Monticello, Kentucky': 'America/Kentucky/Monticello',
-        Toronto: 'America/Toronto',
-        Iqaluit: 'America/Iqaluit',
-        Nipigon: 'America/Nipigon',
-        Pangnirtung: 'America/Pangnirtung',
-        'Thunder Bay': 'America/Thunder_Bay',
-        Halifax: 'America/Halifax',
-        'Glace Bay': 'America/Glace_Bay',
-        'Goose Bay': 'America/Goose_Bay',
-        Moncton: 'America/Moncton'
-      },
-      America: {
-        'Brasilia Time': 'America/Sao_Paulo',
-        Tijuana: 'America/Tijuana',
-        Chihuahua: 'America/Chihuahua',
-        Mazatlan: 'America/Mazatlan',
-        Ojinaga: 'America/Ojinaga',
-        Hermosillo: 'America/Hermosillo',
-        Inuvik: 'America/Inuvik',
-        Belize: 'America/Belize',
-        'Costa Rica': 'America/Costa_Rica',
-        'El Salvador': 'America/El_Salvador',
-        Guatemala: 'America/Guatemala',
-        Managua: 'America/Managua',
-        'Mexico City': 'America/Mexico_City',
-        'Bahia Banderas': 'America/Bahia_Banderas',
-        Matamoros: 'America/Matamoros',
-        Merida: 'America/Merida',
-        Monterrey: 'America/Monterrey',
-        'Swift Current': 'America/Swift_Current',
-        Tegucigalpa: 'America/Tegucigalpa',
-        'Rio Branco': 'America/Rio_Branco',
-        Eirunepe: 'America/Eirunepe',
-        Bogota: 'America/Bogota',
-        Havana: 'America/Havana',
-        Cancun: 'America/Cancun',
-        Cayman: 'America/Cayman',
-        'Grand Turk': 'America/Grand_Turk',
-        Jamaica: 'America/Jamaica',
-        Nassau: 'America/Nassau',
-        Panama: 'America/Panama',
-        Prince: 'America/Port-au-Prince',
-        Guayaquil: 'America/Guayaquil',
-        Lima: 'America/Lima',
-        Manaus: 'America/Manaus',
-        'Boa Vista': 'America/Boa_Vista',
-        'Campo Grande': 'America/Campo_Grande',
-        Cuiaba: 'America/Cuiaba',
-        'Porto Velho': 'America/Porto_Velho',
-        Anguilla: 'America/Anguilla',
-        Antigua: 'America/Antigua',
-        Aruba: 'America/Aruba',
-        Barbados: 'America/Barbados',
-        Bermuda: 'Atlantic/Bermuda',
-        Sablon: 'America/Blanc-Sablon',
-        Curacao: 'America/Curacao',
-        Dominica: 'America/Dominica',
-        Grenada: 'America/Grenada',
-        Guadeloupe: 'America/Guadeloupe',
-        Kralendijk: 'America/Kralendijk',
-        'Lower Princes': 'America/Lower_Princes',
-        Marigot: 'America/Marigot',
-        Martinique: 'America/Martinique',
-        Montserrat: 'America/Montserrat',
-        'Port of Spain': 'America/Port_of_Spain',
-        'Puerto Rico': 'America/Puerto_Rico',
-        'Santo Domingo': 'America/Santo_Domingo',
-        'St Barthelemy': 'America/St_Barthelemy',
-        'St Kitts': 'America/St_Kitts',
-        'St Lucia': 'America/St_Lucia',
-        'St Thomas': 'America/St_Thomas',
-        'St Vincent': 'America/St_Vincent',
-        Thule: 'America/Thule',
-        Tortola: 'America/Tortola',
-        'La Paz': 'America/La_Paz',
-        Guyana: 'America/Guyana',
-        Caracas: 'America/Caracas',
-        'St Johns': 'America/St_Johns',
-        'Buenos Aires': 'America/Argentina/Buenos_Aires',
-        Catamarca: 'America/Argentina/Catamarca',
-        Cordoba: 'America/Argentina/Cordoba',
-        Jujuy: 'America/Argentina/Jujuy',
-        'La Rioja': 'America/Argentina/La_Rioja',
-        Mendoza: 'America/Argentina/Mendoza',
-        'Rio Gallegos': 'America/Argentina/Rio_Gallegos',
-        Tucuman: 'America/Argentina/Tucuman',
-        'San Luis': 'America/Argentina/San_Luis',
-        'San Juan': 'America/Argentina/San_Juan',
-        Ushuaia: 'America/Argentina/Ushuaia',
-        'Sao Paulo': 'America/Sao_Paulo',
-        Araguaina: 'America/Araguaina',
-        Bahia: 'America/Bahia',
-        Belem: 'America/Belem',
-        Fortaleza: 'America/Fortaleza',
-        Maceio: 'America/Maceio',
-        Recife: 'America/Recife',
-        Santarem: 'America/Santarem',
-        Santiago: 'America/Santiago',
-        Cayenne: 'America/Cayenne',
-        Palmer: 'Antarctica/Palmer',
-        Rothera: 'Antarctica/Rothera',
-        'Punta Arenas': 'America/Punta_Arenas',
-        Asuncion: 'America/Asuncion',
-        Miquelon: 'America/Miquelon',
-        Paramaribo: 'America/Paramaribo',
-        Montevideo: 'America/Montevideo',
-        Godthab: 'America/Godthab',
-        Noronha: 'America/Noronha'
-      },
-      Africa: {
-        'Central Africa Time': 'Africa/Johannesburg',
-        'West Africa Time': 'Africa/Lagos',
-        Abidjan: 'Africa/Abidjan',
-        Accra: 'Africa/Accra',
-        Bamako: 'Africa/Bamako',
-        Banjul: 'Africa/Banjul',
-        Bissau: 'Africa/Bissau',
-        Conakry: 'Africa/Conakry',
-        Dakar: 'Africa/Dakar',
-        Freetown: 'Africa/Freetown',
-        Lome: 'Africa/Lome',
-        Monrovia: 'Africa/Monrovia',
-        Nouakchott: 'Africa/Nouakchott',
-        Ouagadougou: 'Africa/Ouagadougou',
-        'Sao Tome': 'Africa/Sao_Tome',
-        Algiers: 'Africa/Algiers',
-        Tunis: 'Africa/Tunis',
-        Casablanca: 'Africa/Casablanca',
-        'El Aaiun': 'Africa/El_Aaiun',
-        Bangui: 'Africa/Bangui',
-        Brazzaville: 'Africa/Brazzaville',
-        Douala: 'Africa/Douala',
-        Kinshasa: 'Africa/Kinshasa',
-        Lagos: 'Africa/Lagos',
-        Libreville: 'Africa/Libreville',
-        Luanda: 'Africa/Luanda',
-        Malabo: 'Africa/Malabo',
-        Ndjamena: 'Africa/Ndjamena',
-        Niamey: 'Africa/Niamey',
-        'Porto-Novo': 'Africa/Porto-Novo',
-        Blantyre: 'Africa/Blantyre',
-        Bujumbura: 'Africa/Bujumbura',
-        Gaborone: 'Africa/Gaborone',
-        Harare: 'Africa/Harare',
-        Khartoum: 'Africa/Khartoum',
-        Kigali: 'Africa/Kigali',
-        Lubumbashi: 'Africa/Lubumbashi',
-        Lusaka: 'Africa/Lusaka',
-        Maputo: 'Africa/Maputo',
-        Windhoek: 'Africa/Windhoek',
-        Cairo: 'Africa/Cairo',
-        Tripoli: 'Africa/Tripoli',
-        Johannesburg: 'Africa/Johannesburg',
-        Maseru: 'Africa/Maseru',
-        Mbabane: 'Africa/Mbabane',
-        'Addis Ababa': 'Africa/Addis_Ababa',
-        Ceuta: 'Africa/Ceuta',
-        Asmara: 'Africa/Asmara',
-        'Dar es Salaam': 'Africa/Dar_es_Salaam',
-        Djibouti: 'Africa/Djibouti',
-        Juba: 'Africa/Juba',
-        Kampala: 'Africa/Kampala',
-        Mogadishu: 'Africa/Mogadishu',
-        Nairobi: 'Africa/Nairobi'
-      },
-      Indian: {
-        Antananarivo: 'Indian/Antananarivo',
-        Comoro: 'Indian/Comoro',
-        Mayotte: 'Indian/Mayotte',
-        Mauritius: 'Indian/Mauritius',
-        Reunion: 'Indian/Reunion',
-        Mahe: 'Indian/Mahe',
-        Kerguelen: 'Indian/Kerguelen',
-        Maldives: 'Indian/Maldives',
-        Chagos: 'Indian/Chagos',
-        Cocos: 'Indian/Cocos',
-        Christmas: 'Indian/Christmas'
-      },
-      UTC: {
-        'UTC Time': 'UTC'
-      }
-    };
-
-    function isElement(el) {
-      return el != null && typeof el === 'object' && el.nodeType === 1;
-    }
-
-    function canOverflow(overflow, skipOverflowHiddenElements) {
-      if (skipOverflowHiddenElements && overflow === 'hidden') {
-        return false;
-      }
-
-      return overflow !== 'visible' && overflow !== 'clip';
-    }
-
-    function getFrameElement(el) {
-      if (!el.ownerDocument || !el.ownerDocument.defaultView) {
-        return null;
-      }
-
-      try {
-        return el.ownerDocument.defaultView.frameElement;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function isHiddenByFrame(el) {
-      var frame = getFrameElement(el);
-
-      if (!frame) {
-        return false;
-      }
-
-      return frame.clientHeight < el.scrollHeight || frame.clientWidth < el.scrollWidth;
-    }
-
-    function isScrollable(el, skipOverflowHiddenElements) {
-      if (el.clientHeight < el.scrollHeight || el.clientWidth < el.scrollWidth) {
-        var style = getComputedStyle(el, null);
-        return canOverflow(style.overflowY, skipOverflowHiddenElements) || canOverflow(style.overflowX, skipOverflowHiddenElements) || isHiddenByFrame(el);
-      }
-
-      return false;
-    }
-
-    function alignNearest(scrollingEdgeStart, scrollingEdgeEnd, scrollingSize, scrollingBorderStart, scrollingBorderEnd, elementEdgeStart, elementEdgeEnd, elementSize) {
-      if (elementEdgeStart < scrollingEdgeStart && elementEdgeEnd > scrollingEdgeEnd || elementEdgeStart > scrollingEdgeStart && elementEdgeEnd < scrollingEdgeEnd) {
-        return 0;
-      }
-
-      if (elementEdgeStart <= scrollingEdgeStart && elementSize <= scrollingSize || elementEdgeEnd >= scrollingEdgeEnd && elementSize >= scrollingSize) {
-        return elementEdgeStart - scrollingEdgeStart - scrollingBorderStart;
-      }
-
-      if (elementEdgeEnd > scrollingEdgeEnd && elementSize < scrollingSize || elementEdgeStart < scrollingEdgeStart && elementSize > scrollingSize) {
-        return elementEdgeEnd - scrollingEdgeEnd + scrollingBorderEnd;
-      }
-
-      return 0;
-    }
-
-    var computeScrollIntoView = (function (target, options) {
-      var scrollMode = options.scrollMode,
-          block = options.block,
-          inline = options.inline,
-          boundary = options.boundary,
-          skipOverflowHiddenElements = options.skipOverflowHiddenElements;
-      var checkBoundary = typeof boundary === 'function' ? boundary : function (node) {
-        return node !== boundary;
-      };
-
-      if (!isElement(target)) {
-        throw new TypeError('Invalid target');
-      }
-
-      var scrollingElement = document.scrollingElement || document.documentElement;
-      var frames = [];
-      var cursor = target;
-
-      while (isElement(cursor) && checkBoundary(cursor)) {
-        cursor = cursor.parentNode;
-
-        if (cursor === scrollingElement) {
-          frames.push(cursor);
-          break;
-        }
-
-        if (cursor === document.body && isScrollable(cursor) && !isScrollable(document.documentElement)) {
-          continue;
-        }
-
-        if (isScrollable(cursor, skipOverflowHiddenElements)) {
-          frames.push(cursor);
-        }
-      }
-
-      var viewportWidth = window.visualViewport ? visualViewport.width : innerWidth;
-      var viewportHeight = window.visualViewport ? visualViewport.height : innerHeight;
-      var viewportX = window.scrollX || pageXOffset;
-      var viewportY = window.scrollY || pageYOffset;
-
-      var _target$getBoundingCl = target.getBoundingClientRect(),
-          targetHeight = _target$getBoundingCl.height,
-          targetWidth = _target$getBoundingCl.width,
-          targetTop = _target$getBoundingCl.top,
-          targetRight = _target$getBoundingCl.right,
-          targetBottom = _target$getBoundingCl.bottom,
-          targetLeft = _target$getBoundingCl.left;
-
-      var targetBlock = block === 'start' || block === 'nearest' ? targetTop : block === 'end' ? targetBottom : targetTop + targetHeight / 2;
-      var targetInline = inline === 'center' ? targetLeft + targetWidth / 2 : inline === 'end' ? targetRight : targetLeft;
-      var computations = [];
-
-      for (var index = 0; index < frames.length; index++) {
-        var frame = frames[index];
-
-        var _frame$getBoundingCli = frame.getBoundingClientRect(),
-            height = _frame$getBoundingCli.height,
-            width = _frame$getBoundingCli.width,
-            top = _frame$getBoundingCli.top,
-            right = _frame$getBoundingCli.right,
-            bottom = _frame$getBoundingCli.bottom,
-            left = _frame$getBoundingCli.left;
-
-        if (scrollMode === 'if-needed' && targetTop >= 0 && targetLeft >= 0 && targetBottom <= viewportHeight && targetRight <= viewportWidth && targetTop >= top && targetBottom <= bottom && targetLeft >= left && targetRight <= right) {
-          return computations;
-        }
-
-        var frameStyle = getComputedStyle(frame);
-        var borderLeft = parseInt(frameStyle.borderLeftWidth, 10);
-        var borderTop = parseInt(frameStyle.borderTopWidth, 10);
-        var borderRight = parseInt(frameStyle.borderRightWidth, 10);
-        var borderBottom = parseInt(frameStyle.borderBottomWidth, 10);
-        var blockScroll = 0;
-        var inlineScroll = 0;
-        var scrollbarWidth = 'offsetWidth' in frame ? frame.offsetWidth - frame.clientWidth - borderLeft - borderRight : 0;
-        var scrollbarHeight = 'offsetHeight' in frame ? frame.offsetHeight - frame.clientHeight - borderTop - borderBottom : 0;
-
-        if (scrollingElement === frame) {
-          if (block === 'start') {
-            blockScroll = targetBlock;
-          } else if (block === 'end') {
-            blockScroll = targetBlock - viewportHeight;
-          } else if (block === 'nearest') {
-            blockScroll = alignNearest(viewportY, viewportY + viewportHeight, viewportHeight, borderTop, borderBottom, viewportY + targetBlock, viewportY + targetBlock + targetHeight, targetHeight);
-          } else {
-            blockScroll = targetBlock - viewportHeight / 2;
-          }
-
-          if (inline === 'start') {
-            inlineScroll = targetInline;
-          } else if (inline === 'center') {
-            inlineScroll = targetInline - viewportWidth / 2;
-          } else if (inline === 'end') {
-            inlineScroll = targetInline - viewportWidth;
-          } else {
-            inlineScroll = alignNearest(viewportX, viewportX + viewportWidth, viewportWidth, borderLeft, borderRight, viewportX + targetInline, viewportX + targetInline + targetWidth, targetWidth);
-          }
-
-          blockScroll = Math.max(0, blockScroll + viewportY);
-          inlineScroll = Math.max(0, inlineScroll + viewportX);
-        } else {
-          if (block === 'start') {
-            blockScroll = targetBlock - top - borderTop;
-          } else if (block === 'end') {
-            blockScroll = targetBlock - bottom + borderBottom + scrollbarHeight;
-          } else if (block === 'nearest') {
-            blockScroll = alignNearest(top, bottom, height, borderTop, borderBottom + scrollbarHeight, targetBlock, targetBlock + targetHeight, targetHeight);
-          } else {
-            blockScroll = targetBlock - (top + height / 2) + scrollbarHeight / 2;
-          }
-
-          if (inline === 'start') {
-            inlineScroll = targetInline - left - borderLeft;
-          } else if (inline === 'center') {
-            inlineScroll = targetInline - (left + width / 2) + scrollbarWidth / 2;
-          } else if (inline === 'end') {
-            inlineScroll = targetInline - right + borderRight + scrollbarWidth;
-          } else {
-            inlineScroll = alignNearest(left, right, width, borderLeft, borderRight + scrollbarWidth, targetInline, targetInline + targetWidth, targetWidth);
-          }
-
-          var scrollLeft = frame.scrollLeft,
-              scrollTop = frame.scrollTop;
-          blockScroll = Math.max(0, Math.min(scrollTop + blockScroll, frame.scrollHeight - height + scrollbarHeight));
-          inlineScroll = Math.max(0, Math.min(scrollLeft + inlineScroll, frame.scrollWidth - width + scrollbarWidth));
-          targetBlock += scrollTop - blockScroll;
-          targetInline += scrollLeft - inlineScroll;
-        }
-
-        computations.push({
-          el: frame,
-          top: blockScroll,
-          left: inlineScroll
-        });
-      }
-
-      return computations;
-    });
-
-    /* eslint no-bitwise: "off" */
-    /* eslint no-plusplus: "off" */
-
-    // https://github.com/lukeed/uid/blob/master/src/index.js
-    let IDX = 36;
-    let HEX = '';
-
-    while (IDX--) {
-      HEX += IDX.toString(36);
-    }
-
-    // Get a unique ID
-    const uid = (len) => {
-      let str = '';
-      let num = len || 11;
-
-      while (num--) {
-        str += HEX[(Math.random() * 36) | 0];
-      }
-
-      return str;
-    };
-
-    // Scroll an element into view if needed
-    const scrollIntoView = (node, rootNode) => {
-      if (node === null) {
-        return;
-      }
-
-      const actions = computeScrollIntoView(node, {
-        boundary: rootNode,
-        block: 'center',
-        scrollMode: 'if-needed'
-      });
-
-      // eslint-disable-next-line no-shadow
-      actions.forEach(({ el, top }) => {
-        el.scrollTop = top; // eslint-disable-line no-param-reassign
-      });
-    };
-
-    // Given a value, find its corresponding key in the object
-    const getKeyByValue = (object, value) =>
-      Object.keys(object).find((key) => object[key] === value);
-
-    // Transform a string into a slug
-    const slugify = (str) =>
-      str
-        .toString()
-        .toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, '') // Remove non-word [a-z0-9_], non-whitespace, non-hyphen characters
-        .replace(/[\s_-]+/g, '-') // Swap any length of whitespace, underscore, hyphen characters with a single -
-        .replace(/^-+|-+$/g, ''); // Remove leading, trailing -
-
-    const keyCodes = {
-      Enter: 13,
-      Escape: 27,
-      Space: 32,
-      ArrowDown: 40,
-      ArrowUp: 38,
-      Backspace: 8,
-      Characters: [
-        48, // 0
-        49, // 1
-        50, // 2
-        51, // 3
-        52, // 4
-        53, // 5
-        54, // 6
-        55, // 7
-        56, // 8
-        57, // 9
-        65, // A
-        66, // B
-        67, // C
-        68, // D
-        69, // E
-        70, // F
-        71, // G
-        72, // H
-        73, // I
-        74, // J
-        75, // K
-        76, // L
-        77, // M
-        78, // N
-        79, // O
-        80, // P
-        81, // Q
-        82, // R
-        83, // S
-        84, // T
-        85, // U
-        86, // V
-        87, // W
-        88, // X
-        89, // Y
-        90 // Z
-      ]
-    };
-
-    // Straight from ramda.js
-    const pickBy = (testFn, obj) => {
-      const result = {};
-      for (const prop in obj) {
-        if (testFn(obj[prop], prop, obj)) {
-          result[prop] = obj[prop];
-        }
-      }
-      return result;
-    };
-
-    // We allow the consumer to only pick some timezones from the list to display
-    const pickZones = (timezones, pick) => {
-      const unique = Array.from(new Set([...pick]));
-      const isInPicks = (val) => unique.includes(val);
-
-      return Object.keys(timezones).reduce((zones, zone) => {
-        const picked = pickBy(isInPicks, timezones[zone]);
-        return {
-          ...zones,
-          ...(Object.keys(picked).length > 0 && { [zone]: picked })
-        };
-      }, {});
-    };
-
-    // We take the grouped timezones and flatten them so that they can be easily searched
-    // e.g. { Europe: { 'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } } => {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' }
-    const ungroupZones = (timezones) =>
-      Object.values(timezones).reduce(
-        (values, zone) => ({ ...values, ...zone }),
-        {}
-      );
-
-    // Filter the list of zone labels to only those that match a search string
-    const filterZones = (search, zones) =>
-      zones.filter((zone) => zone.toLowerCase().includes(search.toLowerCase()));
-
-    /* src/Picker.svelte generated by Svelte v3.23.1 */
-
-    const { Object: Object_1, console: console_1 } = globals;
-
-    const file = "src/Picker.svelte";
-
-    function get_each_context_1(ctx, list, i) {
-    	const child_ctx = ctx.slice();
-    	child_ctx[50] = list[i];
-    	return child_ctx;
-    }
-
-    function get_each_context(ctx, list, i) {
-    	const child_ctx = ctx.slice();
-    	child_ctx[47] = list[i];
-    	return child_ctx;
-    }
-
-    // (314:0) {#if expanded}
-    function create_if_block_5(ctx) {
-    	let div;
-    	let mounted;
-    	let dispose;
-
-    	const block = {
-    		c: function create() {
-    			div = element("div");
-    			attr_dev(div, "class", "overlay svelte-1rfyif");
-    			add_location(div, file, 314, 2, 9831);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-
-    			if (!mounted) {
-    				dispose = listen_dev(div, "click", /*reset*/ ctx[16], false, false, false);
-    				mounted = true;
-    			}
-    		},
-    		p: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div);
-    			mounted = false;
-    			dispose();
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block_5.name,
-    		type: "if",
-    		source: "(314:0) {#if expanded}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (411:6) {#if utcDatetime}
-    function create_if_block_4(ctx) {
-    	let t0;
-    	let t1_value = format$1(/*utcDatetime*/ ctx[3], `'GMT' xxx`, { timeZone: /*timezone*/ ctx[0] }) + "";
-    	let t1;
-    	let t2;
-
-    	const block = {
-    		c: function create() {
-    			t0 = text("(");
-    			t1 = text(t1_value);
-    			t2 = text(")");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, t0, anchor);
-    			insert_dev(target, t1, anchor);
-    			insert_dev(target, t2, anchor);
-    		},
-    		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*utcDatetime, timezone*/ 9 && t1_value !== (t1_value = format$1(/*utcDatetime*/ ctx[3], `'GMT' xxx`, { timeZone: /*timezone*/ ctx[0] }) + "")) set_data_dev(t1, t1_value);
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(t0);
-    			if (detaching) detach_dev(t1);
-    			if (detaching) detach_dev(t2);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block_4.name,
-    		type: "if",
-    		source: "(411:6) {#if utcDatetime}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (428:2) {#if expanded}
-    function create_if_block(ctx) {
-    	let div1;
-    	let label;
-    	let t0;
-    	let t1;
-    	let div0;
-    	let input;
-    	let t2;
-    	let t3;
-    	let ul;
-    	let ul_aria_activedescendant_value;
-    	let div1_transition;
-    	let current;
-    	let mounted;
-    	let dispose;
-    	let if_block = /*userSearch*/ ctx[4] && /*userSearch*/ ctx[4].length > 0 && create_if_block_3(ctx);
-    	let each_value = Object.keys(timezones);
-    	validate_each_argument(each_value);
-    	let each_blocks = [];
-
-    	for (let i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
-    	}
-
-    	const block = {
-    		c: function create() {
-    			div1 = element("div");
-    			label = element("label");
-    			t0 = text("Select a timezone from the list. Start typing to filter or use the arrow\n        keys to navigate the list");
-    			t1 = space();
-    			div0 = element("div");
-    			input = element("input");
-    			t2 = space();
-    			if (if_block) if_block.c();
-    			t3 = space();
-    			ul = element("ul");
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].c();
-    			}
-
-    			attr_dev(label, "id", /*labelId*/ ctx[12]);
-    			attr_dev(label, "class", "svelte-1rfyif");
-    			add_location(label, file, 434, 6, 16255);
-    			attr_dev(input, "id", /*searchInputId*/ ctx[14]);
-    			attr_dev(input, "type", "search");
-    			attr_dev(input, "aria-autocomplete", "list");
-    			attr_dev(input, "aria-controls", /*listBoxId*/ ctx[13]);
-    			attr_dev(input, "aria-labelledby", /*labelId*/ ctx[12]);
-    			attr_dev(input, "autocomplete", "off");
-    			attr_dev(input, "autocorrect", "off");
-    			attr_dev(input, "placeholder", "Search...");
-    			input.autofocus = true;
-    			attr_dev(input, "class", "svelte-1rfyif");
-    			add_location(input, file, 440, 8, 16494);
-    			attr_dev(div0, "class", "input-group svelte-1rfyif");
-    			add_location(div0, file, 438, 6, 16414);
-    			attr_dev(ul, "tabindex", "-1");
-    			attr_dev(ul, "class", "tz-groups svelte-1rfyif");
-    			attr_dev(ul, "id", /*listBoxId*/ ctx[13]);
-    			attr_dev(ul, "role", "listbox");
-    			attr_dev(ul, "aria-labelledby", /*labelId*/ ctx[12]);
-    			attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`);
-    			add_location(ul, file, 481, 6, 17660);
-    			attr_dev(div1, "class", "tz-dropdown svelte-1rfyif");
-    			add_location(div1, file, 428, 4, 16118);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, div1, anchor);
-    			append_dev(div1, label);
-    			append_dev(label, t0);
-    			append_dev(div1, t1);
-    			append_dev(div1, div0);
-    			append_dev(div0, input);
-    			/*input_binding*/ ctx[28](input);
-    			set_input_value(input, /*userSearch*/ ctx[4]);
-    			append_dev(div0, t2);
-    			if (if_block) if_block.m(div0, null);
-    			append_dev(div1, t3);
-    			append_dev(div1, ul);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(ul, null);
-    			}
-
-    			/*ul_binding*/ ctx[34](ul);
-    			current = true;
-    			input.focus();
-
-    			if (!mounted) {
-    				dispose = [
-    					listen_dev(input, "input", /*input_input_handler*/ ctx[29]),
-    					listen_dev(div1, "introend", /*scrollToHighlighted*/ ctx[24], false, false, false),
-    					listen_dev(div1, "keydown", /*keyDown*/ ctx[20], false, false, false)
-    				];
-
-    				mounted = true;
-    			}
-    		},
-    		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*userSearch*/ 16) {
-    				set_input_value(input, /*userSearch*/ ctx[4]);
-    			}
-
-    			if (/*userSearch*/ ctx[4] && /*userSearch*/ ctx[4].length > 0) {
-    				if (if_block) {
-    					if_block.p(ctx, dirty);
-    				} else {
-    					if_block = create_if_block_3(ctx);
-    					if_block.c();
-    					if_block.m(div0, null);
-    				}
-    			} else if (if_block) {
-    				if_block.d(1);
-    				if_block = null;
-    			}
-
-    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, setHighlightedZone, handleTimezoneUpdate, utcDatetime, getTimeForZone, ungroupedZones, filteredZones, groupHasVisibleChildren*/ 5147688) {
-    				each_value = Object.keys(timezones);
-    				validate_each_argument(each_value);
-    				let i;
-
-    				for (i = 0; i < each_value.length; i += 1) {
-    					const child_ctx = get_each_context(ctx, each_value, i);
-
-    					if (each_blocks[i]) {
-    						each_blocks[i].p(child_ctx, dirty);
-    					} else {
-    						each_blocks[i] = create_each_block(child_ctx);
-    						each_blocks[i].c();
-    						each_blocks[i].m(ul, null);
-    					}
-    				}
-
-    				for (; i < each_blocks.length; i += 1) {
-    					each_blocks[i].d(1);
-    				}
-
-    				each_blocks.length = each_value.length;
-    			}
-
-    			if (!current || dirty[0] & /*currentZone*/ 4 && ul_aria_activedescendant_value !== (ul_aria_activedescendant_value = /*currentZone*/ ctx[2] && `tz-${slugify(/*currentZone*/ ctx[2])}`)) {
-    				attr_dev(ul, "aria-activedescendant", ul_aria_activedescendant_value);
-    			}
-    		},
-    		i: function intro(local) {
-    			if (current) return;
-
-    			add_render_callback(() => {
-    				if (!div1_transition) div1_transition = create_bidirectional_transition(div1, slide, {}, true);
-    				div1_transition.run(1);
-    			});
-
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			if (!div1_transition) div1_transition = create_bidirectional_transition(div1, slide, {}, false);
-    			div1_transition.run(0);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div1);
-    			/*input_binding*/ ctx[28](null);
-    			if (if_block) if_block.d();
-    			destroy_each(each_blocks, detaching);
-    			/*ul_binding*/ ctx[34](null);
-    			if (detaching && div1_transition) div1_transition.end();
-    			mounted = false;
-    			run_all(dispose);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block.name,
-    		type: "if",
-    		source: "(428:2) {#if expanded}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (455:8) {#if userSearch && userSearch.length > 0}
-    function create_if_block_3(ctx) {
-    	let button;
-    	let svg;
-    	let path0;
-    	let path1;
-    	let mounted;
-    	let dispose;
-
-    	const block = {
-    		c: function create() {
-    			button = element("button");
-    			svg = svg_element("svg");
-    			path0 = svg_element("path");
-    			path1 = svg_element("path");
-    			attr_dev(path0, "fill", "transparent");
-    			attr_dev(path0, "strokewidth", "3");
-    			attr_dev(path0, "stroke", "hsl(0, 0%, 18%)");
-    			attr_dev(path0, "strokelinecap", "round");
-    			attr_dev(path0, "d", "M 3 16.5 L 17 2.5");
-    			add_location(path0, file, 461, 14, 17144);
-    			attr_dev(path1, "fill", "transparent");
-    			attr_dev(path1, "strokewidth", "3");
-    			attr_dev(path1, "stroke", "hsl(0, 0%, 18%)");
-    			attr_dev(path1, "strokelinecap", "round");
-    			attr_dev(path1, "d", "M 3 2.5 L 17 16.346");
-    			add_location(path1, file, 468, 14, 17371);
-    			attr_dev(svg, "width", "0.88em");
-    			attr_dev(svg, "height", "0.88em");
-    			attr_dev(svg, "viewBox", "0 0 23 23");
-    			add_location(svg, file, 460, 12, 17073);
-    			attr_dev(button, "title", "Clear search text");
-    			attr_dev(button, "class", "svelte-1rfyif");
-    			add_location(button, file, 455, 10, 16925);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, button, anchor);
-    			append_dev(button, svg);
-    			append_dev(svg, path0);
-    			append_dev(svg, path1);
-    			/*button_binding_1*/ ctx[30](button);
-
-    			if (!mounted) {
-    				dispose = listen_dev(button, "click", /*clearSearch*/ ctx[21], false, false, false);
-    				mounted = true;
-    			}
-    		},
-    		p: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(button);
-    			/*button_binding_1*/ ctx[30](null);
-    			mounted = false;
-    			dispose();
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block_3.name,
-    		type: "if",
-    		source: "(455:8) {#if userSearch && userSearch.length > 0}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (492:10) {#if groupHasVisibleChildren(group, filteredZones)}
-    function create_if_block_1(ctx) {
-    	let li;
-    	let p;
-    	let t0_value = /*group*/ ctx[47] + "";
-    	let t0;
-    	let t1;
-    	let each_1_anchor;
-    	let each_value_1 = Object.keys(timezones[/*group*/ ctx[47]]);
-    	validate_each_argument(each_value_1);
-    	let each_blocks = [];
-
-    	for (let i = 0; i < each_value_1.length; i += 1) {
-    		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
-    	}
-
-    	const block = {
-    		c: function create() {
-    			li = element("li");
-    			p = element("p");
-    			t0 = text(t0_value);
-    			t1 = space();
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].c();
-    			}
-
-    			each_1_anchor = empty();
-    			attr_dev(p, "class", "svelte-1rfyif");
-    			add_location(p, file, 493, 14, 18092);
-    			attr_dev(li, "role", "option");
-    			attr_dev(li, "aria-hidden", "true");
-    			attr_dev(li, "class", "svelte-1rfyif");
-    			add_location(li, file, 492, 12, 18040);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, li, anchor);
-    			append_dev(li, p);
-    			append_dev(p, t0);
-    			insert_dev(target, t1, anchor);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(target, anchor);
-    			}
-
-    			insert_dev(target, each_1_anchor, anchor);
-    		},
-    		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*highlightedZone, listBoxOptionRefs, setHighlightedZone, handleTimezoneUpdate, utcDatetime, getTimeForZone, ungroupedZones, filteredZones*/ 4623400) {
-    				each_value_1 = Object.keys(timezones[/*group*/ ctx[47]]);
-    				validate_each_argument(each_value_1);
-    				let i;
-
-    				for (i = 0; i < each_value_1.length; i += 1) {
-    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
-
-    					if (each_blocks[i]) {
-    						each_blocks[i].p(child_ctx, dirty);
-    					} else {
-    						each_blocks[i] = create_each_block_1(child_ctx);
-    						each_blocks[i].c();
-    						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-    					}
-    				}
-
-    				for (; i < each_blocks.length; i += 1) {
-    					each_blocks[i].d(1);
-    				}
-
-    				each_blocks.length = each_value_1.length;
-    			}
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(li);
-    			if (detaching) detach_dev(t1);
-    			destroy_each(each_blocks, detaching);
-    			if (detaching) detach_dev(each_1_anchor);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block_1.name,
-    		type: "if",
-    		source: "(492:10) {#if groupHasVisibleChildren(group, filteredZones)}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (497:14) {#if filteredZones.includes(name)}
-    function create_if_block_2(ctx) {
-    	let li;
-    	let t0_value = /*name*/ ctx[50] + "";
-    	let t0;
-    	let t1;
-    	let span;
-
-    	let t2_value = (/*utcDatetime*/ ctx[3] && format$1(/*getTimeForZone*/ ctx[18](/*utcDatetime*/ ctx[3], /*ungroupedZones*/ ctx[15][/*name*/ ctx[50]]), `'GMT' xxx`, {
-    		timeZone: /*ungroupedZones*/ ctx[15][/*name*/ ctx[50]]
-    	})) + "";
-
-    	let t2;
-    	let t3;
-    	let li_id_value;
-    	let li_aria_label_value;
-    	let li_aria_selected_value;
-    	let name = /*name*/ ctx[50];
-    	let mounted;
-    	let dispose;
-    	const assign_li = () => /*li_binding*/ ctx[31](li, name);
-    	const unassign_li = () => /*li_binding*/ ctx[31](null, name);
-
-    	function mouseover_handler(...args) {
-    		return /*mouseover_handler*/ ctx[32](/*name*/ ctx[50], ...args);
-    	}
-
-    	function click_handler(...args) {
-    		return /*click_handler*/ ctx[33](/*name*/ ctx[50], ...args);
-    	}
-
-    	const block = {
-    		c: function create() {
-    			li = element("li");
-    			t0 = text(t0_value);
-    			t1 = space();
-    			span = element("span");
-    			t2 = text(t2_value);
-    			t3 = space();
-    			add_location(span, file, 508, 18, 18729);
-    			attr_dev(li, "role", "option");
-    			attr_dev(li, "tabindex", "0");
-    			attr_dev(li, "id", li_id_value = `tz-${slugify(/*name*/ ctx[50])}`);
-    			attr_dev(li, "aria-label", li_aria_label_value = `Select ${/*name*/ ctx[50]}`);
-    			attr_dev(li, "aria-selected", li_aria_selected_value = /*highlightedZone*/ ctx[5] === /*name*/ ctx[50]);
-    			attr_dev(li, "class", "svelte-1rfyif");
-    			add_location(li, file, 497, 16, 18251);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, li, anchor);
-    			append_dev(li, t0);
-    			append_dev(li, t1);
-    			append_dev(li, span);
-    			append_dev(span, t2);
-    			append_dev(li, t3);
-    			assign_li();
-
-    			if (!mounted) {
-    				dispose = [
-    					listen_dev(li, "mouseover", mouseover_handler, false, false, false),
-    					listen_dev(li, "click", click_handler, false, false, false)
-    				];
-
-    				mounted = true;
-    			}
-    		},
-    		p: function update(new_ctx, dirty) {
-    			ctx = new_ctx;
-
-    			if (dirty[0] & /*utcDatetime*/ 8 && t2_value !== (t2_value = (/*utcDatetime*/ ctx[3] && format$1(/*getTimeForZone*/ ctx[18](/*utcDatetime*/ ctx[3], /*ungroupedZones*/ ctx[15][/*name*/ ctx[50]]), `'GMT' xxx`, {
-    				timeZone: /*ungroupedZones*/ ctx[15][/*name*/ ctx[50]]
-    			})) + "")) set_data_dev(t2, t2_value);
-
-    			if (dirty[0] & /*highlightedZone*/ 32 && li_aria_selected_value !== (li_aria_selected_value = /*highlightedZone*/ ctx[5] === /*name*/ ctx[50])) {
-    				attr_dev(li, "aria-selected", li_aria_selected_value);
-    			}
-
-    			if (name !== /*name*/ ctx[50]) {
-    				unassign_li();
-    				name = /*name*/ ctx[50];
-    				assign_li();
-    			}
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(li);
-    			unassign_li();
-    			mounted = false;
-    			run_all(dispose);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block_2.name,
-    		type: "if",
-    		source: "(497:14) {#if filteredZones.includes(name)}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (496:12) {#each Object.keys(groupedZones[group]) as name}
-    function create_each_block_1(ctx) {
-    	let show_if = /*filteredZones*/ ctx[11].includes(/*name*/ ctx[50]);
-    	let if_block_anchor;
-    	let if_block = show_if && create_if_block_2(ctx);
-
-    	const block = {
-    		c: function create() {
-    			if (if_block) if_block.c();
-    			if_block_anchor = empty();
-    		},
-    		m: function mount(target, anchor) {
-    			if (if_block) if_block.m(target, anchor);
-    			insert_dev(target, if_block_anchor, anchor);
-    		},
-    		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 2048) show_if = /*filteredZones*/ ctx[11].includes(/*name*/ ctx[50]);
-
-    			if (show_if) {
-    				if (if_block) {
-    					if_block.p(ctx, dirty);
-    				} else {
-    					if_block = create_if_block_2(ctx);
-    					if_block.c();
-    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
-    				}
-    			} else if (if_block) {
-    				if_block.d(1);
-    				if_block = null;
-    			}
-    		},
-    		d: function destroy(detaching) {
-    			if (if_block) if_block.d(detaching);
-    			if (detaching) detach_dev(if_block_anchor);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_each_block_1.name,
-    		type: "each",
-    		source: "(496:12) {#each Object.keys(groupedZones[group]) as name}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (491:8) {#each Object.keys(groupedZones) as group}
-    function create_each_block(ctx) {
-    	let show_if = /*groupHasVisibleChildren*/ ctx[19](/*group*/ ctx[47], /*filteredZones*/ ctx[11]);
-    	let if_block_anchor;
-    	let if_block = show_if && create_if_block_1(ctx);
-
-    	const block = {
-    		c: function create() {
-    			if (if_block) if_block.c();
-    			if_block_anchor = empty();
-    		},
-    		m: function mount(target, anchor) {
-    			if (if_block) if_block.m(target, anchor);
-    			insert_dev(target, if_block_anchor, anchor);
-    		},
-    		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*filteredZones*/ 2048) show_if = /*groupHasVisibleChildren*/ ctx[19](/*group*/ ctx[47], /*filteredZones*/ ctx[11]);
-
-    			if (show_if) {
-    				if (if_block) {
-    					if_block.p(ctx, dirty);
-    				} else {
-    					if_block = create_if_block_1(ctx);
-    					if_block.c();
-    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
-    				}
-    			} else if (if_block) {
-    				if_block.d(1);
-    				if_block = null;
-    			}
-    		},
-    		d: function destroy(detaching) {
-    			if (if_block) if_block.d(detaching);
-    			if (detaching) detach_dev(if_block_anchor);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_each_block.name,
-    		type: "each",
-    		source: "(491:8) {#each Object.keys(groupedZones) as group}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function create_fragment(ctx) {
-    	let t0;
-    	let div;
-    	let button;
-    	let svg0;
-    	let path0;
-    	let t1;
-    	let span;
-    	let t2;
-    	let t3;
-    	let t4;
-    	let svg1;
-    	let path1;
-    	let path1_transform_value;
-    	let button_aria_label_value;
-    	let t5;
-    	let current;
-    	let mounted;
-    	let dispose;
-    	let if_block0 = /*expanded*/ ctx[1] && create_if_block_5(ctx);
-    	let if_block1 = /*utcDatetime*/ ctx[3] && create_if_block_4(ctx);
-    	let if_block2 = /*expanded*/ ctx[1] && create_if_block(ctx);
-
-    	const block = {
-    		c: function create() {
-    			if (if_block0) if_block0.c();
-    			t0 = space();
-    			div = element("div");
-    			button = element("button");
-    			svg0 = svg_element("svg");
-    			path0 = svg_element("path");
-    			t1 = space();
-    			span = element("span");
-    			t2 = text(/*currentZone*/ ctx[2]);
-    			t3 = space();
-    			if (if_block1) if_block1.c();
-    			t4 = space();
-    			svg1 = svg_element("svg");
-    			path1 = svg_element("path");
-    			t5 = space();
-    			if (if_block2) if_block2.c();
-    			attr_dev(path0, "d", "M484.681\n        213.47c-4.498-40.879-19.541-78.226-43.869-111.5-39.194-53.578-91.611-86.336-157.067-97.74-13.051-2.271-26.398-2.862-39.608-4.23h-2.622c-12.342\n        1.351-24.737 2.246-36.993 4.129C78.665 23.442-12.331 142.612 2.056\n        269.395 8.921 329.91 34.27 381.516 79.271 422.673c53.504 48.941 117.062\n        69.925 189.118 63.079 55.301-5.271 103.557-27.573 143.33-66.489\n        57.76-56.561 81.781-125.699 72.962-205.793zM433.4\n        338.072c-6.153-10.729-13.92-25.688-17.39-38.455-5.042-18.537-17.147-.627-18.158\n        11.479s-9.078 21.184-25.221\n        3.025c-16.143-18.157-19.169-14.126-24.211-14.126s-14.121 12.104-12.105\n        68.601c1.437 40.335 17.349 46.736 27.746 49.662-19.305 13.264-41.488\n        23.714-66.385 30.038-95.157\n        24.151-192.289-19.706-237.671-106.837-42.28-81.185-21.681-173.053\n        21.299-223.616 1.156 9.094 2.288 17.263 3.23 25.464 2.562 22.39.629\n        44.487-3.939 66.496-.976 4.69-.636 10.033.629 14.646.688 2.519 4.486\n        5.494 7.11 5.743 2.066.201 5.671-3.074 6.508-5.533 1.513-4.397\n        1.575-9.327 2.04-14.053.334-3.334.34-6.712.57-11.942 3.413 2.766 5.902\n        4.444 7.971 6.525 5.272 5.308 10.604 10.592 15.415 16.299 2.125 2.533\n        4.315 6.079 4.256 9.129-.133 6.525 2.73 10.962 6.227 16.086 3.886 5.698\n        5.636 12.862 8.136 19.459 1.046 2.766 1.265 5.887 2.512 8.547 2.663\n        5.697 6.688 9.599 13.607 10.024 7.279.461 10.004 3.286 11.05\n        10.733-1.862.213-3.715.462-5.574.633-8.878.846-13.278 4.924-12.927\n        13.879.694 17.785 7.11 33.324 20.312 45.678 3.638 3.411 7.503 6.579\n        11.038 10.072 8.074 7.974 10.891 17.342 7.01 28.354-1.859 5.249-4.407\n        10.403-5.231 15.83-.839 5.514-.845 11.508.432 16.904 1.324 5.615.756\n        17.897 6.555 16.881 10.258-1.803 16.154.219\n        16.952-11.266.151-2.188-.018-2.459-.6-4.48-3.05-10.781 10.799-41.387\n        19.109-46.967 7.099-4.776 14.218-9.635 20.652-15.244 9.276-8.062\n        13.429-18.477 9.531-30.605-3.668-11.414.623-19.795 8.603-27.143\n        8.14-7.489 13.477-16.119\n        12.921-27.645-.556-11.526-8.098-19.849-17.927-18.666-4.806.567-9.413\n        2.872-14.098 4.45-6.868 2.323-13.571 5.574-20.62 6.839-9.88\n        1.75-15.968-4.705-20.375-12.543-3.546-6.301-4.714-6.785-10.87-2.86-5.193\n        3.322-10.376 6.667-15.755 9.67-5.588 3.121-8.633\n        1.963-12.941-2.707-2.548-2.755-6.076-4.693-9.351-6.679-2.355-1.442-5.539-1.839-7.427-3.647-2.53-2.447-6.059-6.076-5.701-8.729.417-3.115\n        4.025-7.014 7.172-8.29 5.423-2.199 11.585-2.554 17.401-3.818 3.097-.674\n        6.239-1.375 9.167-2.53 4.008-1.599\n        3.839-4.232.771-6.703-1.513-1.215-3.384-2.069-5.208-2.802-8.866-3.57-17.782-6.984-26.643-10.568-2.202-.884-4.371-1.971-6.348-3.263-5.571-3.661-6.242-7.692-1.188-12.152\n        19.955-17.602 43.264-22.756 63.916.63 6.398 7.243 10.737 16.275 16.778\n        23.876 4.752 5.994 10.223 11.621 16.263 16.246 2.489 1.9 8.086 2.223\n        10.87.697 4.146-2.27 4.291-7.444\n        2.205-11.759-1.803-3.748-3.922-7.442-6.469-10.722-11.733-15.117-10.926-44.576\n        12.055-56.867 7.687-4.117 15.441-8.453 19.112-19.497-4.403 1.191-7.596\n        1.959-10.723 2.917-17.451 5.405-5.302-7.613 2.726-9.883\n        4.876-1.386-4.362-5.122-4.362-5.122.219-.381 6.135-2.069 12.714-4.874\n        4.527-1.924 9.155-4.09 12.915-7.152 2.436-1.998 3.375-5.816\n        4.977-8.819-.407-.473-.804-.934-1.217-1.407-4.611.621-9.216 1.303-13.838\n        1.824-7.832.877-9.67-.659-10.396-8.559-.503-5.394-6-8.334-11.133-5.568-3.473\n        1.883-6.476 4.613-9.818 6.773-7.716 4.998-13.485\n        3-16.512-5.618-1.803-5.13-4.314-6.1-9.034-3.227-2.374 1.442-4.354\n        3.549-6.768 4.897-3.958 2.211-7.982 4.43-12.232 5.932-4.14 1.466-9.126\n        2.53-11.943-2.01-3.026-4.882-.381-9.635 3.435-12.696 4.743-3.807\n        10.211-6.762 15.548-9.753 7.602-4.279 15.652-7.838 22.993-12.504\n        5.388-3.438 7.743-9.041\n        6-15.652-1.472-5.58-5.205-7.468-10.374-4.909-4.268 2.119-7.997\n        5.435-12.386 7.143-3.207 1.229-7.203\n        1.242-10.646.636-1.271-.225-2.622-3.747-2.657-5.792-.024-1.179\n        2.367-3.227 3.892-3.476 10.604-1.652 21.255-3.05 31.921-4.265 1.41-.154\n        3.529.718 4.413 1.844 7.045 8.893 16.875 13.208 27.216 16.287 8.688 2.58\n        9.947 1.351 11.142-7.764 11.159-2.627 22.502-7.803 33.732-.721 6.23\n        3.921 11.91 8.917 17.183 14.091 1.307 1.288.509 5.272-.118 7.838-.827\n        3.448-2.736 6.635-3.617 10.083-1.702 6.682 2.618 11.904 9.522 11.795\n        2.181-.047 4.356-.494 6.549-.603 6.378-.298 8.642 2.143 8.057 8.583-.828\n        9.126.691 10.223 9.9 8.665 2.647-.446 5.704.756 8.405 1.703 1.607.567\n        2.854 2.107 4.285 3.188 8.564 6.49 15.113 4.058\n        17.62-6.561.271-1.156.236-2.391.473-3.559.993-4.764 3.683-5.99\n        6.897-2.604 6.81 7.211 13.199 14.824 20.108 22.686-7.424 6.809-7.672\n        15.084-6.028 23.193 1.826 9.021-.55 16.858-4.108 24.805-3.41 7.613-7.157\n        15.179-9.434 23.144-3.404 11.955.461 17.416 12.602 20.062 11.585 2.529\n        13.482 4.858 13.92 16.184.585 15.448 8.518 26.11 22.071 32.914 3.009\n        1.501 6.206 2.642 9.279 3.919-1.519 23.814-8.317 48.598-19.949 72.111z");
-    			add_location(path0, file, 334, 6, 10342);
-    			attr_dev(svg0, "xmlns", "http://www.w3.org/2000/svg");
-    			attr_dev(svg0, "viewBox", "0 0 487.015 487.015");
-    			attr_dev(svg0, "width", "0.88em");
-    			attr_dev(svg0, "height", "0.88em");
-    			add_location(svg0, file, 328, 4, 10205);
-    			attr_dev(span, "class", "svelte-1rfyif");
-    			add_location(span, file, 408, 4, 15555);
-    			attr_dev(path1, "d", "M29.994 10.183L15.363 24.812.733 10.184a2.5 2.5 0\n        113.536-3.536l11.095 11.093L26.461 6.647a2.5 2.5 0 113.533 3.536z");
-
-    			attr_dev(path1, "transform", path1_transform_value = /*expanded*/ ctx[1]
-    			? "rotate(180, 15.3635, 15.3635)"
-    			: "rotate(0)");
-
-    			add_location(path1, file, 420, 6, 15838);
-    			attr_dev(svg1, "xmlns", "http://www.w3.org/2000/svg");
-    			attr_dev(svg1, "viewBox", "0 0 30.727 30.727");
-    			attr_dev(svg1, "width", "0.88em");
-    			attr_dev(svg1, "height", "0.88em");
-    			add_location(svg1, file, 414, 4, 15703);
-    			attr_dev(button, "type", "button");
-    			attr_dev(button, "aria-label", button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`);
-    			attr_dev(button, "aria-haspopup", "listbox");
-    			attr_dev(button, "data-toggle", "true");
-    			attr_dev(button, "aria-expanded", /*expanded*/ ctx[1]);
-    			attr_dev(button, "class", "svelte-1rfyif");
-    			add_location(button, file, 318, 2, 9914);
-    			attr_dev(div, "class", "tz-container svelte-1rfyif");
-    			add_location(div, file, 317, 0, 9885);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			if (if_block0) if_block0.m(target, anchor);
-    			insert_dev(target, t0, anchor);
-    			insert_dev(target, div, anchor);
-    			append_dev(div, button);
-    			append_dev(button, svg0);
-    			append_dev(svg0, path0);
-    			append_dev(button, t1);
-    			append_dev(button, span);
-    			append_dev(span, t2);
-    			append_dev(span, t3);
-    			if (if_block1) if_block1.m(span, null);
-    			append_dev(button, t4);
-    			append_dev(button, svg1);
-    			append_dev(svg1, path1);
-    			/*button_binding*/ ctx[27](button);
-    			append_dev(div, t5);
-    			if (if_block2) if_block2.m(div, null);
-    			current = true;
-
-    			if (!mounted) {
-    				dispose = [
-    					listen_dev(button, "click", /*toggleExpanded*/ ctx[23], false, false, false),
-    					listen_dev(button, "keydown", /*toggleExpanded*/ ctx[23], false, false, false)
-    				];
-
-    				mounted = true;
-    			}
-    		},
-    		p: function update(ctx, dirty) {
-    			if (/*expanded*/ ctx[1]) {
-    				if (if_block0) {
-    					if_block0.p(ctx, dirty);
-    				} else {
-    					if_block0 = create_if_block_5(ctx);
-    					if_block0.c();
-    					if_block0.m(t0.parentNode, t0);
-    				}
-    			} else if (if_block0) {
-    				if_block0.d(1);
-    				if_block0 = null;
-    			}
-
-    			if (!current || dirty[0] & /*currentZone*/ 4) set_data_dev(t2, /*currentZone*/ ctx[2]);
-
-    			if (/*utcDatetime*/ ctx[3]) {
-    				if (if_block1) {
-    					if_block1.p(ctx, dirty);
-    				} else {
-    					if_block1 = create_if_block_4(ctx);
-    					if_block1.c();
-    					if_block1.m(span, null);
-    				}
-    			} else if (if_block1) {
-    				if_block1.d(1);
-    				if_block1 = null;
-    			}
-
-    			if (!current || dirty[0] & /*expanded*/ 2 && path1_transform_value !== (path1_transform_value = /*expanded*/ ctx[1]
-    			? "rotate(180, 15.3635, 15.3635)"
-    			: "rotate(0)")) {
-    				attr_dev(path1, "transform", path1_transform_value);
-    			}
-
-    			if (!current || dirty[0] & /*currentZone*/ 4 && button_aria_label_value !== (button_aria_label_value = `${/*currentZone*/ ctx[2]} is currently selected. Change timezone`)) {
-    				attr_dev(button, "aria-label", button_aria_label_value);
-    			}
-
-    			if (!current || dirty[0] & /*expanded*/ 2) {
-    				attr_dev(button, "aria-expanded", /*expanded*/ ctx[1]);
-    			}
-
-    			if (/*expanded*/ ctx[1]) {
-    				if (if_block2) {
-    					if_block2.p(ctx, dirty);
-
-    					if (dirty[0] & /*expanded*/ 2) {
-    						transition_in(if_block2, 1);
-    					}
-    				} else {
-    					if_block2 = create_if_block(ctx);
-    					if_block2.c();
-    					transition_in(if_block2, 1);
-    					if_block2.m(div, null);
-    				}
-    			} else if (if_block2) {
-    				group_outros();
-
-    				transition_out(if_block2, 1, 1, () => {
-    					if_block2 = null;
-    				});
-
-    				check_outros();
-    			}
-    		},
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(if_block2);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(if_block2);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			if (if_block0) if_block0.d(detaching);
-    			if (detaching) detach_dev(t0);
-    			if (detaching) detach_dev(div);
-    			if (if_block1) if_block1.d();
-    			/*button_binding*/ ctx[27](null);
-    			if (if_block2) if_block2.d();
-    			mounted = false;
-    			run_all(dispose);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function instance($$self, $$props, $$invalidate) {
-    	let { datetime = null } = $$props;
-    	let { timezone = null } = $$props;
-    	let { expanded = false } = $$props;
-    	let { allowedTimezones = null } = $$props;
-
-    	// ***** End Public API *****
-    	// What is the current zone?
-    	let currentZone;
-
-    	// We will always convert the datetime to UTC
-    	let utcDatetime;
-
-    	// We keep track of what the user is typing in the search box
-    	let userSearch;
-
-    	// What is the currently selected zone in the dropdown?
-    	let highlightedZone;
-
-    	// DOM nodes refs
-    	let toggleButtonRef;
-
-    	let searchInputRef;
-    	let clearButtonRef;
-    	let listBoxRef;
-    	let listBoxOptionRefs;
-
-    	// A few IDs that will we use for a11y
-    	const labelId = uid();
-
-    	const listBoxId = uid();
-    	const searchInputId = uid();
-    	const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // eslint-disable-line new-cap
-    	let availableZones;
-
-    	if (allowedTimezones) {
-    		if (Array.isArray(allowedTimezones)) {
-    			availableZones = pickZones(timezones, [...allowedTimezones, userTimezone]);
-    		} else {
-    			console.error("You need to provide a list of timezones as an Array!", `You provided ${allowedTimezones}.`);
-    			availableZones = timezones;
-    		}
-    	} else {
-    		availableZones = timezones;
-    	}
-
-    	const ungroupedZones = ungroupZones(availableZones);
-
-    	// We take the ungroupedZones and create a list of just the user-visible lables
-    	// e.g. {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } => ['London', 'Berlin']
-    	const zoneLabels = Object.keys(ungroupedZones);
-
-    	// We also want a list of all the valid zones
-    	// e.g. {'London': 'Europe/London', 'Berlin': 'Europe/Berlin' } => ['Europe/London', 'Europe/Berlin']
-    	const validZones = Object.values(ungroupedZones);
-
-    	// Zones will be filtered as the user types, so we keep track of them internally here
-    	let filteredZones = [];
-
-    	listBoxOptionRefs = zoneLabels.map(zone => ({ [zone]: null }));
-
-    	// We keep track of the initial state so we can reset to these values when needed
-    	const initialState = { expanded, userSearch: null };
-
-    	// Reset the dropdown and all internal state to the initial values
-    	const reset = () => {
-    		$$invalidate(1, expanded = initialState.expanded); // eslint-disable-line prefer-destructuring
-    		$$invalidate(4, userSearch = initialState.userSearch); // eslint-disable-line prefer-destructuring
-    	};
-
-    	// We will use the dispatcher to send the update event
-    	const dispatch = createEventDispatcher();
-
-    	// Because CustomEvents don't bubble by default, custom components won't work
-    	// We will need to do some tricks for this to work properly
-    	// https://github.com/sveltejs/svelte/issues/3119
-    	const component = get_current_component();
-
-    	const dispatchUpdates = () => {
-    		const eventName = "update";
-
-    		const eventData = {
-    			timezone,
-    			datetime,
-    			utcDatetime,
-    			zonedDatetime: utcToZonedTime(utcDatetime, timezone)
-    		};
-
-    		const event = new CustomEvent(eventName,
-    		{
-    				detail: eventData,
-    				bubbles: true,
-    				cancelable: true,
-    				composed: true
-    			});
-
-    		component.dispatchEvent && component.dispatchEvent(event);
-    		dispatch(eventName, eventData);
-    	};
-
-    	// Emit the event back to the consumer
-    	const handleTimezoneUpdate = (ev, zoneId) => {
-    		$$invalidate(2, currentZone = zoneId);
-    		$$invalidate(0, timezone = ungroupedZones[zoneId]);
-    		dispatchUpdates();
-    		reset();
-    		toggleButtonRef.focus();
-    		ev.preventDefault();
-    	};
-
-    	// ***** Methods *****
-    	// Given a Date and a timezone, give the correct Date and Time for that timezone
-    	const getTimeForZone = (d, t) => utcToZonedTime(d, t);
-
-    	// Figure out if a grouped zone has any currently visible zones
-    	// We use this when the user searches in order to show/hide the group name in the list
-    	const groupHasVisibleChildren = (group, zones) => Object.keys(timezones[group]).some(zone => zones.includes(zone));
-
-    	// Scroll the list to a specific element in it if that element is not already visible on screen
-    	const scrollList = zone => {
-    		const zoneElementRef = listBoxOptionRefs[zone];
-
-    		if (listBoxRef && zoneElementRef) {
-    			scrollIntoView(zoneElementRef, listBoxRef);
-    			zoneElementRef.focus({ preventScroll: true });
-    		}
-    	};
-
-    	// Every time the user uses their keyboard to move up or down in the list,
-    	// we need to figure out if their at the end/start of the list and scroll the correct elements
-    	// into view
-    	const moveSelection = direction => {
-    		const len = filteredZones.length;
-    		const zoneIndex = filteredZones.findIndex(zone => zone === highlightedZone);
-    		let index;
-
-    		if (direction === "up") {
-    			index = (zoneIndex - 1 + len) % len;
-    		}
-
-    		if (direction === "down") {
-    			index = (zoneIndex + 1) % len;
-    		}
-
-    		// We update the highlightedZone to be the one the user is currently on
-    		$$invalidate(5, highlightedZone = filteredZones[index]);
-
-    		// We make sure the highlightedZone is visible on screen, scrolling it into view if not
-    		scrollList(highlightedZone);
-    	};
-
-    	// We watch for when the user presses Escape, ArrowDown or ArrowUp and react accordingly
-    	const keyDown = ev => {
-    		// If the clearButton is focused, don't do anything else
-    		// We should only continue if the dropdown is expanded
-    		if (document.activeElement === clearButtonRef || !expanded) {
-    			return;
-    		}
-
-    		// If the user presses Escape, we dismiss the drodpown
-    		if (ev.keyCode === keyCodes.Escape) {
-    			reset();
-    		}
-
-    		// If the user presses the down arrow, start navigating the list
-    		if (ev.keyCode === keyCodes.ArrowDown) {
-    			ev.preventDefault();
-    			moveSelection("down");
-    		}
-
-    		// If the user presses the up arrow, start navigating the list
-    		if (ev.keyCode === keyCodes.ArrowUp) {
-    			ev.preventDefault();
-    			moveSelection("up");
-    		}
-
-    		// If the user presses Enter and the dropdown is expanded, select the current item
-    		if (ev.keyCode === keyCodes.Enter && highlightedZone) {
-    			handleTimezoneUpdate(ev, highlightedZone);
-    		}
-
-    		// If the user start to type letters or numbers, we focus on the Search field
-    		if (keyCodes.Characters.includes(ev.keyCode) || ev.keyCode === keyCodes.Backspace) {
-    			searchInputRef.focus();
-    		}
-    	};
-
-    	// When the user presses the clear button when searching,
-    	// we want to clear the text and refocus on the input
-    	const clearSearch = () => {
-    		$$invalidate(4, userSearch = initialState.userSearch); // eslint-disable-line prefer-destructuring
-
-    		// Refocus to the search input
-    		searchInputRef.focus();
-    	};
-
-    	const setHighlightedZone = zone => {
-    		$$invalidate(5, highlightedZone = zone);
-    	};
-
-    	const toggleExpanded = ev => {
-    		if (ev.keyCode) {
-    			// If it's a keyboard event, we should react only to certain keys
-    			// Enter and Space should show it
-    			if ([keyCodes.Enter, keyCodes.Space].includes(ev.keyCode)) {
-    				$$invalidate(1, expanded = !expanded);
-    			}
-
-    			// Escape should just hide the menu
-    			if (ev.keyCode === keyCodes.Escape) {
-    				$$invalidate(1, expanded = false);
-    			}
-
-    			// ArrowDown should show it
-    			if (ev.keyCode === keyCodes.ArrowDown) {
-    				$$invalidate(1, expanded = true);
-    			}
-    		} else {
-    			// If there is no keyCode, it's not a keyboard event
-    			$$invalidate(1, expanded = !expanded);
-    		}
-    	};
-
-    	const scrollToHighlighted = () => {
-    		if (expanded && highlightedZone) {
-    			scrollList(highlightedZone);
-    		}
-    	};
-
-    	const setTimezone = tz => {
-    		if (!tz) {
-    			$$invalidate(0, timezone = userTimezone);
-    		}
-
-    		if (tz && !Object.values(ungroupedZones).includes(tz)) {
-    			// The timezone must be a valid timezone, so we check it against our list of values in flat
-    			console.warn(`The timezone provided is not valid: ${tz}!`, `Valid zones are: ${validZones}`);
-
-    			$$invalidate(0, timezone = userTimezone);
-    		}
-
-    		$$invalidate(2, currentZone = getKeyByValue(ungroupedZones, timezone));
-    		setHighlightedZone(currentZone);
-    	};
-
-    	const setDatetime = (dt, tz) => {
-    		// Warn the user if the datetime is invalid
-    		if (dt && !isValid(parseISO(dt))) {
-    			console.warn(`The datetime provided is not a valid date: ${dt}`);
-    		}
-
-    		// If there is a valid datetime, update the utcDatetime
-    		if (dt && isValid(parseISO(dt))) {
-    			$$invalidate(3, utcDatetime = zonedTimeToUtc(parseISO(dt), tz));
-    		}
-    	};
-
-    	// ***** Lifecycle methods *****
-    	onMount(() => {
-    		setTimezone(timezone);
-    		setDatetime(datetime, timezone);
-    		scrollToHighlighted();
-    	});
-
-    	const writable_props = ["datetime", "timezone", "expanded", "allowedTimezones"];
-
-    	Object_1.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Picker> was created with unknown prop '${key}'`);
-    	});
-
-    	let { $$slots = {}, $$scope } = $$props;
-    	validate_slots("Picker", $$slots, []);
-
-    	function button_binding($$value) {
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			toggleButtonRef = $$value;
-    			$$invalidate(6, toggleButtonRef);
-    		});
-    	}
-
-    	function input_binding($$value) {
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			searchInputRef = $$value;
-    			$$invalidate(7, searchInputRef);
-    		});
-    	}
-
-    	function input_input_handler() {
-    		userSearch = this.value;
-    		$$invalidate(4, userSearch);
-    	}
-
-    	function button_binding_1($$value) {
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			clearButtonRef = $$value;
-    			$$invalidate(8, clearButtonRef);
-    		});
-    	}
-
-    	function li_binding($$value, name) {
-    		if (listBoxOptionRefs[name] === $$value) return;
-
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			listBoxOptionRefs[name] = $$value;
-    			$$invalidate(10, listBoxOptionRefs);
-    		});
-    	}
-
-    	const mouseover_handler = name => setHighlightedZone(name);
-    	const click_handler = (name, ev) => handleTimezoneUpdate(ev, name);
-
-    	function ul_binding($$value) {
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			listBoxRef = $$value;
-    			$$invalidate(9, listBoxRef);
-    		});
-    	}
-
-    	$$self.$set = $$props => {
-    		if ("datetime" in $$props) $$invalidate(25, datetime = $$props.datetime);
-    		if ("timezone" in $$props) $$invalidate(0, timezone = $$props.timezone);
-    		if ("expanded" in $$props) $$invalidate(1, expanded = $$props.expanded);
-    		if ("allowedTimezones" in $$props) $$invalidate(26, allowedTimezones = $$props.allowedTimezones);
-    	};
-
-    	$$self.$capture_state = () => ({
-    		createEventDispatcher,
-    		onMount,
-    		get_current_component,
-    		slide,
-    		utcToZonedTime,
-    		zonedTimeToUtc,
-    		format: format$1,
-    		isValid,
-    		parseISO,
-    		groupedZones: timezones,
-    		scrollIntoView,
-    		uid,
-    		getKeyByValue,
-    		slugify,
-    		keyCodes,
-    		ungroupZones,
-    		filterZones,
-    		pickZones,
-    		datetime,
-    		timezone,
-    		expanded,
-    		allowedTimezones,
-    		currentZone,
-    		utcDatetime,
-    		userSearch,
-    		highlightedZone,
-    		toggleButtonRef,
-    		searchInputRef,
-    		clearButtonRef,
-    		listBoxRef,
-    		listBoxOptionRefs,
-    		labelId,
-    		listBoxId,
-    		searchInputId,
-    		userTimezone,
-    		availableZones,
-    		ungroupedZones,
-    		zoneLabels,
-    		validZones,
-    		filteredZones,
-    		initialState,
-    		reset,
-    		dispatch,
-    		component,
-    		dispatchUpdates,
-    		handleTimezoneUpdate,
-    		getTimeForZone,
-    		groupHasVisibleChildren,
-    		scrollList,
-    		moveSelection,
-    		keyDown,
-    		clearSearch,
-    		setHighlightedZone,
-    		toggleExpanded,
-    		scrollToHighlighted,
-    		setTimezone,
-    		setDatetime
-    	});
-
-    	$$self.$inject_state = $$props => {
-    		if ("datetime" in $$props) $$invalidate(25, datetime = $$props.datetime);
-    		if ("timezone" in $$props) $$invalidate(0, timezone = $$props.timezone);
-    		if ("expanded" in $$props) $$invalidate(1, expanded = $$props.expanded);
-    		if ("allowedTimezones" in $$props) $$invalidate(26, allowedTimezones = $$props.allowedTimezones);
-    		if ("currentZone" in $$props) $$invalidate(2, currentZone = $$props.currentZone);
-    		if ("utcDatetime" in $$props) $$invalidate(3, utcDatetime = $$props.utcDatetime);
-    		if ("userSearch" in $$props) $$invalidate(4, userSearch = $$props.userSearch);
-    		if ("highlightedZone" in $$props) $$invalidate(5, highlightedZone = $$props.highlightedZone);
-    		if ("toggleButtonRef" in $$props) $$invalidate(6, toggleButtonRef = $$props.toggleButtonRef);
-    		if ("searchInputRef" in $$props) $$invalidate(7, searchInputRef = $$props.searchInputRef);
-    		if ("clearButtonRef" in $$props) $$invalidate(8, clearButtonRef = $$props.clearButtonRef);
-    		if ("listBoxRef" in $$props) $$invalidate(9, listBoxRef = $$props.listBoxRef);
-    		if ("listBoxOptionRefs" in $$props) $$invalidate(10, listBoxOptionRefs = $$props.listBoxOptionRefs);
-    		if ("availableZones" in $$props) availableZones = $$props.availableZones;
-    		if ("filteredZones" in $$props) $$invalidate(11, filteredZones = $$props.filteredZones);
-    	};
-
-    	if ($$props && "$$inject" in $$props) {
-    		$$self.$inject_state($$props.$$inject);
-    	}
-
-    	$$self.$$.update = () => {
-    		if ($$self.$$.dirty[0] & /*userSearch*/ 16) {
-    			// ***** Reactive *****
-    			// As the user types, we filter the available zones to show only those that should be visible
-    			 $$invalidate(11, filteredZones = userSearch && userSearch.length > 0
-    			? filterZones(userSearch, zoneLabels)
-    			: zoneLabels.slice());
-    		}
-
-    		if ($$self.$$.dirty[0] & /*timezone*/ 1) {
-    			// We want to properly handle any potential changes to the current timezone and datetime
-    			// that might come in from the consumer of the component.
-    			// This includes setting the proper timezone, datetime and dispatching the updated values
-    			// back up to the consumer
-    			 setTimezone(timezone);
-    		}
-
-    		if ($$self.$$.dirty[0] & /*datetime, timezone*/ 33554433) {
-    			 setDatetime(datetime, timezone);
-    		}
-
-    		if ($$self.$$.dirty[0] & /*utcDatetime*/ 8) {
-    			 utcDatetime && dispatchUpdates();
-    		}
-    	};
-
-    	return [
-    		timezone,
-    		expanded,
-    		currentZone,
-    		utcDatetime,
-    		userSearch,
-    		highlightedZone,
-    		toggleButtonRef,
-    		searchInputRef,
-    		clearButtonRef,
-    		listBoxRef,
-    		listBoxOptionRefs,
-    		filteredZones,
-    		labelId,
-    		listBoxId,
-    		searchInputId,
-    		ungroupedZones,
-    		reset,
-    		handleTimezoneUpdate,
-    		getTimeForZone,
-    		groupHasVisibleChildren,
-    		keyDown,
-    		clearSearch,
-    		setHighlightedZone,
-    		toggleExpanded,
-    		scrollToHighlighted,
-    		datetime,
-    		allowedTimezones,
-    		button_binding,
-    		input_binding,
-    		input_input_handler,
-    		button_binding_1,
-    		li_binding,
-    		mouseover_handler,
-    		click_handler,
-    		ul_binding
-    	];
-    }
-
-    class Picker extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-
-    		init(
-    			this,
-    			options,
-    			instance,
-    			create_fragment,
-    			safe_not_equal,
-    			{
-    				datetime: 25,
-    				timezone: 0,
-    				expanded: 1,
-    				allowedTimezones: 26
-    			},
-    			[-1, -1]
-    		);
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "Picker",
-    			options,
-    			id: create_fragment.name
-    		});
-    	}
-
-    	get datetime() {
-    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set datetime(value) {
-    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get timezone() {
-    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set timezone(value) {
-    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get expanded() {
-    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set expanded(value) {
-    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get allowedTimezones() {
-    		throw new Error("<Picker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set allowedTimezones(value) {
-    		throw new Error("<Picker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-    }
-
-    /* demo/Demo.svelte generated by Svelte v3.23.1 */
+    /* demo/Demo.svelte generated by Svelte v3.25.0 */
 
     const { Object: Object_1$1 } = globals;
     const file$1 = "demo/Demo.svelte";
 
-    // (41:2) {#if Object.keys(payload).length}
+    // (36:2) {#if Object.keys(payload).length}
     function create_if_block$1(ctx) {
-    	let div;
-    	let p0;
-    	let t1;
     	let pre;
-    	let t2_value = JSON.stringify(/*payload*/ ctx[1], null, 2) + "";
+    	let t0_value = JSON.stringify(/*payload*/ ctx[0], null, 2) + "";
+    	let t0;
+    	let t1;
+    	let p0;
     	let t2;
+    	let t3_value = format(/*payload*/ ctx[0].zonedDatetime, "MMMM do, yyyy', ' HH:mm aaaa") + "";
     	let t3;
-    	let p1;
     	let t4;
-    	let t5_value = format(/*payload*/ ctx[1].zonedDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "";
+    	let t5_value = /*payload*/ ctx[0].timezone + "";
     	let t5;
     	let t6;
-    	let t7_value = /*payload*/ ctx[1].timezone + "";
     	let t7;
+    	let p1;
     	let t8;
+    	let t9_value = format(/*payload*/ ctx[0].utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "";
     	let t9;
-    	let p2;
-    	let t10;
-    	let t11_value = format(/*payload*/ ctx[1].utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "";
-    	let t11;
 
     	const block = {
     		c: function create() {
-    			div = element("div");
-    			p0 = element("p");
-    			p0.textContent = "The payload for the server will be:";
-    			t1 = space();
     			pre = element("pre");
-    			t2 = text(t2_value);
-    			t3 = space();
-    			p1 = element("p");
-    			t4 = text("It will be ");
+    			t0 = text(t0_value);
+    			t1 = space();
+    			p0 = element("p");
+    			t2 = text("Local time: ");
+    			t3 = text(t3_value);
+    			t4 = text(" in ");
     			t5 = text(t5_value);
-    			t6 = text("\n        in ");
-    			t7 = text(t7_value);
-    			t8 = text(".");
-    			t9 = space();
-    			p2 = element("p");
-    			t10 = text("UTC: ");
-    			t11 = text(t11_value);
-    			attr_dev(p0, "class", "svelte-1vrlhjq");
-    			add_location(p0, file$1, 42, 6, 1113);
-    			attr_dev(pre, "class", "svelte-1vrlhjq");
-    			add_location(pre, file$1, 43, 6, 1162);
-    			attr_dev(p1, "class", "svelte-1vrlhjq");
-    			add_location(p1, file$1, 44, 6, 1214);
-    			attr_dev(p2, "class", "svelte-1vrlhjq");
-    			add_location(p2, file$1, 48, 6, 1350);
-    			attr_dev(div, "class", "col svelte-1vrlhjq");
-    			add_location(div, file$1, 41, 4, 1089);
+    			t6 = text(".");
+    			t7 = space();
+    			p1 = element("p");
+    			t8 = text("UTC: ");
+    			t9 = text(t9_value);
+    			attr_dev(pre, "class", "svelte-1rvm9r5");
+    			add_location(pre, file$1, 36, 4, 1153);
+    			attr_dev(p0, "class", "svelte-1rvm9r5");
+    			add_location(p0, file$1, 37, 4, 1203);
+    			attr_dev(p1, "class", "svelte-1rvm9r5");
+    			add_location(p1, file$1, 40, 4, 1325);
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    			append_dev(div, p0);
-    			append_dev(div, t1);
-    			append_dev(div, pre);
-    			append_dev(pre, t2);
-    			append_dev(div, t3);
-    			append_dev(div, p1);
-    			append_dev(p1, t4);
-    			append_dev(p1, t5);
-    			append_dev(p1, t6);
-    			append_dev(p1, t7);
+    			insert_dev(target, pre, anchor);
+    			append_dev(pre, t0);
+    			insert_dev(target, t1, anchor);
+    			insert_dev(target, p0, anchor);
+    			append_dev(p0, t2);
+    			append_dev(p0, t3);
+    			append_dev(p0, t4);
+    			append_dev(p0, t5);
+    			append_dev(p0, t6);
+    			insert_dev(target, t7, anchor);
+    			insert_dev(target, p1, anchor);
     			append_dev(p1, t8);
-    			append_dev(div, t9);
-    			append_dev(div, p2);
-    			append_dev(p2, t10);
-    			append_dev(p2, t11);
+    			append_dev(p1, t9);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*payload*/ 2 && t2_value !== (t2_value = JSON.stringify(/*payload*/ ctx[1], null, 2) + "")) set_data_dev(t2, t2_value);
-    			if (dirty & /*payload*/ 2 && t5_value !== (t5_value = format(/*payload*/ ctx[1].zonedDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "")) set_data_dev(t5, t5_value);
-    			if (dirty & /*payload*/ 2 && t7_value !== (t7_value = /*payload*/ ctx[1].timezone + "")) set_data_dev(t7, t7_value);
-    			if (dirty & /*payload*/ 2 && t11_value !== (t11_value = format(/*payload*/ ctx[1].utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "")) set_data_dev(t11, t11_value);
+    			if (dirty & /*payload*/ 1 && t0_value !== (t0_value = JSON.stringify(/*payload*/ ctx[0], null, 2) + "")) set_data_dev(t0, t0_value);
+    			if (dirty & /*payload*/ 1 && t3_value !== (t3_value = format(/*payload*/ ctx[0].zonedDatetime, "MMMM do, yyyy', ' HH:mm aaaa") + "")) set_data_dev(t3, t3_value);
+    			if (dirty & /*payload*/ 1 && t5_value !== (t5_value = /*payload*/ ctx[0].timezone + "")) set_data_dev(t5, t5_value);
+    			if (dirty & /*payload*/ 1 && t9_value !== (t9_value = format(/*payload*/ ctx[0].utcDatetime, "MMMM do, yyyy 'at' HH:mm aaaa") + "")) set_data_dev(t9, t9_value);
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div);
+    			if (detaching) detach_dev(pre);
+    			if (detaching) detach_dev(t1);
+    			if (detaching) detach_dev(p0);
+    			if (detaching) detach_dev(t7);
+    			if (detaching) detach_dev(p1);
     		}
     	};
 
@@ -6796,7 +6068,7 @@ var SvelteTimezonePicker = (function () {
     		block,
     		id: create_if_block$1.name,
     		type: "if",
-    		source: "(41:2) {#if Object.keys(payload).length}",
+    		source: "(36:2) {#if Object.keys(payload).length}",
     		ctx
     	});
 
@@ -6804,98 +6076,131 @@ var SvelteTimezonePicker = (function () {
     }
 
     function create_fragment$1(ctx) {
-    	let div1;
+    	let div6;
+    	let div4;
+    	let div3;
     	let div0;
     	let p0;
     	let t1;
+    	let picker0;
+    	let t2;
+    	let div1;
     	let p1;
-    	let button;
-    	let t3;
-    	let input;
     	let t4;
+    	let picker1;
     	let t5;
-    	let show_if = Object.keys(/*payload*/ ctx[1]).length;
+    	let div2;
+    	let p2;
+    	let t7;
+    	let picker2;
+    	let t8;
+    	let div5;
+    	let p3;
+    	let t10;
+    	let show_if = Object.keys(/*payload*/ ctx[0]).length;
     	let current;
-    	let mounted;
-    	let dispose;
+    	picker0 = new Picker({ $$inline: true });
+    	picker0.$on("update", /*update*/ ctx[3]);
 
-    	const picker = new Picker({
+    	picker1 = new Picker({
+    			props: { timezone: "Europe/London" },
+    			$$inline: true
+    		});
+
+    	picker1.$on("update", /*update*/ ctx[3]);
+
+    	picker2 = new Picker({
     			props: {
-    				datetime: /*datetime*/ ctx[0],
-    				timezone: /*timezone*/ ctx[2]
+    				timezone: "Asia/Istanbul",
+    				allowedTimezones: /*allowedTimezones*/ ctx[2]
     			},
     			$$inline: true
     		});
 
-    	picker.$on("update", /*update*/ ctx[4]);
+    	picker2.$on("update", /*update*/ ctx[3]);
     	let if_block = show_if && create_if_block$1(ctx);
 
     	const block = {
     		c: function create() {
-    			div1 = element("div");
+    			div6 = element("div");
+    			div4 = element("div");
+    			div3 = element("div");
     			div0 = element("div");
     			p0 = element("p");
-    			p0.textContent = "Somewhere in user land...";
+    			p0.textContent = "With defaults";
     			t1 = space();
+    			create_component(picker0.$$.fragment);
+    			t2 = space();
+    			div1 = element("div");
     			p1 = element("p");
-    			button = element("button");
-    			button.textContent = "Simulate datetime change";
-    			t3 = space();
-    			input = element("input");
+    			p1.textContent = "With timezone";
     			t4 = space();
-    			create_component(picker.$$.fragment);
+    			create_component(picker1.$$.fragment);
     			t5 = space();
+    			div2 = element("div");
+    			p2 = element("p");
+    			p2.textContent = "With timezone and list of allowed timezones";
+    			t7 = space();
+    			create_component(picker2.$$.fragment);
+    			t8 = space();
+    			div5 = element("div");
+    			p3 = element("p");
+    			p3.textContent = `${parseISO(/*datetime*/ ctx[1])}`;
+    			t10 = space();
     			if (if_block) if_block.c();
-    			attr_dev(p0, "class", "svelte-1vrlhjq");
-    			add_location(p0, file$1, 33, 4, 796);
-    			add_location(button, file$1, 35, 6, 843);
-    			attr_dev(p1, "class", "svelte-1vrlhjq");
-    			add_location(p1, file$1, 34, 4, 833);
-    			attr_dev(input, "type", "datetime-local");
-    			attr_dev(input, "class", "svelte-1vrlhjq");
-    			add_location(input, file$1, 37, 4, 926);
-    			attr_dev(div0, "class", "col svelte-1vrlhjq");
-    			add_location(div0, file$1, 32, 2, 774);
-    			attr_dev(div1, "class", "cols svelte-1vrlhjq");
-    			add_location(div1, file$1, 31, 0, 753);
+    			attr_dev(p0, "class", "svelte-1rvm9r5");
+    			add_location(p0, file$1, 20, 8, 649);
+    			attr_dev(div0, "class", "col bg svelte-1rvm9r5");
+    			add_location(div0, file$1, 19, 6, 620);
+    			attr_dev(p1, "class", "svelte-1rvm9r5");
+    			add_location(p1, file$1, 24, 8, 758);
+    			attr_dev(div1, "class", "col bg svelte-1rvm9r5");
+    			add_location(div1, file$1, 23, 6, 729);
+    			attr_dev(p2, "class", "svelte-1rvm9r5");
+    			add_location(p2, file$1, 28, 8, 892);
+    			attr_dev(div2, "class", "col bg svelte-1rvm9r5");
+    			add_location(div2, file$1, 27, 6, 863);
+    			attr_dev(div3, "class", "rows svelte-1rvm9r5");
+    			add_location(div3, file$1, 18, 4, 595);
+    			attr_dev(div4, "class", "col svelte-1rvm9r5");
+    			add_location(div4, file$1, 17, 2, 573);
+    			attr_dev(p3, "class", "svelte-1rvm9r5");
+    			add_location(p3, file$1, 34, 2, 1085);
+    			attr_dev(div5, "class", "col bg svelte-1rvm9r5");
+    			add_location(div5, file$1, 33, 2, 1062);
+    			attr_dev(div6, "class", "cols svelte-1rvm9r5");
+    			add_location(div6, file$1, 16, 0, 552);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div1, anchor);
-    			append_dev(div1, div0);
+    			insert_dev(target, div6, anchor);
+    			append_dev(div6, div4);
+    			append_dev(div4, div3);
+    			append_dev(div3, div0);
     			append_dev(div0, p0);
     			append_dev(div0, t1);
-    			append_dev(div0, p1);
-    			append_dev(p1, button);
-    			append_dev(div0, t3);
-    			append_dev(div0, input);
-    			set_input_value(input, /*datetime*/ ctx[0]);
-    			append_dev(div0, t4);
-    			mount_component(picker, div0, null);
-    			append_dev(div1, t5);
-    			if (if_block) if_block.m(div1, null);
+    			mount_component(picker0, div0, null);
+    			append_dev(div3, t2);
+    			append_dev(div3, div1);
+    			append_dev(div1, p1);
+    			append_dev(div1, t4);
+    			mount_component(picker1, div1, null);
+    			append_dev(div3, t5);
+    			append_dev(div3, div2);
+    			append_dev(div2, p2);
+    			append_dev(div2, t7);
+    			mount_component(picker2, div2, null);
+    			append_dev(div6, t8);
+    			append_dev(div6, div5);
+    			append_dev(div5, p3);
+    			append_dev(div5, t10);
+    			if (if_block) if_block.m(div5, null);
     			current = true;
-
-    			if (!mounted) {
-    				dispose = [
-    					listen_dev(button, "click", /*switchDatetime*/ ctx[3], false, false, false),
-    					listen_dev(input, "input", /*input_input_handler*/ ctx[5])
-    				];
-
-    				mounted = true;
-    			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if (dirty & /*datetime*/ 1) {
-    				set_input_value(input, /*datetime*/ ctx[0]);
-    			}
-
-    			const picker_changes = {};
-    			if (dirty & /*datetime*/ 1) picker_changes.datetime = /*datetime*/ ctx[0];
-    			picker.$set(picker_changes);
-    			if (dirty & /*payload*/ 2) show_if = Object.keys(/*payload*/ ctx[1]).length;
+    			if (dirty & /*payload*/ 1) show_if = Object.keys(/*payload*/ ctx[0]).length;
 
     			if (show_if) {
     				if (if_block) {
@@ -6903,7 +6208,7 @@ var SvelteTimezonePicker = (function () {
     				} else {
     					if_block = create_if_block$1(ctx);
     					if_block.c();
-    					if_block.m(div1, null);
+    					if_block.m(div5, null);
     				}
     			} else if (if_block) {
     				if_block.d(1);
@@ -6912,19 +6217,23 @@ var SvelteTimezonePicker = (function () {
     		},
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(picker.$$.fragment, local);
+    			transition_in(picker0.$$.fragment, local);
+    			transition_in(picker1.$$.fragment, local);
+    			transition_in(picker2.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
-    			transition_out(picker.$$.fragment, local);
+    			transition_out(picker0.$$.fragment, local);
+    			transition_out(picker1.$$.fragment, local);
+    			transition_out(picker2.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div1);
-    			destroy_component(picker);
+    			if (detaching) detach_dev(div6);
+    			destroy_component(picker0);
+    			destroy_component(picker1);
+    			destroy_component(picker2);
     			if (if_block) if_block.d();
-    			mounted = false;
-    			run_all(dispose);
     		}
     	};
 
@@ -6940,29 +6249,16 @@ var SvelteTimezonePicker = (function () {
     }
 
     function instance$1($$self, $$props, $$invalidate) {
-    	let datetime = "2018-08-23T10:00";
-    	let datetime1 = "2018-08-23T10:00";
-    	let timezone = "Europe/London";
-
-    	// let datetime;
-    	// let timezone;
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Demo", slots, []);
+    	let datetime = "2020-09-15T10:00";
+    	let allowedTimezones = ["Europe/London", "Africa/Abidjan", "Asia/Istanbul"];
     	let payload = {};
 
-    	let datetime2 = "2016-06-19T08:30";
-
-    	const switchDatetime = () => {
-    		if (datetime === datetime1) {
-    			$$invalidate(0, datetime = datetime2);
-    		} else {
-    			$$invalidate(0, datetime = datetime1);
-    		}
-    	};
-
     	const update = ev => {
-    		$$invalidate(1, payload.datetime = ev.detail.datetime, payload);
-    		$$invalidate(1, payload.timezone = ev.detail.timezone, payload);
-    		$$invalidate(1, payload.utcDatetime = ev.detail.utcDatetime, payload);
-    		$$invalidate(1, payload.zonedDatetime = ev.detail.zonedDatetime, payload);
+    		$$invalidate(0, payload.timezone = ev.detail.timezone, payload);
+    		$$invalidate(0, payload.utcDatetime = zonedTimeToUtc(parseISO(datetime), payload.timezone), payload);
+    		$$invalidate(0, payload.zonedDatetime = utcToZonedTime(payload.utcDatetime, payload.timezone), payload);
     	};
 
     	const writable_props = [];
@@ -6971,14 +6267,6 @@ var SvelteTimezonePicker = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Demo> was created with unknown prop '${key}'`);
     	});
 
-    	let { $$slots = {}, $$scope } = $$props;
-    	validate_slots("Demo", $$slots, []);
-
-    	function input_input_handler() {
-    		datetime = this.value;
-    		$$invalidate(0, datetime);
-    	}
-
     	$$self.$capture_state = () => ({
     		Picker,
     		utcToZonedTime,
@@ -6986,27 +6274,22 @@ var SvelteTimezonePicker = (function () {
     		format,
     		parseISO,
     		datetime,
-    		datetime1,
-    		timezone,
+    		allowedTimezones,
     		payload,
-    		datetime2,
-    		switchDatetime,
     		update
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("datetime" in $$props) $$invalidate(0, datetime = $$props.datetime);
-    		if ("datetime1" in $$props) datetime1 = $$props.datetime1;
-    		if ("timezone" in $$props) $$invalidate(2, timezone = $$props.timezone);
-    		if ("payload" in $$props) $$invalidate(1, payload = $$props.payload);
-    		if ("datetime2" in $$props) datetime2 = $$props.datetime2;
+    		if ("datetime" in $$props) $$invalidate(1, datetime = $$props.datetime);
+    		if ("allowedTimezones" in $$props) $$invalidate(2, allowedTimezones = $$props.allowedTimezones);
+    		if ("payload" in $$props) $$invalidate(0, payload = $$props.payload);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [datetime, payload, timezone, switchDatetime, update, input_input_handler];
+    	return [payload, datetime, allowedTimezones, update];
     }
 
     class Demo extends SvelteComponentDev {

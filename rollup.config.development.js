@@ -40,7 +40,7 @@ const config = {
     }),
     svelte({
       dev: true,
-      css: (css) => css.write('demo/build/bundle.css')
+      css: (css) => css.write('bundle.css')
     }),
     resolve({
       browser: true,

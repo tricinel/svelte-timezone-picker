@@ -1,7 +1,8 @@
 import timezones from './__mocks__/timezones';
-import { ungroupZones } from './utils';
+import { ungroup } from './utils';
 
-const zoneLabels = Object.keys(ungroupZones(timezones));
+const zoneLabels = Object.values(ungroup(timezones)).map((zone) => zone[0]);
+const ungroupedZones = ungroup(timezones);
 
 const getZoneLabelAtIndex = (index) => zoneLabels[index];
 
@@ -48,5 +49,6 @@ export {
   keyArrowUp,
   keyEnter,
   keyEscape,
-  keyLetter
+  keyLetter,
+  ungroupedZones
 };
