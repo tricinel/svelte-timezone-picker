@@ -24,14 +24,10 @@ const props = { timezone: 'Europe/London' };
 let intlSpy;
 
 beforeEach(() => {
-  // eslint-disable-next-line no-underscore-dangle
-  global.__USE_CUSTOM_EVENT__ = false;
   intlSpy = jest.spyOn(Intl, 'DateTimeFormat');
 });
 
 afterEach(() => {
-  // eslint-disable-next-line no-underscore-dangle
-  delete global.__USE_CUSTOM_EVENT__;
   intlSpy.mockRestore();
   jest.clearAllTimers();
 });

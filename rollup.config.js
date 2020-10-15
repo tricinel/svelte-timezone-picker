@@ -2,7 +2,6 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
-import replace from '@rollup/plugin-replace';
 
 import pkg from './package.json';
 
@@ -24,9 +23,6 @@ const config = {
     }
   ],
   plugins: [
-    replace({
-      __USE_CUSTOM_EVENT__: false
-    }),
     svelte(),
     resolve({
       browser: true,

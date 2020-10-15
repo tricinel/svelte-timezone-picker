@@ -1,5 +1,4 @@
 <script>
-  /* global __USE_CUSTOM_EVENT__ */
   import { createEventDispatcher, onMount } from 'svelte';
   import { get_current_component } from 'svelte/internal'; // eslint-disable-line camelcase
   import { slide } from 'svelte/transition';
@@ -114,21 +113,15 @@
   const dispatchUpdates = () => {
     const eventName = 'update';
     const eventData = { timezone };
+    const customEvent = new CustomEvent(eventName, {
+      detail: eventData,
+      bubbles: true,
+      cancelable: true,
+      composed: true
+    });
 
-    // __USE_CUSTOM_EVENT__ is inserted through the rollup build process
-    if (__USE_CUSTOM_EVENT__) {
-      const customEvent = new CustomEvent(eventName, {
-        detail: eventData,
-        bubbles: true,
-        cancelable: true,
-        composed: true
-      });
-      component.dispatchEvent && component.dispatchEvent(customEvent);
-    }
-
-    if (!__USE_CUSTOM_EVENT__) {
-      dispatch(eventName, eventData);
-    }
+    component.dispatchEvent && component.dispatchEvent(customEvent);
+    dispatch(eventName, eventData);
   };
 
   // Emit the event back to the consumer
