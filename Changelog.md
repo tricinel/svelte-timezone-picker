@@ -1,3 +1,9 @@
+### v2.0.1
+
+---
+
+- Remove `__USE_CUSTOM_EVENT__` usage
+
 ### v2.0.0
 
 ---
