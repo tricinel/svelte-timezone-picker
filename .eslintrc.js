@@ -4,7 +4,11 @@ module.exports = {
     'jest/globals': true,
     es6: true
   },
-  extends: ['frontwerk', 'plugin:prettier/recommended'],
+  extends: [
+    'frontwerk',
+    'plugin:prettier/recommended',
+    'plugin:cypress/recommended'
+  ],
   plugins: ['jest', 'svelte3', 'prettier'],
   overrides: [
     {

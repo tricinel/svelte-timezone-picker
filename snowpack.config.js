@@ -8,7 +8,10 @@ module.exports = {
   plugins: ['@snowpack/plugin-svelte', '@snowpack/plugin-dotenv'],
   install: [],
   installOptions: {},
-  devOptions: {},
+  devOptions: {
+    port: 4000,
+    open: 'none'
+  },
   buildOptions: {},
   proxy: {},
   alias: {}
