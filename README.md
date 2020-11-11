@@ -1,5 +1,7 @@
 # Svelte Timezone Picker
 
+![Svelte Timezone Picker Demo](./demo.gif)
+
 You need a timezone picker that will allow the user to pick a timezone from a list. You want it to be accessible and follow the ARIA design pattern for a [select](https://www.w3.org/TR/wai-aria-practices/examples/listbox/listbox-collapsible.html).
 
 This is a component that controls all user interactions and state for you. It follows best practices and accessibility guidelines.
