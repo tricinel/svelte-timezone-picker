@@ -1,0 +1,26 @@
+version: 2.1
+orbs:
+  node: circleci/node@4.0.0
+  cypress: cypress-io/cypress@1.16.1
+jobs:
+  run-unit-tests:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn test:ci -u --maxWorkers=1 --maxConcurrency=1
+workflows:
+  node-tests:
+    jobs:
+      - run-unit-tests
+      - cypress/install:
+          name: cypress-install
+          yarn: true
+      - cypress/run:
+          name: start-dev-and-test
+          yarn: true
+          requires:
+            - cypress-install
+          start: yarn dev
+          wait-on: 'http://localhost:4000'
