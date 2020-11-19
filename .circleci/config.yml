@@ -9,7 +9,7 @@ jobs:
     steps:
       - checkout
       - run: yarn install
-      - run: yarn test:ci -u --maxWorkers=1 --maxConcurrency=1
+      - run: yarn test -u --maxWorkers=1 --maxConcurrency=1
 workflows:
   node-tests:
     jobs:
