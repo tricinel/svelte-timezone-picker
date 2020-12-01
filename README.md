@@ -10,6 +10,8 @@ This is a component that controls all user interactions and state for you. It fo
 
 ## Installation
 
+![Npm version][npm-version-badge] ![Build status][build-status-badge] ![Node Version][node-version-badge] ![License][license-badge]
+
 This module is distributed via npm which is bundled with node and should be installed as one of your project's dependencies:
 
 ```
@@ -101,3 +103,6 @@ Check out the [Demo](./demo) or play with this on [Codesandbox](https://codesand
 MIT License - fork, modify and use however you want.
 
 [license-badge]: https://img.shields.io/npm/l/svelte-timezone-picker.svg?style=flat-square
+[node-version-badge]: https://img.shields.io/node/v/svelte-timezone-picker?style=flat-square
+[npm-version-badge]: https://img.shields.io/npm/v/svelte-timezone-picker?style=flat-square
+[build-status-badge]: https://img.shields.io/circleci/build/github/tricinel/svelte-timezone-picker?label=circleci&style=flat-square
