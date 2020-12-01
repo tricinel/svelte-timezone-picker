@@ -45,8 +45,6 @@ context('Timezone Picker', () => {
     cy.findByTestId('payload-zonedDatetime').should('exist');
     cy.findByTestId('payload-utcDatetime').should('exist');
     cy.findByTestId('payload-timezone').contains('Europe/Berlin');
-    cy.findByTestId('payload-zonedDatetime').contains('GMT+0200');
-    cy.findByTestId('payload-utcDatetime').contains('GMT+0200');
   });
 
   it('allows the user to open and close the timezone dropdown', () => {
