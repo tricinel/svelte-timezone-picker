@@ -402,7 +402,6 @@ const timezones = {
     'Canada/Eastern': ['Eastern', '-05:00', '-04:00'],
     'Canada/Mountain': ['Mountain', '-07:00', '-06:00'],
     'Canada/Newfoundland': ['Newfoundland', '-03:30', '-02:30'],
-    'Canada/Pacific': ['Pacific', '-08:00', '-07:00'],
     'Canada/Saskatchewan': ['Saskatchewan', '-06:00', '-06:00'],
     'Canada/Yukon': ['Yukon', '-08:00', '-07:00']
   },
