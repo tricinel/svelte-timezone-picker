@@ -1,6 +1,6 @@
 {
   "name": "svelte-timezone-picker",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "engines": {
     "node": ">= 10",
     "npm": ">= 6"

@@ -1,3 +1,9 @@
+### v2.0.2
+
+---
+
+- Remove duplucate Pacific time zone
+
 ### v2.0.1
 
 ---
