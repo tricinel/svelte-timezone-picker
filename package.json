@@ -44,7 +44,7 @@
     "test:ci": "jest src --silent -i",
     "test:cy": "start-server-and-test 'yarn dev' http-get://localhost:4000 'cypress open'",
     "test:cy:headless": "start-server-and-test 'yarn dev' http-get://localhost:4000 'cypress run --headless --quiet'",
-    "prepublishOnly": "npm-run-all build --prallel test test:cy:headless"
+    "prepublishOnly": "npm-run-all build --parallel test test:cy:headless"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
