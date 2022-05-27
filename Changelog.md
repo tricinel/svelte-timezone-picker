@@ -1,8 +1,14 @@
+### v2.0.3
+
+---
+
+- Hide the default clear button for the search field on webkit browsers
+
 ### v2.0.2
 
 ---
 
-- Remove duplucate Pacific time zone
+- Remove duplicate Pacific time zone
 
 ### v2.0.1
 

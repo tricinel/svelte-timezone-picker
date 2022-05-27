@@ -508,6 +508,10 @@
     width: calc(100% - 0.8em);
   }
 
+  input::-webkit-search-cancel-button {
+    display: none;
+  }
+
   .sr-only {
     border: 0;
     clip: 'rect(0, 0, 0, 0)';
