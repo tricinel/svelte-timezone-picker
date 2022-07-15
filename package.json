@@ -80,13 +80,13 @@
     "sirv-cli": "^1.0.6",
     "snowpack": "^2.17.0",
     "start-server-and-test": "^1.11.5",
-    "svelte": "^3.25.0",
+    "svelte": "^3.49.0",
     "svelte-jester": "^1.1.5"
   },
   "dependencies": {
     "compute-scroll-into-view": "^1.0.16"
   },
   "peerDependencies": {
-    "svelte": "^3.25.0"
+    "svelte": "^3.49.0"
   }
 }
